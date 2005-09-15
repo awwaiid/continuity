@@ -3,6 +3,7 @@
 use strict;
 use Coro::Cont;
 
+# Take a sub ref and give back a continuation
 sub mkcont {
   my ($func) = @_;
   my $cont = csub { &$func(@_) };
@@ -18,33 +19,42 @@ sub main {
   }
 }
 
-my $main = mkcont(\&main);
+use vars qw( %application );
+
+%application = (
+  '/countup' => \&main,
+);
+
+sub init {
+  foreach my $appname (keys %application) {
+    $application{$appname} = mkcont($application{$appname});
+  }
+}
+
+init();
 
 use HTTP::Daemon;
 use HTTP::Status;
 
-my $d = HTTP::Daemon->new(LocalPort => 8080) || die;
+my $d = HTTP::Daemon->new(LocalPort => 8081) || die;
 print "Please contact me at: ", $d->url, "\n";
 
 while (my $c = $d->accept) {
     while (my $r = $c->get_request) {
-        if(($r->method eq 'GET'
-          || $r->method eq 'POST')
-          && $r->url->path eq "/xyzzy") {
+        my $app;
+        if(($r->method eq 'GET' || $r->method eq 'POST')
+          && ($app = $application{$r->url->path})) {
             my $code = RC_OK;
-            my $content = &$main();
+            my $content = &$app();
             my $r = HTTP::Response->new($code);
             $r->headers('content-type' => 'text/html');
             $r->content($content);
 
             $c->send_response($r);
-
-            # remember, this is *not* recommended practice :-)
-            #$c->send_file_response("/etc/passwd");
+        } else {
+            $c->send_error(RC_NOT_FOUND)
         }
-        else {
-            $c->send_error(RC_FORBIDDEN)
-        }
+        $c->force_last_request;
     }
     $c->close;
     undef($c);
