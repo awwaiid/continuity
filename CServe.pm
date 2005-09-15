@@ -1,5 +1,5 @@
 
-package CServer;
+package CServe;
 
 use strict;
 use Coro::Cont;
