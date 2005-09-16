@@ -53,6 +53,7 @@ sub serve {
         my $code = RC_OK;
         $c->send_basic_header();
         select $c;
+        print "Content-type: text/html\n\n";
         &$app($r);
       } else {
         $c->send_error(RC_NOT_FOUND)

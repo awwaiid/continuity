@@ -12,7 +12,6 @@ sub main {
   while(1) {
     my $params = getParsedInput();
     $count++;
-    print "Content-type: text/html\n\n";
     print "Count: $count\n";
     print "<pre>PARAM DUMP:\n" . Dumper($params) . "</pre>";
   }
