@@ -5,6 +5,7 @@ use strict;
 use Coro::Cont;
 use HTTP::Daemon;
 use HTTP::Status;
+use IO::Capture::Stdout;
 
 # Take a sub ref and give back a continuation
 sub mkcont {
@@ -22,18 +23,16 @@ sub serve {
 
   while (my $c = $d->accept) {
     while (my $r = $c->get_request) {
-      my $app;
       if($r->method eq 'GET' || $r->method eq 'POST') {
         my $code = RC_OK;
-        my $content = &$app($r);
-        my $r = HTTP::Response->new($code);
-        $r->headers('content-type' => 'text/html');
-        $r->content($content);
-        $c->send_response($r);
+        $c->send_basic_header();
+        $capture = IO::Capture::Stdout->new();
+        $capture->
+        my $status = &$app($r);
+        print $c $response;
       } else {
-          $c->send_error(RC_NOT_FOUND)
+        $c->send_error(RC_NOT_FOUND)
       }
-      $c->force_last_request;
     }
     $c->close;
     undef($c);

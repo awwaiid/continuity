@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
+use Coro::Cont;
 use CServe;
 
 sub main {
