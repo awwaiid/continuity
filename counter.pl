@@ -4,6 +4,15 @@ use strict;
 use CServe;
 use URI::Escape;
 
+=head1 Summary
+
+This is pretty clearly an emulation of the Seaside tutorial.
+Except the overhead for seaside is a bit bigger than this...
+I'd say. There is no smoke or mirrors here, just the raw
+code. We even implement our own 'prompt'.
+
+=cut
+
 # Ask a question and keep asking until they answer
 sub prompt {
   my ($msg, @ops) = @_;
@@ -40,7 +49,6 @@ sub main {
     if($count == 42) {
       print "<h1>The Answer To Life, The Universe, and Everything</h1>";
     }
-
   }
 }
 
