@@ -9,7 +9,7 @@ use URI::Escape;
 This is pretty clearly an emulation of the Seaside tutorial.
 Except the overhead for seaside is a bit bigger than this...
 I'd say. There is no smoke or mirrors here, just the raw
-code. We even implement our own 'prompt'...
+code. We even implement our own 'prompt'.
 
 =cut
 
