@@ -21,7 +21,7 @@ sub getParsedInput {
 # Take a sub ref and give back a continuation. Just a shortcut
 sub mkcont {
   my ($func) = @_;
-  my $cont = csub { &$func(@_) };
+  my $cont = csub { $func->(@_) };
   return $cont;
 }
 
@@ -53,8 +53,8 @@ sub serve {
         my $code = RC_OK;
         $c->send_basic_header();
         select $c;
-        print "Content-type: text/html\n\n";
-        &$app($r);
+        print "Content-type: text/html\r\n\r\n";
+        $app->($r);
       } else {
         $c->send_error(RC_NOT_FOUND)
       }
