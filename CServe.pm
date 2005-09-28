@@ -5,33 +5,12 @@ use strict;
 use Coro::Cont;
 use HTTP::Daemon;
 use HTTP::Status;
-use HTTP::Request::Params;
-
-use base 'Exporter';
-use vars qw( @EXPORT );
-@EXPORT = qw( getParsedInput );
-
-sub getParsedInput {
-  yield;
-  my ($r) = @_;
-  my $params = getParams($r);
-  return $params;
-}
 
 # Take a sub ref and give back a continuation. Just a shortcut
 sub mkcont {
   my ($func) = @_;
   my $cont = csub { $func->(@_) };
   return $cont;
-}
-
-# Given an HTTP::Request, return a nice hash of name/params
-# This is really just a thin wrapper around HTTP::Request::Params
-sub getParams {
-  my ($request) = @_;
-  my $parse = HTTP::Request::Params->new({ req => $request });
-  my $params = $parse->params;
-  return $params;
 }
 
 sub serve {

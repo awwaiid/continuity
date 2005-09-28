@@ -2,6 +2,7 @@
 
 use strict;
 use CServe;
+use CServe::Client;
 use URI::Escape;
 
 =head1 Summary
