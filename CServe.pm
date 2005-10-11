@@ -10,8 +10,6 @@ use Coro::Cont;
 use HTTP::Daemon;
 use HTTP::Status;
 
-$| = 1;
-
 use vars qw( %httpConfig );
 
 %httpConfig = (
@@ -31,7 +29,6 @@ sub getSession {
   print "Headers: " . $request->as_string();
   my $cookieHeader = $request->header('Cookie');
   print "Cookie: $cookieHeader\n";
-  $sessionIdCounter++;
   print "sessionIdCounter: $sessionIdCounter\n";
   if($cookieHeader =~ /sessionid=(\d+)/) {
     print "Found sessionId!\n";
