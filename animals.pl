@@ -3,7 +3,8 @@ use strict;
 use CServe;
 use CServe::Client;
 
-# This is the original version written by Merlyn,
+# This is the A MODIFIED VERSION written by awwaiid.
+# The original version was written by Merlyn,
 # http://www.perlmonks.org/?node_id=200391
 
 ## I originally wrote this for a column,
