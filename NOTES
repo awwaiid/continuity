@@ -1,0 +1,30 @@
+
+HTTP::Daemon+Coro
+
+Server Goal:
+For the server to be super-minimal and secure.  At a minimum it should do basic
+static serving and special app serving.  I'd also like it to do plain CGI. For
+fancier things we can use something like perlbal to send other content to
+apache.
+
+App Goal:
+Apps should be as similar to standard CGI as possible. Its just that they get a
+magic yield / suspend / wait-for-input command, and at that point their
+environment variables and such get re-initialized. Further abstractions should
+be done through libraries and frameworks, but the continuation server shouldn't
+care.
+
+
+
+2005.10.13 (awwaiid) --------------------------------------------------------
+
+Turned it inside out today, so that now the server serves content on its own
+instead of being called from an individual application. Right now I'm just
+looking for .pl files to serve as apps, and otherwise am using 'file' to
+determine filetypes and just sending things statically.
+
+Doesn't work correctly for abnormal termination, such as loosing your cookie.
+Also doesn't work on more than one app.  I guess each app needs its own session
+tracking...  using this model doesn't make sense for two different apps to
+share the same coro session anyway.
+
