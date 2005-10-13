@@ -1,6 +1,5 @@
 #!/usr/bin/perl -w
 use strict;
-use CServe;
 use CServe::Client;
 
 # This is the A MODIFIED VERSION written by awwaiid.
@@ -67,5 +66,7 @@ sub stdin {
 }
 
 # Serve this program
-CServe::serve(\&main);
+main();
+
+1;
 

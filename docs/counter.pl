@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use CServe;
+#use CServe;
 use CServe::Client;
 use URI::Escape;
 
@@ -53,6 +53,7 @@ sub main {
   }
 }
 
-# Serve this program
-CServe::serve(\&main);
+main();
+
+1;
 
