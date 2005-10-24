@@ -13,7 +13,8 @@ use HTTP::Status;
 use vars qw( %httpConfig $docroot );
 
 %httpConfig = (
-#  LocalPort => 11111, # 8081,
+  LocalPort => 8081,
+  ReuseAddr => 1,
 );
 
 $docroot = '/home/awwaiid/projects/perl/cserver/docs';
