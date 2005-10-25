@@ -9,10 +9,28 @@ use base 'Exporter';
 use vars qw( @EXPORT );
 @EXPORT = qw( getParsedInput );
 
+sub splitHashify {
+  my ($key, $val) = @_;
+  return $val;
+}
+
 sub getParsedInput {
+  print @_;
   yield;
   my ($r) = @_;
   my $params = getParams($r);
+  foreach my $key (keys %$params) {
+    if($key =~ /:|\[/) {
+      my (@keys) = split /:|\[|\]\[|\]/, $key;
+      my $val = $params->{$key};
+      $key = shift @keys;
+      my $k;
+      while($k = pop @keys) {
+        $val = { $k => $val };
+      }
+      $params->{$key} = $val;
+    }
+  }
   return $params;
 }
 

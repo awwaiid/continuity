@@ -99,7 +99,6 @@ sub sendStatic {
 sub runApp {
   my ($c, $r, $path) = @_;
   my $appref = sub { require $path };
-
   my $sessionId = getSession($r);
   print "Got session $sessionId\n";
   my $app = getSessionApp($sessionId, $appref);
