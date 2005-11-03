@@ -14,6 +14,7 @@ sub splitHashify {
   return $val;
 }
 
+# I like my inputs split up into hashes
 sub getParsedInput {
   print @_;
   yield;
@@ -23,12 +24,13 @@ sub getParsedInput {
     if($key =~ /:|\[/) {
       my (@keys) = split /:|\[|\]\[|\]/, $key;
       my $val = $params->{$key};
-      $key = shift @keys;
-      my $k;
-      while($k = pop @keys) {
-        $val = { $k => $val };
+      my $t = $params;
+      my $key = pop @keys;
+      while(my $k = shift @keys) {
+        $t->{$k} = $t->{$k} || {};
+        $t = $t->{$k};
       }
-      $params->{$key} = $val;
+      $t->{$key} = $val;
     }
   }
   return $params;

@@ -1,7 +1,7 @@
 
-package Coro::HTTP::Daemon;
-use HTTP::Daemon;
-use base 'Coro::Socket', 'HTTP::Daemon::ClientConn';
+#package Coro::HTTP::Daemon;
+#use HTTP::Daemon;
+#use base 'Coro::Socket', 'HTTP::Daemon::ClientConn';
 
 package CServe;
 
@@ -9,6 +9,7 @@ use strict;
 use Coro::Cont;
 use HTTP::Daemon;
 use HTTP::Status;
+use Safe;
 
 use vars qw( %httpConfig $docroot );
 
@@ -17,7 +18,8 @@ use vars qw( %httpConfig $docroot );
   ReuseAddr => 1,
 );
 
-$docroot = '/home/awwaiid/projects/perl/cserver/docs';
+$docroot = '/Users/bwilcox/cserver/docs';
+
 
 # Take a sub ref and give back a continuation. Just a shortcut
 sub mkcont {
@@ -50,8 +52,8 @@ sub getSessionApp {
   } else {
     print "Creating new continuation\n";
     $app = mkcont($appref);
-    print "Calling for initialization\n";
-    $app->(); # Call it once for initialization
+    #print "Calling for initialization\n";
+    #$app->(); # Call it once for initialization
   }
   return $app;
 }
@@ -107,7 +109,8 @@ sub runApp {
   select $c;
   print "Set-Cookie: sessionid=$sessionId\r\n";
   print "Content-type: text/html\r\n\r\n";
-  $app->($r);
+  eval { $app->($r) };
+  print STDERR $@ if $@;
   select STDOUT;
   setSessionApp($sessionId, $app);
 }
