@@ -36,12 +36,6 @@ sub toHTML {
   return $out;
 }
 
-sub html_update {
-  my ($self, $params) = @_;
-  $self->SUPER::html_update('name', $params);
-  $self->SUPER::html_update('serial', $params);
-}
-
 package main;
 use strict;
 use CServe::Client;
