@@ -44,11 +44,11 @@ sub getSession {
 
 my %session;
 sub getSessionApp {
-  my ($sessionId, $appref) = @_;
+  my ($sessionId, $path, $appref) = @_;
   my $app;
-  if(exists $session{$sessionId}) {
+  if(exists $session{$sessionId}{$path}) {
     print "Found existing app\n";
-    $app = $session{$sessionId};
+    $app = $session{$sessionId}{$path};
   } else {
     print "Creating new continuation\n";
     $app = mkcont($appref);
@@ -59,8 +59,8 @@ sub getSessionApp {
 }
 
 sub setSessionApp {
-  my ($sessionId, $app) = @_;
-  $session{$sessionId} = $app;
+  my ($sessionId, $path, $app) = @_;
+  $session{$sessionId}{$path} = $app;
 }
 
 sub mapPath {
@@ -103,7 +103,7 @@ sub runApp {
   my $appref = sub { require $path };
   my $sessionId = getSession($r);
   print "Got session $sessionId\n";
-  my $app = getSessionApp($sessionId, $appref);
+  my $app = getSessionApp($sessionId, $path, $appref);
   print "Got app\n";
   $c->send_basic_header();
   select $c;
@@ -112,7 +112,7 @@ sub runApp {
   eval { $app->($r) };
   print STDERR $@ if $@;
   select STDOUT;
-  setSessionApp($sessionId, $app);
+  setSessionApp($sessionId, $path, $app);
 }
 
 sub serve {
