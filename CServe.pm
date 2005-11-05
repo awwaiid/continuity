@@ -18,7 +18,7 @@ use vars qw( %httpConfig $docroot );
   ReuseAddr => 1,
 );
 
-$docroot = '/Users/bwilcox/cserver/docs';
+$docroot = '/home/awwaiid/projects/perl/cserver/docs';
 
 
 # Take a sub ref and give back a continuation. Just a shortcut

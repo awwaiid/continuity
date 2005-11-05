@@ -8,7 +8,7 @@ use CGI qw/:standard/;
 use Class::DBI::AutoLoader (
   dsn       => 'dbi:mysql:inventory',
   username  => 'root',
-  password  => '',
+  password  => 'vobo2Aje',
   options   => { RaiseError => 1 },
   tables    => [qw( InventoryItem )],
   namespace => 'Database'
