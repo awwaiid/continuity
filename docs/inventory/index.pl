@@ -104,11 +104,13 @@ sub dispMain {
   print start_html('DB example'),
         start_form(-action=>"http://localhost:8081/inventory/index.pl"),
         h2('List of inventory items');
+  print qq{ <input type=submit name="action:add" value="Add"><br>\n};
   my @items = InventoryItem->retrieve_all;
   foreach my $item (@items) {
     print $item->toHTML({ edit => 0 });
     my $id = $item->id();
-    print qq{ <input type=submit name="action:edit:$id" value="Edit"><br>\n};
+    print qq{ <input type=submit name="action:edit:$id" value="Edit">\n};
+    print qq{ <input type=submit name="action:delete:$id" value="Delete"><br>\n};
   }
   print end_form();
   return getParsedInput();
@@ -126,6 +128,15 @@ sub main {
     if($params->{action}{edit}) {
       my $id = firstKey($params->{action}{edit});
       my $item = InventoryItem->retrieve($id);
+      editItem($item);
+    }
+    if($params->{action}{delete}) {
+      my $id = firstKey($params->{action}{delete});
+      my $item = InventoryItem->retrieve($id);
+      $item->delete();
+    }
+    if($params->{action}{add}) {
+      my $item = InventoryItem->create({});
       editItem($item);
     }
   }
