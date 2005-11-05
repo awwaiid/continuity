@@ -51,7 +51,7 @@ sub toHTML {
 package main;
 use strict;
 use CServe::Client;
-use CGI qw/:standard/;
+use CGI qw/:html/;
 
 #my $item = InventoryItem->create({
 #  name => 'computer A',
