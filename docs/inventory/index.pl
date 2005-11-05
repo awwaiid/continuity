@@ -2,7 +2,7 @@
 
 use strict;
 use CServe::Client;
-use CGI qw/:html/;
+use CGI qw/:html :form/;
 
 # load the DB tables
 use Class::DBI::AutoLoader (
@@ -51,7 +51,7 @@ sub toHTML {
 package main;
 use strict;
 use CServe::Client;
-use CGI qw/:html/;
+use CGI qw/:html :form/;
 
 #my $item = InventoryItem->create({
 #  name => 'computer A',
