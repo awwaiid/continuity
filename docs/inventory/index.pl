@@ -2,7 +2,7 @@
 
 use strict;
 use CServe::Client;
-use CGI qw/:standard/;
+use CGI qw/:html/;
 
 # load the DB tables
 use Class::DBI::AutoLoader (
