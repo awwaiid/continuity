@@ -28,8 +28,8 @@ sub toHTML {
   if(!$context->{'edit'}) {
     $out .=  "Item: ".$self->id." ".$self->name." (".$self->serial.")\n";
   } else {
-    $out .= "Item Name: ".$self->html_input('name')."<br>\n";
-    $out .= "Serial: ".$self->html_input('serial')."<br>\n";
+    $out .= "Item Name: ".$self->html_text('name')."<br>\n";
+    $out .= "Serial: ".$self->html_text('serial')."<br>\n";
   }
   # No matter what we get wrapped in a DIV
   $out = qq{ <div class="InventoryItem">$out</div> };
