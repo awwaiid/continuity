@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use CServe;
+use Continuity::Client::CGI;
 use Data::Dumper;
 
 sub main {

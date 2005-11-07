@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 use strict;
-use CServe::Client;
+use Continuity::Client::CGI;
 
 # This is the A MODIFIED VERSION written by awwaiid.
 # The original version was written by Merlyn,

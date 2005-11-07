@@ -1,9 +1,5 @@
 #!/usr/bin/perl
 
-use strict;
-use CServe::Client;
-use CGI qw/:html :form/;
-
 # load the DB tables
 use Class::DBI::AutoLoader (
   dsn       => 'dbi:mysql:inventory',
@@ -28,7 +24,7 @@ CREATE TABLE `InventoryItem` (
 =cut
 
 package InventoryItem;
-use base 'Component::HTMLView';
+use base 'Continuity::Util::Component';
 use base 'Database::InventoryItem';
 
 # So we need to document the CSS attributes this component understands
@@ -50,7 +46,7 @@ sub toHTML {
 
 package main;
 use strict;
-use CServe::Client;
+use Continuity::Client::CGI;
 use CGI qw/:html :form/;
 
 #my $item = InventoryItem->create({

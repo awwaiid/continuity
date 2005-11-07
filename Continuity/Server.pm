@@ -3,7 +3,7 @@
 #use HTTP::Daemon;
 #use base 'Coro::Socket', 'HTTP::Daemon::ClientConn';
 
-package CServe;
+package Continuity::Server;
 
 use strict;
 use Coro::Cont;

@@ -1,5 +1,5 @@
 
-package Component::HTMLView;
+package Continuity::Util::Component;
 
 use strict;
 use Data::Dumper;

@@ -1,5 +1,5 @@
 
-package CServe::Client;
+package Continuity::Client::CGI;
 
 use strict;
 use Coro::Cont;

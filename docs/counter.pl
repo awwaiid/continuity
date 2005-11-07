@@ -1,8 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-#use CServe;
-use CServe::Client;
+use Continuity::Client::CGI;
 use URI::Escape;
 
 =head1 Summary

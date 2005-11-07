@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use CServe::Client;
+use Continuity::Client::CGI;
 use PHP::Interpreter;
 
 sub main {
