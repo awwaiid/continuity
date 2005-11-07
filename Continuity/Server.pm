@@ -189,7 +189,5 @@ sub serve {
   }
 }
 
-serve();
-
 1;
 
