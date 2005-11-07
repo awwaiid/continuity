@@ -10,13 +10,14 @@ sub main {
 
   # After we're done with that we enter a loop
   while(1) {
-    my $params = getParsedInput();
     $count++;
     print "Count: $count\n";
     print "<pre>PARAM DUMP:\n" . Dumper($params) . "</pre>";
+    my $params = getParsedInput();
   }
 }
 
-# Serve this program
-CServe::serve(\&main);
+main();
+
+1;
 
