@@ -14,6 +14,13 @@ code. We even implement our own 'prompt'...
 
 =cut
 
+my $cserver = Continuity::Server->new(
+    port => 8080,
+    newContinuationSub => \&main,
+    # sdw: mapper => \&foo (or mapper => $ob), etc
+);
+
+
 # Ask a question and keep asking until they answer
 sub prompt {
   my ($msg, @ops) = @_;
@@ -27,13 +34,16 @@ sub prompt {
   return $option || prompt($msg, @ops);
 }
 
-sub main {
+sub main :Coro {       # sdw -- don't think we can 'yield' unless ':Coro' is here -- am I wrong?
+  my $request = shift; # sdw -- passed implicitly the first time this is called
+
   # When we are first called we get a chance to initialize stuff
   my $count = 0;
 
   # After we're done with that we enter a loop
   while(1) {
-    my $params = getParsedInput();
+    my $request = $request->next_request;  # sdw -- or something. not sure about a good name. this is where the 'yield' happens.
+    my $params = $request->params;         # sdw -- or maybe params should be directly accessible through $request
     my $add = $params->{add};
     if($count >= 0 && $count + $add < 0) {
       my $choice = prompt("Do you really want to GO NEGATIVE?",
@@ -53,11 +63,9 @@ sub main {
   }
 }
 
-my $cs = new Continuity::Server(
-  newContinuationSub => \&main
-);
+$cserver->start(app => '/app'); # sdw -- perhaps this should be implicit by ->new() ?
 
-$cs->mainLoop('/app');
+Event::loop;  # sdw: could be $cserver->loop as an alias to exactly the same thing
 
 1;
 
