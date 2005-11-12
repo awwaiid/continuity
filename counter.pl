@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
+use Continuity::Server;
 use Continuity::Client::CGI;
 use URI::Escape;
 
@@ -52,7 +53,11 @@ sub main {
   }
 }
 
-main();
+my $cs = new Continuity::Server(
+  newContinuationSub => \&main
+);
+
+$cs->mainLoop();
 
 1;
 
