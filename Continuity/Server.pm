@@ -114,12 +114,6 @@ sub map {
   return $c;
 }
 
-sub sendSessionCookie {
-  my ($self, $c, $request) = @_;
-  my $cookieHeader = $request->header('Cookie');
-  print $c "Cookie: $cookieHeader\n";
-}
-
 sub mainLoop {
 
   my ($self) = @_;
