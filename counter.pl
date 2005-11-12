@@ -18,6 +18,7 @@ my $cserver = Continuity::Server->new(
     port => 8080,
     newContinuationSub => \&main,
     # sdw: mapper => \&foo (or mapper => $ob), etc
+    app => '/app', # all other requests go through the static sender by default
 );
 
 
@@ -34,7 +35,7 @@ sub prompt {
   return $option || prompt($msg, @ops);
 }
 
-sub main :Coro {       # sdw -- don't think we can 'yield' unless ':Coro' is here -- am I wrong?
+sub main {
   my $request = shift; # sdw -- passed implicitly the first time this is called
 
   # When we are first called we get a chance to initialize stuff
@@ -63,9 +64,8 @@ sub main :Coro {       # sdw -- don't think we can 'yield' unless ':Coro' is her
   }
 }
 
-$cserver->start(app => '/app'); # sdw -- perhaps this should be implicit by ->new() ?
 
-Event::loop;  # sdw: could be $cserver->loop as an alias to exactly the same thing
+$cserver->loop(); # rbw: an alias to Event::loop :)
 
 1;
 
