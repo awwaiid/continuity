@@ -7,19 +7,20 @@ package Continuity::Server;
 
 use strict;
 use Coro::Cont;
-use HTTP::Daemon;
-use HTTP::Status;
-use Safe;
 
-use vars qw( %httpConfig $docroot );
+use lib '.';
 
-%httpConfig = (
-  LocalPort => 8081,
-  ReuseAddr => 1,
-);
+sub new {
+  my $self = {@_};
+  bless $self;
 
-$docroot = '/home/awwaiid/projects/perl/cserver/docs';
-
+  if($self->{newContinuationSub}) {
+    my $mkNewCont = sub { mkcont(
+      $self->{newContinuationSub}) };
+    $self->{mkNewCont} = $mkNewCont;
+  }
+  return $self;
+}
 
 # Take a sub ref and give back a continuation. Just a shortcut
 sub mkcont {
@@ -32,7 +33,7 @@ sub mkcont {
 # there... not a very good way!
 my $sessionIdCounter;
 sub getSession {
-  my ($request) = @_;
+  my ($self, $request) = @_;
   #print "Headers: " . $request->as_string();
   my $cookieHeader = $request->header('Cookie');
   print "Cookie: $cookieHeader\n";
@@ -44,53 +45,13 @@ sub getSession {
   return $sessionIdCounter++;
 }
 
-
-=item getSessionApp($sessionId, $path, $appref)
-
-This will try to retrieve the appropriate continutation, given the session and
-path. If we can't find the continuation for that session/path, then we use
-appref to create a new continuation.
-
-=cut
-
-# Global session holder hash
-my %session;
-
-sub getSessionApp {
-  my ($sessionId, $path, $appref) = @_;
-  my $app;
-  if(exists $session{$sessionId}{$path}) {
-    print "Found existing app\n";
-    $app = $session{$sessionId}{$path};
-  } else {
-    print "Creating new continuation\n";
-    $app = mkcont($appref);
-    #print "Calling for initialization\n";
-    #$app->(); # Call it once for initialization
-  }
-  return $app;
-}
-
-
-=item setSessionApp($sessionId, $path, $app)
-
-Save a continuation ($app) to our storage, associated with the given $sessionId
-and $path
-
-=cut
-
-sub setSessionApp {
-  my ($sessionId, $path, $app) = @_;
-  $session{$sessionId}{$path} = $app;
-}
-
-
 =item mapPath($path) - map a URL path to a filesystem path
 
 =cut
 
 sub mapPath {
-  my ($path) = @_;
+  my ($self, $path) = @_;
+  my $docroot = $self->{docroot};
    # some massaging, also makes it more secure
    $path =~ s/%([0-9a-fA-F][0-9a-fA-F])/chr hex $1/ge;
    $path =~ s%//+%/%g;
@@ -111,7 +72,8 @@ file
 =cut
 
 sub sendStatic {
-  my ($c, $path) = @_;
+  my ($self, $r, $c) = @_;
+  my $path = $self->mapPath($r->url->path);
   my $file;
   if(-f $path) {
     local $\;
@@ -128,7 +90,7 @@ sub sendStatic {
     select STDOUT;
     print "Static send '$path', Content-type: $mimetype\n";
   } else {
-    $c->send_error(RC_NOT_FOUND)
+    $c->send_error(404)
   }
 }
 
@@ -161,8 +123,36 @@ sub runApp {
 
 =cut
 
-sub serve {
-#  my ($appref) = @_;
+
+sub map {
+  my ($self, $request) = @_;
+  my $c;
+  my $sessionId = getSession($request);
+  if(defined $self->{continuations}{$sessionId}) {
+    $c = $self->{continuations}{$sessionId};
+  } else {
+    $c = $self->{mkNewCont}->($request);
+    $self->{continuations}{$sessionId} = $c;
+  }
+  return $c;
+}
+
+sub mainLoop {
+
+  my ($self) = @_;
+
+  # Don't pull these in unless we were called
+  eval {
+    use HTTP::Daemon;
+    use HTTP::Status;
+  };
+
+  my %httpConfig = (
+    LocalPort => 8081,
+    ReuseAddr => 1,
+  );
+
+  $self->{docroot} = './docs';
 
   my $d = HTTP::Daemon->new(%httpConfig) || die;
   print "Please contact me at: ", $d->url, "\n";
@@ -173,11 +163,15 @@ sub serve {
       #while (my $r = $c->get_request) { # Doesn't work
       if(my $r = $c->get_request) {
         if($r->method eq 'GET' || $r->method eq 'POST') {
-          my $path = mapPath($r->url->path);
-          if($path =~ /\.pl$/) {
-            runApp($c, $r, $path);
+
+          # We need some way to decide if we should send static or dynamic
+          # content. Lets say that if the requested path ends in .pl then they
+          # should send dynamic, otherwise static.
+          if($r->url->path =~ /\.pl$/) {
+            my $continuation = $self->map($r);
+            $continuation->($r);
           } else {
-            sendStatic($c, $path);
+            $self->sendStatic($r, $c);
           }
         } else {
           $c->send_error(RC_NOT_FOUND)
