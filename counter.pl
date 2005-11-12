@@ -57,7 +57,7 @@ my $cs = new Continuity::Server(
   newContinuationSub => \&main
 );
 
-$cs->mainLoop();
+$cs->mainLoop('/app');
 
 1;
 

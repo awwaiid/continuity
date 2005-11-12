@@ -116,7 +116,7 @@ sub map {
 
 sub mainLoop {
 
-  my ($self) = @_;
+  my ($self, $appName) = @_;
 
   # Don't pull these in unless we were called
   eval {
@@ -151,7 +151,7 @@ sub mainLoop {
           # We need some way to decide if we should send static or dynamic
           # content. Lets say that if the requested path ends in .pl then they
           # should send dynamic, otherwise static.
-          if($r->url->path =~ /\.pl$/) {
+          if($r->url->path eq $appName) {
             print "Calling map... ";
             my $continuation = $self->map($r);
             print " done.\n";
