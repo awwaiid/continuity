@@ -42,6 +42,10 @@ sub getParams {
   my ($request) = @_;
   my $parse = HTTP::Request::Params->new({ req => $request });
   my $params = $parse->params;
+
+  # This should be override-able
+  print "Content-type: text/html\r\n\r\n";
+
   return $params;
 }
 

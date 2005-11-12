@@ -35,8 +35,10 @@ my $sessionIdCounter;
 sub getSession {
   my ($self, $request) = @_;
   #print "Headers: " . $request->as_string();
+
   my $cookieHeader = $request->header('Cookie');
   print "Cookie: $cookieHeader\n";
+  
   print "sessionIdCounter: $sessionIdCounter\n";
   if($cookieHeader =~ /sessionid=(\d+)/) {
     print "Found sessionId!\n";
@@ -78,7 +80,6 @@ sub sendStatic {
   if(-f $path) {
     local $\;
     open($file, $path);
-    $c->send_basic_header();
     select $c;
     # For now we'll cheat (badly) and use file
     my $mimetype = `file -bi $path`;
@@ -92,30 +93,6 @@ sub sendStatic {
   } else {
     $c->send_error(404)
   }
-}
-
-
-=item runApp($c, $r, $path) - Execute the app at $path. Send output to $c
-
-Oh, and $r is our HTTP::Request object which we send to the app
-
-=cut
-
-sub runApp {
-  my ($c, $r, $path) = @_;
-  my $appref = sub { require $path };
-  my $sessionId = getSession($r);
-  print "Got session $sessionId\n";
-  my $app = getSessionApp($sessionId, $path, $appref);
-  print "Got app\n";
-  $c->send_basic_header();
-  select $c;
-  print "Set-Cookie: sessionid=$sessionId\r\n";
-  print "Content-type: text/html\r\n\r\n";
-  eval { $app->($r) };
-  print STDERR $@ if $@;
-  select STDOUT;
-  setSessionApp($sessionId, $path, $app);
 }
 
 
@@ -135,6 +112,12 @@ sub map {
     $self->{continuations}{$sessionId} = $c;
   }
   return $c;
+}
+
+sub sendSessionCookie {
+  my ($self, $c, $request) = @_;
+  my $cookieHeader = $request->header('Cookie');
+  print $c "Cookie: $cookieHeader\n";
 }
 
 sub mainLoop {
@@ -164,11 +147,20 @@ sub mainLoop {
       if(my $r = $c->get_request) {
         if($r->method eq 'GET' || $r->method eq 'POST') {
 
+          # Send the basic headers all the time
+          $c->send_basic_header();
+
+          # And send our session cookie
+          my $sessionId = $self->getSession($r);
+          print $c "Set-Cookie: sessionid=$sessionId\r\n";
+
           # We need some way to decide if we should send static or dynamic
           # content. Lets say that if the requested path ends in .pl then they
           # should send dynamic, otherwise static.
           if($r->url->path =~ /\.pl$/) {
+            print "Calling map... ";
             my $continuation = $self->map($r);
+            print " done.\n";
             $continuation->($r);
           } else {
             $self->sendStatic($r, $c);
