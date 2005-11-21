@@ -11,9 +11,9 @@ use Coro::Cont;
 use lib '.';
 
 sub new {
+  my $class = shift;
   my $self = {@_};
   bless $self;
-
   if($self->{newContinuationSub}) {
     my $mkNewCont = sub { mkcont(
       $self->{newContinuationSub}) };
@@ -102,21 +102,30 @@ sub sendStatic {
 
 
 sub map {
-  my ($self, $request) = @_;
+  my ($self, $request, $conn) = @_;
   my $c;
-  my $sessionId = getSession($request);
+  my $sessionId = $self->getSession($request);
   if(defined $self->{continuations}{$sessionId}) {
     $c = $self->{continuations}{$sessionId};
   } else {
+    # In this case, lets create a new continuation
     $c = $self->{mkNewCont}->($request);
+    # And we call it one time to let it do some initialization
+    $c->();
+    # And we stash it away!
     $self->{continuations}{$sessionId} = $c;
   }
+
+  # And send our session cookie
+  # Perhaps instead we should be adding this to a list of headers to be sent
+  print $conn "Set-Cookie: sessionid=$sessionId\r\n";
   return $c;
 }
 
-sub mainLoop {
+sub loop {
 
-  my ($self, $appName) = @_;
+  my ($self) = @_;
+  my $appName = $self->{app_path};
 
   # Don't pull these in unless we were called
   eval {
@@ -125,7 +134,7 @@ sub mainLoop {
   };
 
   my %httpConfig = (
-    LocalPort => 8081,
+    LocalPort => $self->{port},
     ReuseAddr => 1,
   );
 
@@ -134,7 +143,7 @@ sub mainLoop {
   my $d = HTTP::Daemon->new(%httpConfig) || die;
   print "Please contact me at: ", $d->url, "\n";
 
-  async {
+  #async {
     #while (my $c = $d->accept('Coro::HTTP::Daemon')) {
     while (my $c = $d->accept()) {
       #while (my $r = $c->get_request) { # Doesn't work
@@ -144,20 +153,22 @@ sub mainLoop {
           # Send the basic headers all the time
           $c->send_basic_header();
 
-          # And send our session cookie
-          my $sessionId = $self->getSession($r);
-          print $c "Set-Cookie: sessionid=$sessionId\r\n";
-
           # We need some way to decide if we should send static or dynamic
           # content. Lets say that if the requested path ends in .pl then they
           # should send dynamic, otherwise static.
           if($r->url->path eq $appName) {
             print "Calling map... ";
-            my $continuation = $self->map($r);
+            my $continuation = $self->map($r, $c);
             print " done.\n";
-            $continuation->($r);
+            print "Redirecting STDOUT and running continuation, eh?\n";
+            select $c;
+            eval { $continuation->($r) };
+            print STDERR $@ if $@; # Theoretically this will print errors??
+            select STDOUT;
           } else {
+            print "Sending static content... ";
             $self->sendStatic($r, $c);
+            print "done.\n";
           }
         } else {
           $c->send_error(RC_NOT_FOUND)
@@ -166,7 +177,7 @@ sub mainLoop {
       $c->close;
       undef($c);
     }
-  }
+  #}
 }
 
 1;
