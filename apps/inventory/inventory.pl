@@ -1,53 +1,52 @@
 #!/usr/bin/perl
 
-# load the DB tables
+use strict;
+use lib '../..';
+use Continuity::Server::Simple;
+use CGI qw/:html :form/;
+
+# first load the DB tables
 use Class::DBI::AutoLoader (
   dsn       => 'dbi:mysql:inventory',
   username  => 'root',
-  password  => 'vobo2Aje',
+  password  => '',
   options   => { RaiseError => 1 },
   tables    => [qw( InventoryItem )],
   namespace => 'Database'
 );
 
-=pod
+# Now load the components, which may build off of the DB classes
+use InventoryItem;
 
-Heres the schema (all ONE table!). You'll want to insert a few rows by hand.
-
-CREATE TABLE `InventoryItem` (
-  `inventoryItem_id` int(11) NOT NULL auto_increment,
-  `serial` varchar(50) default NULL,
-  `name` varchar(100) default NULL,
-  PRIMARY KEY  (`inventoryItem_id`)
+# Set up and run the simple continuation server
+my $server = Continuity::Server::Simple->new(
+    port => 8080,
+    new_cont_sub => \&main,
+    app_path => '/app',
+    debug => 3,
 );
 
-=cut
+$server->loop;
 
-package InventoryItem;
-use base 'Continuity::Util::Component';
-use base 'Database::InventoryItem';
-
-# So we need to document the CSS attributes this component understands
-#    edit: boolean -- display as an editable thingie
-
-sub toHTML {
-  my ($self, $context) = @_;
-  my $out;
-  if(!$context->{'edit'}) {
-    $out .=  "Item: ".$self->id." ".$self->name." (".$self->serial.")\n";
-  } else {
-    $out .= "Item Name: ".$self->html_text('name')."<br>\n";
-    $out .= "Serial: ".$self->html_text('serial')."<br>\n";
+sub getParsedInput {
+  my $params = $server->get_request->params;
+  foreach my $key (keys %$params) {
+    if($key =~ /:|\[/) {
+      my (@keys) = split /:|\[|\]\[|\]/, $key;
+      my $val = $params->{$key}; 
+      my $t = $params;
+      my $key = pop @keys;
+      while(my $k = shift @keys) {
+        $t->{$k} = $t->{$k} || {};
+        $t = $t->{$k};
+      }
+      $t->{$key} = $val;
+    }
   }
-  # No matter what we get wrapped in a DIV
-  $out = qq{ <div class="InventoryItem">$out</div> };
-  return $out;
+  use Data::Dumper;
+  print STDERR "Dump: " . Dumper($params);
+  return $params;
 }
-
-package main;
-use strict;
-use Continuity::Client::CGI;
-use CGI qw/:html :form/;
 
 #my $item = InventoryItem->create({
 #  name => 'computer A',
@@ -77,7 +76,7 @@ sub editItem {
   while(1) {
     # First we display the item
     print start_html('Edit item'),
-          start_form(-action=>"http://localhost:8081/inventory/index.pl"),
+          start_form(-action=>"/app"),
           h2('Edit item');
     print $item->toHTML({ edit => 1 });
     print qq{
@@ -98,7 +97,7 @@ sub editItem {
 
 sub dispMain {
   print start_html('DB example'),
-        start_form(-action=>"http://localhost:8081/inventory/index.pl"),
+        start_form(-action=>"/app"),
         h2('List of inventory items');
   print qq{ <input type=submit name="action:add" value="Add"><br>\n};
   my @items = InventoryItem->retrieve_all;
@@ -119,6 +118,8 @@ sub firstKey {
 }
 
 sub main {
+  # Get and ignore first request
+  $server->get_request;
   while(1) {
     my $params = dispMain();
     if($params->{action}{edit}) {
@@ -138,5 +139,4 @@ sub main {
   }
 }
 
-main();
 
