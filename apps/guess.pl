@@ -1,24 +1,41 @@
 #!/usr/bin/perl
 
 use strict;
-use Continuity::Client::CGI;
+use lib '..';
+use Continuity::Server::Simple;
+
+my $server = Continuity::Server::Simple->new(
+    port => 8080,
+    new_cont_sub => \&main,
+    app_path => '/app',
+    debug => 3,
+);
+
+$server->loop;
 
 sub getNum {
- print qq{
+  print qq{
     Enter Guess: <input name="num">
-    <input type=submit value="Guess"><br>
+    </form>
+    </body>
+    </html>
   };
-  my $f = getParsedInput();
+  my $f = $server->get_request->params;
   return $f->{'num'};
 }
 
 sub main {
+  # Ignore the first input, it just means they are viewing us
+  $server->get_request;
   my $guess;
   my $number = int(rand(100)) + 1;
   my $tries = 0;
   my $out = qq{
-    <form>
-      Hi! I'm thinking of a number from 1 to 100... can you guess it?<br>\n";
+    <html>
+      <head><title>The Guessing Game</title></head>
+      <body>
+        <form method=POST>
+          Hi! I'm thinking of a number from 1 to 100... can you guess it?<br>
   };
   do {
     $tries++;
@@ -29,10 +46,9 @@ sub main {
   } until ($guess == $number);
   print "You got it! My number was in fact $number.<br>\n";
   print "It took you $tries tries.<br>\n";
-  print '<a href="guess.pl">Play Again</a>';
+  print '<a href="/app">Play Again</a>';
 }
 
-main();
 
 1;
 

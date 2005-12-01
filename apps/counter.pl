@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
+use lib '..';
 use Continuity::Server::Simple;
 use URI::Escape;
 
@@ -17,6 +18,7 @@ my $server = Continuity::Server::Simple->new(
     port => 8080,
     new_cont_sub => \&main,
     app_path => '/app',
+    debug => 3,
     # all other requests go through the static sender by default
     # sdw: mapper => \&foo (or mapper => $ob), etc
 );
