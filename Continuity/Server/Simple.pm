@@ -31,6 +31,7 @@ sub get_request {
 
 package HTTP::Request;
 
+# A minor ease-of-use extension for HTTP::Request
 # Given an HTTP::Request, return a nice hash of name/params
 # This is really just a thin wrapper around HTTP::Request::Params
 sub params {
