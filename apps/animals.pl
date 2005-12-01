@@ -1,6 +1,9 @@
 #!/usr/bin/perl -w
+
 use strict;
-use Continuity::Client::CGI;
+use lib '..';
+use Continuity::Server::Simple;
+use Data::Dumper;
 
 # This is the A MODIFIED VERSION written by awwaiid.
 # The original version was written by Merlyn,
@@ -13,16 +16,25 @@ use Continuity::Client::CGI;
 ## When you choose not to continue, it'll dump out
 ## the data structure of knowledge it has accumulated.
 
-use Data::Dumper;
-
 my $info = "dog";
 
+my $server = Continuity::Server::Simple->new(
+    port => 8080,
+    new_cont_sub => \&main,
+    app_path => '/app',
+    debug => 3,
+);
+
+$server->loop;
+
 sub main {
+  # Ignore the first input, it just indicates that they are viewing the page
+  $server->get_request;
   {
     try($info);
     redo if (yes("play again?"));
   }
-  print "Bye!\n";
+  print "<pre>Bye!\n";
   print Dumper($info);
 }
 
@@ -60,13 +72,11 @@ sub stdin {
       <script>document.getElementById('in').focus();</script>
     </form>
   };
-  my $params = getParsedInput();
+  my $params = $server->get_request->params;
   my $in = $params->{in};
   return $in;
 }
 
-# Serve this program
-main();
 
 1;
 
