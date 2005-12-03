@@ -14,8 +14,9 @@ sub execCont {
 
   my $prev_select = select $conn; # Should maybe do fancier trick than this
 
-  # This should be override-able
-  print "Content-type: text/html\r\n\r\n";
+  if(!$self->{no_content_type}) {
+    print "Content-type: text/html\r\n\r\n";
+  }
 
   $cont->($request);
   
