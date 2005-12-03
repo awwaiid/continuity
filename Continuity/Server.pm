@@ -174,9 +174,8 @@ sub loop {
           $c->send_basic_header();
 
           # We need some way to decide if we should send static or dynamic
-          # content. Lets say that if the requested path ends in .pl then they
-          # should send dynamic, otherwise static.
-          if($r->url->path eq $appName) {
+          # content.
+          if((!$appName) || $r->url->path eq $appName) {
             $self->debug(3, "Calling map... ");
             my $continuation = $self->map($r, $c);
             $self->debug(3, "done mapping.");
