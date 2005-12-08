@@ -15,8 +15,8 @@ code. We even implement our own 'prompt'...
 =cut
 
 my $server = Continuity::Server::Simple->new(
-    port => 8080,
-    new_cont_sub => \&main,
+    port => 8081,
+#    new_cont_sub => \&main,
     app_path => '/app',
     debug => 3,
     # all other requests go through the static sender by default
