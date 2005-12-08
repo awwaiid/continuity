@@ -20,7 +20,11 @@ sub new {
   bless $self, $class;
   if($self->{new_cont_sub}) {
     $self->{mkNewCont} = $self->mkContMaker($self->{new_cont_sub});
+  } else {
+    # Default to \&::main
+    $self->{mkNewCont} = $self->mkContMaker(\&::main);
   }
+
   return $self;
 }
 
