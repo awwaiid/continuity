@@ -36,18 +36,6 @@ sub getParsedInput {
   return $params;
 }
 
-# Given an HTTP::Request, return a nice hash of name/params
-# This is really just a thin wrapper around HTTP::Request::Params
-sub getParams {
-  my ($request) = @_;
-  my $parse = HTTP::Request::Params->new({ req => $request });
-  my $params = $parse->params;
-
-  # This should be override-able
-  print "Content-type: text/html\r\n\r\n";
-
-  return $params;
-}
 
 1;
 
