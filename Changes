@@ -1,0 +1,6 @@
+Revision history for Perl extension Continuity.
+
+0.5  Fri Dec  9 09:34:10 2005
+	- original version; created by h2xs 1.23 with options
+		-X -n Continuity -v 0.5
+
