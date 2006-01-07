@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use lib '../..';
+use lib '../../lib';
 use Continuity::Server::Simple;
 use CGI qw/:html :form/;
 

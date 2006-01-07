@@ -9,3 +9,9 @@ CREATE TABLE `InventoryItem` (
 );
 
 
+CREATE TABLE InventoryItem (
+  `inventoryItem_id` integer primary kqy,
+  `serial` varchar(50) default NULL,
+  `name` varchar(100) default NULL,
+  PRIMARY KEY  (`inventoryItem_id`)
+);
