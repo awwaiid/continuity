@@ -10,15 +10,20 @@ sub new
   my $self = {};
   $self->{filename} = shift;
   bless $self, $class;
+  while(@_) {
+    $self->set(shift @_, shift @_);
+  }
   return $self;
 }
 
 sub set
 {
   my $self = shift;
-  my $name = shift;
-  my $val = shift;
-  $self->{var}->{$name} = $val;
+  while(@_) {
+    my $name = shift @_;
+    my $val = shift @_;
+    $self->{var}->{$name} = $val;
+  }
   return $val;
 }
 

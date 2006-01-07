@@ -1,3 +1,4 @@
+[- $escmode = 0; -]
 <html>
   <head>
     <title>ATAXX!!</title>
@@ -23,15 +24,19 @@
         border: 1px solid black;
       }
 
-.board a {
-  display: block;
-  height: 100%;
-  width: 100%;
-}
+      .board a {
+        display: block;
+        height: 100%;
+        width: 100%;
+      }
 
-.board a:hover {
-  background-color: #ccc;
-}
+      .board a:hover {
+        background-color: #ccc;
+      }
+
+      .board .selected a {
+        background-color: #0f0;
+      }
         
     </style>
   </head>
@@ -53,10 +58,10 @@
           <tr>
             <th>[+ $i+1 +]</th>
             [* for $j (0..6) { *]
-              <td><a href="?x=[+$j+]&y=[+$i+]">
-                [* if($board->[$j][$i] eq 'R') { *]
+              <td [+ ($selected->[0] == $i && $selected->[1] == $j) ? 'class="selected"' : '' +]><a href="?x=[+$i+]&y=[+$j+]">
+                [* if($board->[$i][$j] eq 'R') { *]
                   <img src="blue-red-flip.gif">
-                [* } elsif($board->[$j][$i] eq 'B') { *]
+                [* } elsif($board->[$i][$j] eq 'B') { *]
                   <img src="red-blue-flip.gif">
                 [* } *]
               </a></td>
@@ -67,9 +72,9 @@
     </div>
 
     <h2>Status</h2>
-    <b>Current Player: Blue</b>
+    <b>Current Player: [+ $player eq 'B' ? 'Blue' : 'Red' +]</b>
     <br>
-    <b>Score:</b> Red 2, Blue 2
+    <b>Score:</b> Red [+$red_score+] , Blue [+$blue_score+]
   </body>
 </html>
 
