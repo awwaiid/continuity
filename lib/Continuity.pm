@@ -25,13 +25,15 @@ Continuity - Simplify web apps through abstraction (such as continuations)
 
 =head1 DESCRIPTION
 
+This module is just for documentation.
+
 Continuity seeks to be a library (not a framework) to simplify web
 applications.At the core is a continuation server, which inverts control back
 to the programmer. This is ALPHA software, and feedback/code is welcomed.
 
 =head1 SEE ALSO
 
-Website/Wiki: http://continuity.tlt42.org/
+Website/Wiki: L<http://continuity.tlt42.org/>
 
 =head1 AUTHOR
 
