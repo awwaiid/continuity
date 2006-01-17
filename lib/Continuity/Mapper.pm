@@ -4,12 +4,35 @@ package Continuity::Mapper;
 use strict;
 use Coro::Cont;
 
+=head1 NAME
+
+Continuity::Mapper - Map a request onto a continuation
+
+=head1 DESCRIPTION
+
+This is the continuation dictionary and mapper. Given an HTTP::Request it
+returns a continuation.
+
+=head1 METHODS
+
+=over
+
+=item $server = new Continuity::Mapper(...)
+
+Create a new continuation mapper
+
+=cut
+
 sub new {
   my $this = shift;
   my $class = ref($this) || $this;
   my $self = {};
   $self = {%$self, @_};
   bless $self, $class;
+
+  # if new_cont_sub is undef then the default mapper will use &::main, btw
+  $self->set_cont_maker_sub($self->{new_cont_sub});
+
   return $self;
 }
 
@@ -62,6 +85,9 @@ sub map {
 
 sub set_cont_maker_sub {
   my ($self, $sub) = @_;
+  if(!$sub) {
+    $sub = \&::main;
+  }
   $self->{mkNewCont} = $self->mkContMaker($sub);
 }
 
@@ -79,6 +105,25 @@ sub mkContMaker {
   };
   return $mkNewCont;
 }
+
+=back
+
+=head1 SEE ALSO
+
+L<Continuity>
+
+=head1 AUTHOR
+
+  Brock Wilcox <awwaiid@thelackthereof.org>
+  http://thelackthereof.org/
+
+=head1 COPYRIGHT
+
+  Copyright (c) 2004-2006 Brock Wilcox <awwaiid@thelackthereof.org>. All rights
+  reserved.  This program is free software; you can redistribute it and/or
+  modify it under the same terms as Perl itself.
+
+=cut
 
 1;
 

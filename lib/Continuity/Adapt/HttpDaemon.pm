@@ -5,6 +5,27 @@ use strict;
 use HTTP::Daemon;
 use HTTP::Status;
 
+=head1 NAME
+
+Continuity::Adapt::HttpDaemon - Use HTTP::Daemon as a continuation server
+
+=head1 DESCRIPTION
+
+This is the default and reference adaptor for L<Continuity>. An adaptor
+interfaces between the continuation server (L<Continuity::Server>) and the web
+server (HTTP::Daemon, FastCGI, etc).
+
+=head1 METHODS
+
+=over
+
+=item $server = new Continuity::Adapt::HttpDaemon(...)
+
+Create a new continuation adaptor and HTTP::Daemon. This actually starts the
+HTTP server which is embeded.
+
+=cut
+
 sub new {
   my $this = shift;
   my $class = ref($this) || $this;
@@ -87,6 +108,25 @@ sub get_request {
   }
   return undef;
 }
+
+=back
+
+=head1 SEE ALSO
+
+L<Continuity>
+
+=head1 AUTHOR
+
+  Brock Wilcox <awwaiid@thelackthereof.org>
+  http://thelackthereof.org/
+
+=head1 COPYRIGHT
+
+  Copyright (c) 2004-2006 Brock Wilcox <awwaiid@thelackthereof.org>. All rights
+  reserved.  This program is free software; you can redistribute it and/or
+  modify it under the same terms as Perl itself.
+
+=cut
 
 1;
 
