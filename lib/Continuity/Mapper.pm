@@ -47,9 +47,7 @@ sub map {
     $c = $self->{continuations}{$sessionId};
   } else {
     # In this case, lets create a new continuation
-    $self->debug(3, "Creating a new continuation...");
     $c = $self->{mkNewCont}->($request);
-    $self->debug(3, "  ... done.");
     # And we call it one time to let it do some initialization
     $c->($self);
     # And we stash it away!
