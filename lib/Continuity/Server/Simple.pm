@@ -21,6 +21,7 @@ standard server.
 
 =cut
 
+
 sub execCont {
 
   my ($self, $cont, $request, $conn) = @_;
@@ -28,6 +29,9 @@ sub execCont {
   my $prev_select = select $conn; # Should maybe do fancier trick than this
 
   if(!$self->{no_content_type}) {
+    print "Cache-Control: private, no-store, no-cache\r\n";
+    print "Pragma: no-cache\r\n";
+    print "Expires: 0\r\n";
     print "Content-type: text/html\r\n\r\n";
   }
 
