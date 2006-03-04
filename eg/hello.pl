@@ -3,6 +3,7 @@
 use lib '..';
 use Continuity::Server::Simple;
 $server = new Continuity::Server::Simple;
+#$server->ignore_path('/siteicon.ico');
 $server->loop();
 
 sub main {

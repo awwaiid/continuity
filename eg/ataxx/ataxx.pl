@@ -2,6 +2,7 @@
 
 use strict;
 use lib '../../lib';
+use lib '.';
 use Continuity::Server::Simple;
 use Template;
 
@@ -12,8 +13,10 @@ my $server = Continuity::Server::Simple->new(
 
 $server->loop;
 
+# This holds all running games
 my $games = [];
 
+# Create a new game and add it to the global list
 sub new_game {
   my $game = {
     board => [
