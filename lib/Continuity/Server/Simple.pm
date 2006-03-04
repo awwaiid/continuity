@@ -58,16 +58,24 @@ sub get_request {
 package HTTP::Request;
 
 use strict;
-use HTTP::Request::Params;
+use CGI;
+use HTTP::Request::AsCGI;
 
 # A minor ease-of-use extension for HTTP::Request
 # Given an HTTP::Request, return a nice hash of name/params
 # This is really just a thin wrapper around HTTP::Request::Params
 sub params {
   my ($request) = @_;
-  my $parse = HTTP::Request::Params->new({ req => $request });
-  my $params = $parse->params;
-  return $params;
+  my $cgi = $request->asCGI;
+  my $vars = $cgi->Vars;
+  return $vars;
+}
+
+sub asCGI {
+  my ($request) = @_;
+  my $s = HTTP::Request::AsCGI->new($request)->setup;
+  my $cgi = new CGI;
+  return $cgi;
 }
 
 =back
