@@ -49,8 +49,8 @@ process
 =cut
 
 sub get_request {
-  my ($self) = @_;
-  yield;
+  my ($self, $retval) = @_;
+  yield $retval;
   my ($request) = @_;
   return $request;
 }
