@@ -91,7 +91,7 @@ sub loop {
 
       # We need some way to decide if we should send static or dynamic
       # content.
-      if(!$self->{app_path} || $r->url->path eq $self->{app_path}) {
+      if(!$self->{app_path} || $r->url->path =~ /$self->{app_path}/) {
         $self->debug(3, "Calling map... ");
         my $continuation = $self->{mapper}->map($r, $c);
         $self->debug(3, "done mapping.");
