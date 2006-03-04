@@ -50,22 +50,27 @@ my $sessionIdCounter;
 sub getSession {
   my ($self, $request) = @_;
   #print "Headers: " . $request->as_string();
-
-  my $cookieHeader = $request->header('Cookie');
-  $self->debug(3, "Cookies: $cookieHeader");
-  
-  $self->debug(3, "sessionIdCounter: $sessionIdCounter");
-  if($cookieHeader =~ /sessionid=(\d+)/) {
-    $self->debug(3, "Found sessionId!");
-    return $1;
+  my $pid = $request->params->{pid};
+  print STDERR "GOT PID: $pid\n";
+  if(defined $pid) {
+    return $pid;
   }
+
+  #my $cookieHeader = $request->header('Cookie');
+  #$self->debug(3, "Cookies: $cookieHeader");
+  
+  #$self->debug(3, "sessionIdCounter: $sessionIdCounter");
+  #if($cookieHeader =~ /sessionid=(\d+)/) {
+  #  $self->debug(3, "Found sessionId!");
+  #  return $1;
+  #}
   return $sessionIdCounter++;
 }
 
 sub map {
   my ($self, $request, $conn) = @_;
   my $c;
-  my $sessionId = $self->getSession($request);
+  my $sessionId = $self->getSession($request) + 0;
   if(defined $self->{continuations}{$sessionId}) {
     $c = $self->{continuations}{$sessionId};
   } else {
@@ -79,7 +84,11 @@ sub map {
 
   # And send our session cookie
   # Perhaps instead we should be adding this to a list of headers to be sent
-  print $conn "Set-Cookie: sessionid=$sessionId\r\n";
+  #print $conn "Set-Cookie: sessionid=$sessionId\r\n";
+  print STDERR "Setting client pid = $sessionId\n";
+  $request->uri->query(
+    $request->uri->query() . '&pid=' . $sessionId
+  );
   return $c;
 }
 
