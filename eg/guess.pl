@@ -6,7 +6,6 @@ use Continuity::Server::Simple;
 
 my $server = Continuity::Server::Simple->new(
     port => 8080,
-    new_cont_sub => \&main,
     app_path => '/app',
     debug => 3,
 );
@@ -15,7 +14,8 @@ $server->loop;
 
 sub getNum {
   print qq{
-    Enter Guess: <input name="num">
+    Enter Guess: <input name="num" id=num>
+    <script>document.getElementById('num').focus()</script>
     </form>
     </body>
     </html>
