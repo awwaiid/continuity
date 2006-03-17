@@ -43,12 +43,18 @@ sub new {
   # Set up the default adaptor
   # The default actually has its very own HTTP::Daemon running
   if(!$self->{adaptor}) {
-    eval { use Continuity::Adapt::HttpDaemon };
-    $self->{adaptor} = new Continuity::Adapt::HttpDaemon(
+    eval "use Continuity::Adapt::HttpDaemon";
+    $self->{adaptor} = Continuity::Adapt::HttpDaemon->new(
       debug => $self->{debug},
       port => $self->{port},
       docroot => $self->{docroot},
     );
+  }
+  if($self->{adaptor} && (!(ref $self->{adaptor}))) {
+    print STDERR "Not a ref, $self->{adaptor}\n";
+    my $pkg = $self->{adaptor};
+    eval "use $pkg";
+    $self->{adaptor} = $pkg->new();
   }
 
   return $self;
@@ -84,10 +90,16 @@ sub loop {
   my ($c, $r);
   
   while(($c, $r) = $self->{adaptor}->get_request()) {
+    print STDERR "Got request\n";
     if($r->method eq 'GET' || $r->method eq 'POST') {
 
       # Send the basic headers all the time
-      $c->send_basic_header();
+      if($c->can('send_basic_header')) {
+        $c->send_basic_header();
+      } else {
+        #print $c "Date: ",time2str(time),"\n";
+        #print $c "Server: Dude\n";
+      }
 
       # We need some way to decide if we should send static or dynamic
       # content.
@@ -103,11 +115,13 @@ sub loop {
         $self->debug(3, "done sending static content.");
       }
     } else {
-      $c->send_error(RC_NOT_FOUND)
+      #$c->send_error(RC_NOT_FOUND)
+      #print $c "ERROR\r\n\n\n";
     }
 
-    $c->close;
-    undef($c);
+    #$c->close;
+    #undef($c);
+    print STDERR "Done processing request, waiting for next\n";
   }
 }
 

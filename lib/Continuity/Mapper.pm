@@ -50,21 +50,26 @@ my $sessionIdCounter;
 sub getSession {
   my ($self, $request) = @_;
   #print "Headers: " . $request->as_string();
-  my $pid = $request->params->{pid};
-  print STDERR "GOT PID: $pid\n";
-  if(defined $pid) {
-    return $pid;
-  }
 
-  #my $cookieHeader = $request->header('Cookie');
-  #$self->debug(3, "Cookies: $cookieHeader");
-  
-  #$self->debug(3, "sessionIdCounter: $sessionIdCounter");
-  #if($cookieHeader =~ /sessionid=(\d+)/) {
-  #  $self->debug(3, "Found sessionId!");
-  #  return $1;
-  #}
-  return $sessionIdCounter++;
+  if($self->{session_style} eq 'query') {
+    my $pid = $request->params->{pid};
+    print STDERR "GOT PID: $pid\n";
+    if(defined $pid) {
+      return $pid;
+    }
+    return $sessionIdCounter++;
+
+  } elsif ($self->{session_style} eq 'cookie') {
+    my $cookieHeader = $request->header('Cookie');
+    $self->debug(3, "Cookies: $cookieHeader");
+    
+    $self->debug(3, "sessionIdCounter: $sessionIdCounter");
+    if($cookieHeader =~ /sessionid=(\d+)/) {
+      $self->debug(3, "Found sessionId!");
+      return $1;
+    }
+    return $sessionIdCounter++;
+  }
 }
 
 sub map {
