@@ -5,7 +5,7 @@ use lib '../lib';
 use Continuity::Server::Simple;
 
 my $server = Continuity::Server::Simple->new(
-    port => 8080,
+    port => 8081,
     app_path => '/app',
     debug => 3,
 );

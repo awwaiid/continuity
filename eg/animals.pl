@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
-use lib '..';
+use lib '../lib';
 use Continuity::Server::Simple;
 use Data::Dumper;
 
@@ -19,7 +19,7 @@ use Data::Dumper;
 my $info = "dog";
 
 my $server = Continuity::Server::Simple->new(
-    port => 8080,
+    port => 8081,
     new_cont_sub => \&main,
     app_path => '/app',
     debug => 3,
