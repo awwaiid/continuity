@@ -23,9 +23,14 @@ To install this module type the following:
 
 DEPENDENCIES
 
-This module requires these other modules and libraries:
+I installed the following on a clean debian system:
 
-  blah blah blah
+libfcgi-perl
+Bundle::CPAN
+Coro
+Bundle::LWP
+HTTP::Request::AsCGI
+
 
 COPYRIGHT AND LICENCE
 
