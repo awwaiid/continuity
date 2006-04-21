@@ -119,8 +119,8 @@ sub loop {
       #print $c "ERROR\r\n\n\n";
     }
 
-    #$c->close;
-    #undef($c);
+    $c->close;
+    undef($c);
     print STDERR "Done processing request, waiting for next\n";
   }
 }
