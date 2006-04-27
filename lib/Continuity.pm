@@ -2,12 +2,14 @@ package Continuity;
 
 our $VERSION = '0.5';
 
+# This module is just for documentation.
+
 1;
 __END__
 
 =head1 NAME
 
-Continuity - Simplify web apps through abstraction (such as continuations)
+Continuity - Abstract away statelessness of HTTP using continuations for stateful Web applications
 
 =head1 SYNOPSIS
 
@@ -25,11 +27,14 @@ Continuity - Simplify web apps through abstraction (such as continuations)
 
 =head1 DESCRIPTION
 
-This module is just for documentation.
-
 Continuity seeks to be a library (not a framework) to simplify web
-applications.At the core is a continuation server, which inverts control back
-to the programmer. This is ALPHA software, and feedback/code is welcomed.
+applications.
+At the core is a continuation server, which inverts control back
+to the programmer. 
+Rather than exiting and waiting for the next request, applications call a method which
+(eventually) returns the next request.
+Corotines make HTTP Web appear stateful.
+This is ALPHA software, and feedback/code is welcomed.
 
 =head1 SEE ALSO
 

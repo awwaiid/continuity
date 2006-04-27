@@ -1,8 +1,19 @@
 
 /*
 
-* Crap -- any header that gets sent, we need to pick out of the environment and send!  CGIs don't get to parse
-  the raw incoming data!
+  Turns CGI hits back into HTTP hits to transparently proxy hits on a
+  main Webserver into hits on a high-port application process with its
+  own Webserver.  More generally, it adds proxying capabilities to Webserver
+  such as thttpd that lack the feature natively.
+
+  This version is incomplete with regards to the headers it sends.  It's
+  also woefully lacking in the options department.
+
+  There's dead code that should be removed.
+
+  There are probably better versions of this same thing floating around.
+
+  Scott Walters, 200604, scott@slowass.net
 
  */
 
@@ -47,7 +58,7 @@ main(int argc, char *argv[]) {
     s = socket( AF_INET, SOCK_STREAM, 0 );
     if(!s) exit(2);
 
-    errlog = open("/tmp/highport.log", O_WRONLY|O_CREAT);
+    // errlog = open("/tmp/highport.log", O_WRONLY|O_CREAT);
 
     if ( connect( s, ( struct sockaddr * )&peer, sizeof( peer ) ) ) {
         perror("socket connect failed");
@@ -95,19 +106,19 @@ main(int argc, char *argv[]) {
             if(bytes == -1 && errno != EINTR && errno != EAGAIN) { perror("copy from webserver"); exit(0); }
             if(bytes > 0) {
                 zero_bytes_in_row = 0;
-                //if(! line_skipped) {
-                //   // skip the first line, which contains something like 'HTTP/1.0 200 OK'
-                //   int off;
-                //   for(off=0; off+2<bytes && buf[off] != '\r'; off++); 
-                //   off++;
-                //   if(buf[off] == '\n') off++;
-                //   write(0, buf+off, bytes-off);
-                //   if(errlog) write(errlog, "in:  ", 5); write(errlog, buf+off, bytes-off);
-                //   line_skipped = 1;
-                //} else {
+                if(! line_skipped) {
+                   // skip the first line, which contains something like 'HTTP/1.0 200 OK'
+                   int off;
+                   for(off=0; off+2<bytes && buf[off] != '\r'; off++); 
+                   off++;
+                   if(buf[off] == '\n') off++;
+                   write(0, buf+off, bytes-off);
+                   if(errlog) { write(errlog, "in:  ", 5); write(errlog, buf+off, bytes-off); }
+                   line_skipped = 1;
+                } else {
                    write(1, buf, bytes);
-                   if(errlog) write(errlog, "in:  ", 5); write(errlog, buf, bytes);
-                //}
+                   if(errlog) { write(errlog, "in:  ", 5); write(errlog, buf, bytes); }
+                }
             } else {
                 // printf("0 bytes read from socket\n");  // this is the normal EOF condition -- exit successfully
                 zero_bytes_in_row++;
@@ -144,25 +155,11 @@ main(int argc, char *argv[]) {
 int
 up(char text[], int bytes) {
     int ret = write(s, text, bytes);
-    if(errlog) write(errlog, "out: ", 5); write(errlog, text, bytes);
+    if(errlog) { write(errlog, "out: ", 5); write(errlog, text, bytes); }
     return ret;
 }
 
 
-// this doesn't test for write buffer space, but since communication is only going
-// one way at a time with HTTP, blocking on write won't ever create deadlock.
-        // if(FD_ISSET(0, &rfds)) { printf("0/rfds\n"); }
-        // if(FD_ISSET(s, &rfds)) { printf("s/rfds\n"); }
-        // if(FD_ISSET(0, &wfds)) { printf("0/wfds\n"); }
-        // if(FD_ISSET(s, &wfds)) { printf("s/wfds\n"); }
-    // non-blocking
-    // fcntl(0, F_SETFL, O_NONBLOCK | fcntl(0, F_GETFL));
-    // fcntl(s, F_SETFL, O_NONBLOCK | fcntl(s, F_GETFL));
-//       int open(const char *pathname, int flags);
-//       FD_CLR(int fd, fd_set *set);
-//       FD_ISSET(int fd, fd_set *set);
-//       FD_SET(int fd, fd_set *set);
-    //char headers[][][] = {
      //   { "AUTH_TYPE", "Authorization" },
     //    { "CONTENT_LENGTH", "Content-Length" },
     //    { "CONTENT_TYPE", "Content-Type" },

@@ -2,6 +2,11 @@
 package Continuity::Server;
 
 use strict;
+use warnings; # XXX -- while in devolopment
+
+use IO::Handle;
+use Coro;
+use Coro::Cont;
 use HTTP::Status; # to grab static response codes. Probably shouldn't be here
 
 =head1 NAME
@@ -14,118 +19,132 @@ This is the central module for Continuity.
 
 =head1 METHODS
 
-=over
-
-=item $server = new Continuity::Server(...)
+=head2 $server = Continuity::Server->new(...)
 
 Create a new continuation server
 
 =cut
 
 sub new {
+
   my $this = shift;
   my $class = ref($this) || $this;
-  my $self = {};
-  # Default docroot
-  $self->{docroot} = '.';
-  $self = {%$self, @_};
+  my $self = { 
+    docroot => '.',   # default docroot
+    mapper => undef,
+    adapter => undef,
+    @_,  
+  };
+
   bless $self, $class;
 
-  # Set up the default mapper
+  # Set up the default mapper.
+  # The mapper associates execution contexts (continuations) with requests 
+  # according to some criteria.  The default version uses a combination of
+  # client IP address and the path in the request.  
   if(!$self->{mapper}) {
-    eval { use Continuity::Mapper };
-    $self->{mapper} = new Continuity::Mapper(
+    require Continuity::Mapper;
+    $self->{mapper} = Continuity::Mapper->new(
       debug => $self->{debug},
       new_cont_sub => $self->{new_cont_sub},
-    ); # default mapper
-  }
-
-  # Set up the default adaptor
-  # The default actually has its very own HTTP::Daemon running
-  if(!$self->{adaptor}) {
-    eval "use Continuity::Adapt::HttpDaemon";
-    $self->{adaptor} = Continuity::Adapt::HttpDaemon->new(
-      debug => $self->{debug},
-      port => $self->{port},
-      docroot => $self->{docroot},
+      server => $self,
     );
   }
-  if($self->{adaptor} && (!(ref $self->{adaptor}))) {
-    print STDERR "Not a ref, $self->{adaptor}\n";
-    my $pkg = $self->{adaptor};
-    eval "use $pkg";
-    $self->{adaptor} = $pkg->new();
+
+  # Set up the default adaptor.
+  # The adapater plugs the system into a server (probably a Web server)
+  # The default has its very own HTTP::Daemon running.
+  if(!$self->{adaptor}) {
+    require Continuity::Adapt::HttpDaemon;
+    $self->{adaptor} = Continuity::Adapt::HttpDaemon->new(
+      debug => $self->{debug},
+      docroot => $self->{docroot},
+      server => $self,
+    );
   }
 
+  if($self->{adaptor} && (!(ref $self->{adaptor}))) {
+    die "Not a ref, $self->{adaptor}\n";
+  }
+
+  async { 
+    while((my $c, my $r) = $self->{adaptor}->get_request()) {
+      print STDERR "Got request\n";
+      if($r->method eq 'GET' || $r->method eq 'POST') {
+  
+        # Send the basic headers all the time
+        if($c->can('send_basic_header')) {
+          $c->send_basic_header();
+        } else {
+          #print $c "Date: ",time2str(time),"\n";
+          #print $c "Server: Dude\n";
+        }
+  
+        # We need some way to decide if we should send static or dynamic
+        # content.
+        # To save users from having to re-implement (likely incorrecty)
+        # basic security checks like .. abuse in GET paths, we should provide
+        # a default implementation -- preferably one already on CPAN.
+        if(!$self->{app_path} || $r->url->path =~ /$self->{app_path}/) {
+          $self->debug(3, "Calling map... ");
+          my $continuation = $self->{mapper}->map($r, $c);
+          $self->debug(3, "done mapping.");
+          # $continuation->($r, $c); # or $self->debug(1, "Error: $@");
+          $self->exec_cont($continuation, $r, $c);
+        } else {
+          $self->debug(3, "Sending static content... ");
+          $self->{adaptor}->send_static($r, $c);
+          $self->debug(3, "done sending static content.");
+        }
+      } else {
+        #$c->send_error(RC_NOT_FOUND)
+        #print $c "ERROR\r\n\r\n";
+      }
+  
+      $c->close;
+      undef($c);
+      STDERR->print("Done processing request, waiting for next\n");
+    
+  };
+
   return $self;
+
 }
 
 sub debug {
   my ($self, $level, $msg) = @_;
-  if($level >= $self->{debug}) {
+  if(defined $self->{debug} and $level >= $self->{debug}) {
     print STDERR "$msg\n";
   }
 }
 
 
-# Actually execute the continuation. The only reason this is separate is so
-# that it is easily overridable by inheriting classes who want to do something
-# funky
-sub execCont {
-  my ($self, $continuation, $r, $c) = @_;
-  eval { $continuation->($r, $c) };
-}
+=head2 $server->exec_cont($subref, $request, $conn)
 
-
-=item $server->loop()
-
-Loop, returning a new connection and request
+Override in subclasses for more specific behavior.
+This default implementation sends HTTP headers, selects C<$conn> as the
+default filehandle for output, and invokes C<$subref>, which is presumabily
+a continuation, with C<$request> and C<$conn> as arguments.
 
 =cut
 
+sub exec_cont {
 
-sub loop {
+  my ($self, $cont, $request, $conn) = @_;
 
-  my ($self) = @_;
-  my ($c, $r);
-  
-  while(($c, $r) = $self->{adaptor}->get_request()) {
-    print STDERR "Got request\n";
-    if($r->method eq 'GET' || $r->method eq 'POST') {
+  my $prev_select = select $conn; # Should maybe do fancier trick than this
 
-      # Send the basic headers all the time
-      if($c->can('send_basic_header')) {
-        $c->send_basic_header();
-      } else {
-        #print $c "Date: ",time2str(time),"\n";
-        #print $c "Server: Dude\n";
-      }
-
-      # We need some way to decide if we should send static or dynamic
-      # content.
-      if(!$self->{app_path} || $r->url->path =~ /$self->{app_path}/) {
-        $self->debug(3, "Calling map... ");
-        my $continuation = $self->{mapper}->map($r, $c);
-        $self->debug(3, "done mapping.");
-        $self->execCont($continuation, $r, $c);
-        $self->debug(1, "Error: $@") if $@; # Theoretically this will print errors??
-      } else {
-        $self->debug(3, "Sending static content... ");
-        $self->{adaptor}->sendStatic($r, $c);
-        $self->debug(3, "done sending static content.");
-      }
-    } else {
-      #$c->send_error(RC_NOT_FOUND)
-      #print $c "ERROR\r\n\n\n";
-    }
-
-    $c->close;
-    undef($c);
-    print STDERR "Done processing request, waiting for next\n";
+  if(!$self->{no_content_type}) {
+    print "Cache-Control: private, no-store, no-cache\r\n";
+    print "Pragma: no-cache\r\n";
+    print "Expires: 0\r\n";
+    print "Content-type: text/html\r\n\r\n";
   }
-}
 
-=back
+  $cont->($request);
+
+  select $prev_select;
+}
 
 =head1 SEE ALSO
 

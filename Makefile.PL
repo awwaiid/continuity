@@ -6,8 +6,9 @@ WriteMakefile(
     NAME              => 'Continuity',
     VERSION_FROM      => 'lib/Continuity.pm', # finds $VERSION
     PREREQ_PM         => {
-      HTTP::Daemon => 1.36,
+      HTTP::Daemon    => 1.36,
       HTTP::Request::AsCGI => 0.4,
+      Data::Alias     => 0.01,
     },
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/Continuity.pm', # retrieve abstract from module
