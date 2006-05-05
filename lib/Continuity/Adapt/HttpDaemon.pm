@@ -1,16 +1,88 @@
 
+=for comment
+
+Bleah.  Mucking around in internals of Coro::Socket and IO::Socket::INET is going very badly.
+
+Let's just use Event to add Coro friendliness to just the plain old IO::Socket::INET that
+gets created by HTTP::Daemon when it's inheritance isn't messed with.  That should just
+be a matter of creating some read event handles and waiting on them.
+
+=cut
+
 package Continuity::Adapt::HttpDaemon;
 
 use strict;
 use warnings;  # XXX dev
 
 use Coro;
-use Coro::Cont;
 use Coro::Socket;
 
 use IO::Handle;
 
-use HTTP::Daemon; BEGIN { @HTTP::Daemon::ISA = @HTTP::Daemon::ClientConn = ('Coro::Socket'); };
+use HTTP::Daemon; 
+
+do {
+
+    package HTTP::Daemon;
+
+    sub xx_accept {   
+        # it already had one of these, but Coro::Socket locks the accept($alternate_package) feature
+        my $self = shift;
+        my $pkg = shift || "HTTP::Daemon::ClientConn";
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
+        # $_[0]->readable or return;
+        # my ($sock, $peer) = Coro::Socket->can('accept')->($self);
+        Coro::Event->io(fd => fileno $self, poll => 'r', )->next;
+        (my $sock, my $peer) = $self->accept();
+        # $sock = $self->new_from_fh($fh);
+        # return unless $!{EAGAIN};
+STDERR->print(__FILE__, ' ', __LINE__, " err: $@ $!\n");
+        if ($sock) {
+            bless $sock, $pkg; # evil rebless
+            ${*$sock}{'httpd_daemon'} = $self;
+            return wantarray ? ($sock, $peer) : $sock;
+        } else {
+            return;
+        }
+    }
+
+    package HTTP::Daemon::ClientConn;
+
+sub _need_more
+{   
+    my $self = shift;
+    #my($buf,$timeout,$fdset) = @_;
+    print STDERR "sysread()\n";
+    Coro::Event->io(fd => fileno $self, poll => 'r', $_[1] ? ( timeout => $_[1] ) : ( ), )->next;
+    my $n = sysread($self, $_[0], 2048, length($_[0]));
+    print STDERR "sysread() done: $@ $!\n";
+    $self->reason(defined($n) ? "Client closed" : "sysread: $!") unless $n;
+    $n;
+}   
+
+    sub xx__need_more {
+        my $self = shift;
+        if ($_[1]) {
+            my($timeout, $fdset) = @_[1,2];
+            $self->timeout($timeout); # Coro::Handle method
+            #print STDERR "select(,,,$timeout)\n" if $DEBUG;
+            #my $n = select($fdset,undef,undef,$timeout);
+            #unless ($n) {
+            #    $self->reason(defined($n) ? "Timeout" : "select: $!");
+            #    return;
+            #}
+        }
+print STDERR "sysread() start\n";
+        $self->readable(); # Coro::Handle method
+        my $n = $self->recv($_[0], 2048);
+print STDERR "sysread() finished\n";
+        $self->reason(defined($n) ? "Client closed" : "sysread: $!") unless $n;
+        $n;
+    }
+
+};
+
+
 use HTTP::Status;
 
 =head1 NAME
@@ -39,8 +111,7 @@ HTTP server which is embeded.
 sub new {
   my $this = shift;
   my $class = ref($this) || $this;
-  $self = { @_ };
-  bless $self, $class;
+  my $self = bless { @_ }, $class;
 
   # Set up our http daemon
   my %httpConfig = (
@@ -48,7 +119,10 @@ sub new {
     ReuseAddr => 1,
   );
 
-  $self->{daemon} = HTTP::Daemon->new(%httpConfig) or die;
+  HTTP::Daemon->new(%httpConfig) or die $@;
+  $self->{daemon} = HTTP::Daemon->new(%httpConfig) or die $@;
+#use Data::Dumper;
+STDERR->print('self-daemon: ', ref($self->{daemon})); 
   print STDERR "Please contact me at: ", $self->{daemon}->url, "\n";
 
   return $self;
@@ -69,7 +143,7 @@ sub mapPath {
 }
 
 
-=item sendStatic($c, $path) - send static file to the $c filehandle
+=item send_static($c, $path) - send static file to the $c filehandle
 
 We cheat here... use 'magic' to get mimetype and send that. 
 Then the binary file.
@@ -93,27 +167,33 @@ sub send_static {
     print $c (<$file>);
     $self->{server}->debug(3, "Static send '$path', Content-type: $mimetype");
   } else {
-    $c->send_error(404)
+    $c->send_error(404);
   }
 }
 
-=head2 mapPath($path) - map a URL path to a filesystem path
+=head2 get_request() - map a URL path to a filesystem path
+
+Called in a loop from L<Contuinity::Server>.
+Returns the empty list on failure, which aborts the server process.
 
 =cut
 
 sub get_request {
   my ($self) = @_;
 
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
   if(my $c = $self->{daemon}->accept) {
+STDERR->print("debug: c is an ", ref $c, "\n");
     if(my $r = $c->get_request) {
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
       return ($c, $r);
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
     }
     close $c;
   }
+STDERR->print(__FILE__, ' ', __LINE__, " err: $@ $!\n");
   return ();
 }
-
-=back
 
 =head1 SEE ALSO
 

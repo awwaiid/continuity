@@ -33,10 +33,13 @@ sub new {
     docroot => '.',   # default docroot
     mapper => undef,
     adapter => undef,
+    debug => 4, # XXX
     @_,  
   };
 
   bless $self, $class;
+
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
 
   # Set up the default mapper.
   # The mapper associates execution contexts (continuations) with requests 
@@ -51,6 +54,7 @@ sub new {
     );
   }
 
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
   # Set up the default adaptor.
   # The adapater plugs the system into a server (probably a Web server)
   # The default has its very own HTTP::Daemon running.
@@ -67,9 +71,11 @@ sub new {
     die "Not a ref, $self->{adaptor}\n";
   }
 
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
   async { 
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
     while((my $c, my $r) = $self->{adaptor}->get_request()) {
-      print STDERR "Got request\n";
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
       if($r->method eq 'GET' || $r->method eq 'POST') {
   
         # Send the basic headers all the time
@@ -85,12 +91,17 @@ sub new {
         # To save users from having to re-implement (likely incorrecty)
         # basic security checks like .. abuse in GET paths, we should provide
         # a default implementation -- preferably one already on CPAN.
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
         if(!$self->{app_path} || $r->url->path =~ /$self->{app_path}/) {
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
           $self->debug(3, "Calling map... ");
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
           my $continuation = $self->{mapper}->map($r, $c);
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
           $self->debug(3, "done mapping.");
           # $continuation->($r, $c); # or $self->debug(1, "Error: $@");
           $self->exec_cont($continuation, $r, $c);
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
         } else {
           $self->debug(3, "Sending static content... ");
           $self->{adaptor}->send_static($r, $c);
@@ -104,6 +115,8 @@ sub new {
       $c->close;
       undef($c);
       STDERR->print("Done processing request, waiting for next\n");
+    }
+STDERR->print(__FILE__, ' ', __LINE__, " err: $!\n");
     
   };
 
@@ -141,9 +154,26 @@ sub exec_cont {
     print "Content-type: text/html\r\n\r\n";
   }
 
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
   $cont->($request);
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
 
   select $prev_select;
+}
+
+=item $server->get_request
+
+Get a request from the server. All this really does (right now) is yield the
+running continuation, returning control to the looping Continuity::Server
+process
+      
+=cut
+   
+sub get_request {
+  my ($self, $retval) = @_;
+  yield $retval;
+  my ($request) = @_;
+  return $request;
 }
 
 =head1 SEE ALSO

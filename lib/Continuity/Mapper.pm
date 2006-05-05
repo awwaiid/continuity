@@ -4,6 +4,7 @@ package Continuity::Mapper;
 use strict;
 use warnings; # XXX -- development only
 use Data::Alias;
+use Coro;
 use Coro::Cont;
 
 =head1 NAME
@@ -37,12 +38,14 @@ an instance of a different implementation is desired.
 =cut
 
 sub new {
+
   my $this = shift;
   my $class = ref($this) || $this;
   my $self = { 
       continuations => { },
       @_,
   };
+
   bless $self, $class;
 
   # if new_cont_sub is undef then the default mapper will use &::main, btw
@@ -85,10 +88,14 @@ sub map {
   my ($self, $request, $conn) = @_;
   my $session_id = $self->get_session_id_from_hit($request);
   alias my $c = $self->{continuations}->{$session_id};
+STDERR->print(__FILE__, ' ', __LINE__, ' ', $c, "\n");
   if(! $c) {
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
       $c = $self->new_continuation($request);
       # And we call it one time to let it do some initialization
-      $c->($self);
+      # Well, if we were going to do this, we'd want to call C::Server::exec_cont to do it.  This vesion doesn't even
+      # pass the request object in.
+      # $c->($self);
   }
 
   # And send our session cookie
@@ -115,11 +122,10 @@ This default implementation creates them from the C<main::> routine of the progr
 =cut
 
 sub new_continuation {
-  my ($self) = @_;
-  csub { (\&::main)->(@_) };
+    my ($self) = @_;
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
+    csub { ::main(@_) };
 }
-
-=back
 
 =head1 SEE ALSO
 
