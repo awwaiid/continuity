@@ -1,14 +1,4 @@
 
-=for comment
-
-Bleah.  Mucking around in internals of Coro::Socket and IO::Socket::INET is going very badly.
-
-Let's just use Event to add Coro friendliness to just the plain old IO::Socket::INET that
-gets created by HTTP::Daemon when it's inheritance isn't messed with.  That should just
-be a matter of creating some read event handles and waiting on them.
-
-=cut
-
 package Continuity::Adapt::HttpDaemon;
 
 use strict;
@@ -23,24 +13,28 @@ use HTTP::Daemon;
 
 do {
 
+    # HTTP::Daemon isn't Coro-friendly and attempting to diddle HTTP::Daemon's inheritence
+    # to use Coro::Socket instead was a dissaster.  So, instead, we provide reimplementations
+    # of just a couple of functions to make it all Coro-friendly.  This kind of meddling-
+    # under-the-hood is still just asking for breaking from future versions of HTTP::Daemon.
+
     package HTTP::Daemon;
 
-    sub xx_accept {   
-        # it already had one of these, but Coro::Socket locks the accept($alternate_package) feature
+    use Errno;
+    use Fcntl uc ':default';
+
+    sub accept {
         my $self = shift;
-        my $pkg = shift || "HTTP::Daemon::ClientConn";
-STDERR->print(__FILE__, ' ', __LINE__, "\n");
-        # $_[0]->readable or return;
-        # my ($sock, $peer) = Coro::Socket->can('accept')->($self);
-        Coro::Event->io(fd => fileno $self, poll => 'r', )->next;
-        (my $sock, my $peer) = $self->accept();
-        # $sock = $self->new_from_fh($fh);
-        # return unless $!{EAGAIN};
-STDERR->print(__FILE__, ' ', __LINE__, " err: $@ $!\n");
-        if ($sock) {
-            bless $sock, $pkg; # evil rebless
+        my $pkg = shift || "HTTP::Daemon::ClientConn";  
+        fcntl $self, &Fcntl::F_SETFL, &Fcntl::O_NONBLOCK or die "fcntl(O_NONBLOCK): $!";
+        try_again:
+        (my $sock, my $peer) = $self->SUPER::accept($pkg);
+        if($sock) {
             ${*$sock}{'httpd_daemon'} = $self;
             return wantarray ? ($sock, $peer) : $sock;
+        } elsif($!{EAGAIN}) {
+            Coro::Event->io(fd => fileno $self, poll => 'r', )->next;
+            goto try_again; 
         } else {
             return;
         }
@@ -48,40 +42,18 @@ STDERR->print(__FILE__, ' ', __LINE__, " err: $@ $!\n");
 
     package HTTP::Daemon::ClientConn;
 
-sub _need_more
-{   
-    my $self = shift;
-    #my($buf,$timeout,$fdset) = @_;
-    print STDERR "sysread()\n";
-    Coro::Event->io(fd => fileno $self, poll => 'r', $_[1] ? ( timeout => $_[1] ) : ( ), )->next;
-    my $n = sysread($self, $_[0], 2048, length($_[0]));
-    print STDERR "sysread() done: $@ $!\n";
-    $self->reason(defined($n) ? "Client closed" : "sysread: $!") unless $n;
-    $n;
-}   
-
-    sub xx__need_more {
+    sub _need_more {   
         my $self = shift;
-        if ($_[1]) {
-            my($timeout, $fdset) = @_[1,2];
-            $self->timeout($timeout); # Coro::Handle method
-            #print STDERR "select(,,,$timeout)\n" if $DEBUG;
-            #my $n = select($fdset,undef,undef,$timeout);
-            #unless ($n) {
-            #    $self->reason(defined($n) ? "Timeout" : "select: $!");
-            #    return;
-            #}
-        }
-print STDERR "sysread() start\n";
-        $self->readable(); # Coro::Handle method
-        my $n = $self->recv($_[0], 2048);
-print STDERR "sysread() finished\n";
+        #my($buf,$timeout,$fdset) = @_;
+        print STDERR "sysread()\n";
+        Coro::Event->io(fd => fileno $self, poll => 'r', $_[1] ? ( timeout => $_[1] ) : ( ), )->next;
+        my $n = sysread($self, $_[0], 2048, length($_[0]));
+        print STDERR "sysread() done: $@ $!\n";
         $self->reason(defined($n) ? "Client closed" : "sysread: $!") unless $n;
         $n;
-    }
+    }   
 
 };
-
 
 use HTTP::Status;
 
@@ -91,90 +63,60 @@ Continuity::Adapt::HttpDaemon - Use HTTP::Daemon as a continuation server
 
 =head1 DESCRIPTION
 
-This is the default and reference adaptor for L<Continuity>. An adaptor
-interfaces between the continuation server (L<Continuity::Server>) and the web
+This is the default and reference adaptor for L<Continuity>. 
+
+An adaptor interfaces between the continuation server (L<Continuity::Server>) and the web
 server (HTTP::Daemon, FastCGI, etc).
 
-  XXX needs an abstract parent class if this is a reference implementation and not itself a base class
-  XXX plays stupid inheritance tricks because HTTP::Daemon thinks it's cool to inherit rather than delegate
-  XXX mapper and adapter now have server=>$self passed in from the server, and config is delegated to rather than copied
+This adapter adapts between an L<HTTP::Daemon> server and L<Contuinity>. 
+
+This module was designed to be subclassed to fine-tune behavior.
 
 =head1 METHODS
 
-=head2 $server = Continuity::Adapt::HttpDaemon->new(...)
+=head2 C<< $adapter = Continuity::Adapt::HttpDaemon->new(...) >>
 
-Create a new continuation adaptor and HTTP::Daemon. This actually starts the
-HTTP server which is embeded.
+Create a new continuation adaptor and HTTP::Daemon. 
+This actually starts the HTTP server which is embeded.
+It takes the same arguments as the L<HTTP::Daemon> module, and those arguments are passed along.
+It also takes C<< server => Contuinity->new >> as well as the optional argument C<< docroot => '/path' >>.
+This adapter may then be specified for use with the following code:
+
+  my $server = Contuinity->new(adapter => $adapter);
 
 =cut
 
 sub new {
   my $this = shift;
   my $class = ref($this) || $this;
-  my $self = bless { @_ }, $class;
+  my %args = @_;
+  my $self = bless { 
+    server => delete $args{server}, 
+    docroot => delete $args{docroot},
+  }, $class;
 
   # Set up our http daemon
-  my %httpConfig = (
+  $self->{daemon} = HTTP::Daemon->new(
     LocalPort => $self->{server}->{port},
     ReuseAddr => 1,
-  );
+    %args,
+  ) or die $@;
 
-  HTTP::Daemon->new(%httpConfig) or die $@;
-  $self->{daemon} = HTTP::Daemon->new(%httpConfig) or die $@;
-#use Data::Dumper;
-STDERR->print('self-daemon: ', ref($self->{daemon})); 
   print STDERR "Please contact me at: ", $self->{daemon}->url, "\n";
 
   return $self;
-}
-
-sub mapPath {
-  my ($self, $path) = @_;
-  my $docroot = $self->{docroot};
-  # some massaging, also makes it more secure
-  $path =~ s/%([0-9a-fA-F][0-9a-fA-F])/chr hex $1/ge;
-  $path =~ s%//+%/%g;
-  $path =~ s%/\.(?=/|$)%%g;
-  1 while $path =~ s%/[^/]+/\.\.(?=/|$)%%;
-
-  # if($path =~ m%^/?\.\.(?=/|$)%) then bad
-
-  return "$docroot$path";
-}
-
-
-=item send_static($c, $path) - send static file to the $c filehandle
-
-We cheat here... use 'magic' to get mimetype and send that. 
-Then the binary file.
-I don't think we're well enough protected against shell meta characters... ever.  XXX Use a pipe with a 3-arg open instead to bypass shell if we're going to use magic.
-
-=cut
-
-sub send_static {
-  my ($self, $r, $c) = @_;
-  my $path = $self->mapPath($r->url->path);
-  my $file;
-  if(-f $path) {
-    local $/;
-    open $file, '<', $path or return;
-    # For now we'll cheat (badly) and use file
-    my $mimetype = `file -bi $path`; # XXX
-    chomp $mimetype;
-    # And for now we'll make a raw exception for .html
-    $mimetype = 'text/html' if $path =~ /\.html$/;
-    print $c "Content-type: $mimetype\r\n\r\n";
-    print $c (<$file>);
-    $self->{server}->debug(3, "Static send '$path', Content-type: $mimetype");
-  } else {
-    $c->send_error(404);
-  }
 }
 
 =head2 get_request() - map a URL path to a filesystem path
 
 Called in a loop from L<Contuinity::Server>.
 Returns the empty list on failure, which aborts the server process.
+Aside from the constructor, this is the heart of this module.
+
+Note that this method has a confusingly same name as C<get_request()> in
+L<Continuity>.  
+The C<get_request()> here is called from C<Continuity> and pulls down a raw
+L<HTTP::Request> object without consideration  other C<get_request()> is called by 
 
 =cut
 
@@ -193,6 +135,60 @@ STDERR->print(__FILE__, ' ', __LINE__, "\n");
   }
 STDERR->print(__FILE__, ' ', __LINE__, " err: $@ $!\n");
   return ();
+}
+
+=head2 C<< $adapter->map_path($path) >>
+
+Decodes URL-encoding in the path and attempts to guard against malice.
+Returns the processed path.
+
+=cut
+
+sub map_path {
+  my ($self, $path) = @_;
+  my $docroot = $self->{docroot};
+  # some massaging, also makes it more secure
+  $path =~ s/%([0-9a-fA-F][0-9a-fA-F])/chr hex $1/ge;
+  $path =~ s%//+%/%g;
+  $path =~ s%/\.(?=/|$)%%g;
+  1 while $path =~ s%/[^/]+/\.\.(?=/|$)%%;
+
+  # if($path =~ m%^/?\.\.(?=/|$)%) then bad
+
+  return "$docroot$path";
+}
+
+=head2 C<< send_static($conn, $path) >> 
+
+Sends static file to the C<$conn> filehandle.
+
+We cheat here... use 'magic' to get mimetype and send that followed by the contents of the file. 
+I don't think we're well enough protected against shell meta characters... ever.  
+
+This may be obvious, but you can't send binary data as part of the same request that you've already
+sent text or HTML on, MIME aside.
+
+=cut
+
+sub send_static {
+  my ($self, $r, $c) = @_;
+  my $path = $self->map_path($r->url->path);
+  my $file;
+  unless (-f $path) {
+    $c->send_error(404);
+  }
+  open $file, '<', $path or return;
+  # For now we'll cheat (badly) and use file
+  open my $magic, '-|', 'file', '-bi', $path;
+  my $mimetype = <$magic>;
+  chomp $mimetype;
+  # And for now we'll make a raw exception for .html
+  $mimetype = 'text/html' if $path =~ /\.html$/ or ! $mimetype;
+  print $c "Content-type: $mimetype\r\n\r\n";
+  while(read $c, my $buf, 8192) {
+      $c->print($buf);
+  } 
+  $self->{server}->debug(3, "Static send '$path', Content-type: $mimetype");
 }
 
 =head1 SEE ALSO

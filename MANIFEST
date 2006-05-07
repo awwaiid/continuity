@@ -33,8 +33,6 @@ eg/tree.pl
 lib/Continuity.pm
 lib/Continuity/Adapt/HttpDaemon.pm
 lib/Continuity/Mapper.pm
-lib/Continuity/Server.pm
-lib/Continuity/Server/Simple.pm
 lib/Continuity/Util/Component.pm
 Makefile.PL
 MANIFEST
