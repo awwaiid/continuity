@@ -5,11 +5,13 @@ use strict;
 use warnings;  # XXX dev
 
 use Coro;
-use Coro::Socket;
+use Coro::Channel;
 
 use IO::Handle;
 
 use HTTP::Daemon; 
+
+use Continuity::Request;
 
 do {
 
@@ -128,10 +130,10 @@ STDERR->print(__FILE__, ' ', __LINE__, "\n");
 STDERR->print("debug: c is an ", ref $c, "\n");
     if(my $r = $c->get_request) {
 STDERR->print(__FILE__, ' ', __LINE__, "\n");
-      return ($c, $r);
+      return Continuity::Request->new( conn => $c, request => $r, );
+      # return ($c, $r);
 STDERR->print(__FILE__, ' ', __LINE__, "\n");
     }
-    close $c;
   }
 STDERR->print(__FILE__, ' ', __LINE__, " err: $@ $!\n");
   return ();

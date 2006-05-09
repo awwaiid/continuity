@@ -30,7 +30,7 @@ Create a new continuation mapper.
 
 L<Contuinity::Server> does the following by default:
 
-  new Continuity::Server( mapper => Continuity::Mapper->new(), ... )
+  Continuity::Server->( mapper => Continuity::Mapper->new(), adapter => Continuity::Adapter::HttpDaemon->new(), )
 
 The C<< mapper => $ob >> argument pair should be passed to L<Continuity::Server> if an
 an instance of a different implementation is desired.
@@ -66,8 +66,15 @@ sub debug {
 sub get_session_id_from_hit {
   my ($self, $request) = @_;
   alias my $hit_to_session_id = $self->{hit_to_session_id};
-  my $ip = $request->headers->header('Remote-Address') || $ENV{REMOTE_ADDR} || undef; # || CGI->remote_host
-  (my $path) = $request->uri =~ m{http://[^/]*/([^?]*)};
+  # this ip business is higherport.c-centric -- if the hit is from the local server, assume that is wrong, and go looking for 
+  # something else. of course, this has problems -- what about proxies sending hits to other machines on the lan?
+  my $ip = $request->conn->peerhost;
+  if($ip eq '192.168.0.1') { 
+      $ip = $request->{request}->headers->header('Remote-Address') || $ENV{REMOTE_ADDR} || undef; # || CGI->remote_host 
+  }
+STDERR->print("uri: ", $request->{request}->uri, "\n");
+  (my $path) = $request->{request}->uri =~ m{/([^?]*)};
+  STDERR->print('=' x 30, ' ', $ip.$path, ' ', '=' x 30, "\n");
   return $ip.$path;
   # our $sessionIdCounter;
   # print "Headers: " . $request->as_string();
@@ -82,20 +89,26 @@ Accepts an L<HTTP::Request> object and returns an existing or new coroutine as a
 
   $mapper->map($request)
 
+This implementation uses the C<get_session_id_from_hit()> method of this same class
+to get an identifying string from information in the request object.
+This is used as an index into C<< $self->{continuations}->{$session_id} >>, which holds
+a code ref (probably a coroutine code ref) if one exists already.
+This implementation wraps the C<main::main()> method in a C<csub { }> to create a new
+coroutine, which is done as necessary.
+
 =cut
 
 sub map {
-  my ($self, $request, $conn) = @_;
+
+  my ($self, $request) = @_;
   my $session_id = $self->get_session_id_from_hit($request);
-  alias my $c = $self->{continuations}->{$session_id};
-STDERR->print(__FILE__, ' ', __LINE__, ' ', $c, "\n");
-  if(! $c) {
+
+  alias my $queue = $self->{continuations}->{$session_id};
+
 STDERR->print(__FILE__, ' ', __LINE__, "\n");
-      $c = $self->new_continuation($request);
-      # And we call it one time to let it do some initialization
-      # Well, if we were going to do this, we'd want to call C::Server::exec_cont to do it.  This vesion doesn't even
-      # pass the request object in.
-      # $c->($self);
+  if(! $queue) {
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
+      $queue = $self->new_continuation($request);
   }
 
   # And send our session cookie
@@ -105,7 +118,10 @@ STDERR->print(__FILE__, ' ', __LINE__, "\n");
   # print STDERR "Setting client pid = $sessionId\n";
   # $request->uri->query( $request->uri->query() . '&pid=' . $sessionId );
 
-  return $c;
+  $request->queue = $queue;
+
+  return $request;
+
 }
 
 =head2 new_continuation()
@@ -121,11 +137,60 @@ This default implementation creates them from the C<main::> routine of the progr
 
 =cut
 
-sub new_continuation {
+sub xx_new_continuation {
     my ($self) = @_;
 STDERR->print(__FILE__, ' ', __LINE__, "\n");
     csub { ::main(@_) };
 }
+
+sub new_continuation {
+    my $self = shift;
+    my $request = shift or die;
+    my $queue = Coro::Channel->new(2);
+    # break the chicken-and-egg problem and roll up a starting null request object
+    # no, wait, there is no chicken-and-egg problem: we're only asked to create a new coro when we've got a hit and we're going to run the damn thing
+    # my $req = Continuity::Request->new( conn => $conn, queue => $queue, );
+    async { $self->{server}->{callback} ? $self->{server}->{callback}->($request, @_) : ::main($request, @_ ); };
+    $queue;
+}
+
+=head2 C<< $server->exec_cont($subref, $request) >>
+
+Override in subclasses for more specific behavior.
+This default implementation sends HTTP headers, selects C<$conn> as the
+default filehandle for output, and invokes C<$subref> (which is presumabily
+a continuation) with C<$request> and C<$conn> as arguments.
+
+=cut
+
+sub exec_cont {
+ 
+  my $self = shift;
+  my $request = shift;
+ 
+  # my $prev_select = select $request->{conn}; # Should maybe do fancier trick than this
+  *STDOUT = $request->{conn};
+ 
+  if(!$self->{no_content_type}) {
+    $request->conn->print(
+        "Cache-Control: private, no-store, no-cache\r\n",
+         "Pragma: no-cache\r\n",
+         "Expires: 0\r\n",
+         "Content-type: text/html\r\n",
+         "\r\n",
+    );
+  }
+ 
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
+  # $cont->($request);
+
+  $request->queue->put($request);
+
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
+
+  # select $prev_select;
+}
+
 
 =head1 SEE ALSO
 
