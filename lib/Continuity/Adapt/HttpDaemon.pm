@@ -10,6 +10,7 @@ use Coro::Channel;
 use IO::Handle;
 
 use HTTP::Daemon; 
+use HTTP::Status;
 
 use Continuity::Request;
 
@@ -57,8 +58,6 @@ do {
 
 };
 
-use HTTP::Status;
-
 =head1 NAME
 
 Continuity::Adapt::HttpDaemon - Use HTTP::Daemon as a continuation server
@@ -81,7 +80,7 @@ This module was designed to be subclassed to fine-tune behavior.
 Create a new continuation adaptor and HTTP::Daemon. 
 This actually starts the HTTP server which is embeded.
 It takes the same arguments as the L<HTTP::Daemon> module, and those arguments are passed along.
-It also takes C<< server => Contuinity->new >> as well as the optional argument C<< docroot => '/path' >>.
+It also takes the optional argument C<< docroot => '/path' >>.
 This adapter may then be specified for use with the following code:
 
   my $server = Contuinity->new(adapter => $adapter);
@@ -93,13 +92,11 @@ sub new {
   my $class = ref($this) || $this;
   my %args = @_;
   my $self = bless { 
-    server => delete $args{server}, 
     docroot => delete $args{docroot},
   }, $class;
 
   # Set up our http daemon
   $self->{daemon} = HTTP::Daemon->new(
-    LocalPort => $self->{server}->{port},
     ReuseAddr => 1,
     %args,
   ) or die $@;
@@ -160,12 +157,11 @@ sub map_path {
   return "$docroot$path";
 }
 
-=head2 C<< send_static($conn, $path) >> 
+=head2 C<< send_static($request) >>
 
-Sends static file to the C<$conn> filehandle.
+Sends a static file off of the filesystem.
 
 We cheat here... use 'magic' to get mimetype and send that followed by the contents of the file. 
-I don't think we're well enough protected against shell meta characters... ever.  
 
 This may be obvious, but you can't send binary data as part of the same request that you've already
 sent text or HTML on, MIME aside.
@@ -173,25 +169,38 @@ sent text or HTML on, MIME aside.
 =cut
 
 sub send_static {
-  my ($self, $r, $c) = @_;
-  my $path = $self->map_path($r->url->path);
-  my $file;
+  my ($self, $r) = @_;
+  my $c = $r->conn or die;
+  my $path = $self->map_path($r->{request}->url->path) or do { 
+       $self->debug(1, "can't map path: " . $r->url->path); $c->send_error(404); return; 
+  };
+  # STDERR->print("XXX: send_static with path: $path\n");
+  substr($path, 0, 1) eq '/' and substr $path, 0, 1, ''; # remove leading /
   unless (-f $path) {
-    $c->send_error(404);
+      $c->send_error(404);
+      return;
   }
-  open $file, '<', $path or return;
-  # For now we'll cheat (badly) and use file
+  # For now we'll cheat and use file -- perhaps later this will be overridable
   open my $magic, '-|', 'file', '-bi', $path;
   my $mimetype = <$magic>;
   chomp $mimetype;
   # And for now we'll make a raw exception for .html
   $mimetype = 'text/html' if $path =~ /\.html$/ or ! $mimetype;
   print $c "Content-type: $mimetype\r\n\r\n";
-  while(read $c, my $buf, 8192) {
+  open my $file, '<', $path or return;
+  while(read $file, my $buf, 8192) {
       $c->print($buf);
   } 
-  $self->{server}->debug(3, "Static send '$path', Content-type: $mimetype");
+  $self->debug(3, "Static send '$path', Content-type: $mimetype");
 }
+
+sub debug {
+  my ($self, $level, $msg) = @_;
+  if(defined $self->{debug} and $level >= $self->{debug}) {
+    print STDERR "$msg\n"; 
+  } 
+} 
+
 
 =head1 SEE ALSO
 

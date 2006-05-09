@@ -26,11 +26,15 @@ The default strategy is (in limbo but quite possibily) based on client IP addres
 
 Create a new continuation mapper.
 
-  $server = new()
+  $mapper = Continuity::Mapper->new( callback => sub { } )
 
 L<Contuinity::Server> does the following by default:
 
-  Continuity::Server->( mapper => Continuity::Mapper->new(), adapter => Continuity::Adapter::HttpDaemon->new(), )
+  Continuity::Server->( 
+    mapper   => Continuity::Mapper->new(), 
+    adapter  => Continuity::Adapter::HttpDaemon->new(), 
+    callback => sub { },
+  )
 
 The C<< mapper => $ob >> argument pair should be passed to L<Continuity::Server> if an
 an instance of a different implementation is desired.
@@ -39,21 +43,13 @@ an instance of a different implementation is desired.
 
 sub new {
 
-  my $this = shift;
-  my $class = ref($this) || $this;
-  my $self = { 
+  my $class = shift; 
+  my $self = bless { 
       continuations => { },
       @_,
-  };
-
-  bless $self, $class;
-
-  # if new_cont_sub is undef then the default mapper will use &::main, btw
-  # no. this "maybe this, maybe that" crap needs to depend on subclass.
-  # in here, keep it simple, and serve as an example and reference.
-  # $self->set_cont_maker_sub($self->{new_cont_sub}); 
-
+  }, $class;
   return $self;
+
 }
 
 sub debug {
@@ -150,11 +146,11 @@ sub new_continuation {
     # break the chicken-and-egg problem and roll up a starting null request object
     # no, wait, there is no chicken-and-egg problem: we're only asked to create a new coro when we've got a hit and we're going to run the damn thing
     # my $req = Continuity::Request->new( conn => $conn, queue => $queue, );
-    async { $self->{server}->{callback} ? $self->{server}->{callback}->($request, @_) : ::main($request, @_ ); };
+    async { $self->{callback} ? $self->{callback}->($request, @_) : ::main($request, @_ ); };
     $queue;
 }
 
-=head2 C<< $server->exec_cont($subref, $request) >>
+=head2 C<< $mapper->exec_cont($subref, $request) >>
 
 Override in subclasses for more specific behavior.
 This default implementation sends HTTP headers, selects C<$conn> as the

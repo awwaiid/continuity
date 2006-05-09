@@ -15,11 +15,13 @@ Continuity - Abstract away statelessness of HTTP using continuations for statefu
   my $server = new Continuity;
 
   sub main {
-    # must do a substr to chop the leading '/'
-    $name = substr($server->get_request->url->path,1) || 'World';
-    print "Hello, $name!";
-    $name = substr($server->get_request->url->path,1) || 'World';
-    print "Hello to you too, $name!";
+      my $request = shift;
+      # must do a substr to chop the leading '/'
+      $name = substr($request->url->path, 1) || 'World';
+      $request->conn->print("Hello, $name!");
+      $request = $request->next();
+      $name = substr($request->url->path, 1) || 'World';
+      $request->conn->print(print "Hello to you too, $name!");
   }
 
   Event::loop;
@@ -55,10 +57,29 @@ use Coro;
 use Coro::Cont;
 use HTTP::Status; # to grab static response codes. Probably shouldn't be here
 
-=head2 C<< $server = Continuity::Server->new(...) >>
+=head2 C<< $server = Continuity->new(...) >>
 
-Create a new continuation server.
-The program should run C<Event::loop> 
+The C<Continuity> object wires together an adapter and a mapper.
+Creating the C<Continuity> object gives you the defaults wired together,
+or if user-supplied instances are provided, it wires those together.
+
+Arguments:
+
+=over 1
+
+=item C<adapter> -- defaults to an instance of C<Continuity::Adapt::HttpDaemon>
+
+=item C<mapper> -- defaults to an instance of C<Continuity::Mapper>
+
+=item C<docroot> -- defaults to C<.>
+
+=item C<callback> -- defaults to C<\&::main>
+
+=item C<staticp> -- defaults to C<< sub { 0 } >>, used to indicate whether any request is for static content
+
+=item C<debug> -- defaults to C<4> at the moment ;)
+
+=back
 
 =cut
 
@@ -66,18 +87,16 @@ sub new {
 
   my $this = shift;
   my $class = ref($this) || $this;
-  my $self = { 
+
+  my $self = bless { 
     docroot => '.',   # default docroot
     mapper => undef,
     adapter => undef,
     debug => 4, # XXX
-    callback => exists &::main ? \&::main : undef,
+    callback => (exists &::main ? \&::main : undef),
+    staticp => sub { 0 },   
     @_,  
-  };
-
-  bless $self, $class;
-
-STDERR->print(__FILE__, ' ', __LINE__, "\n");
+  }, $class;
 
   # Set up the default mapper.
   # The mapper associates execution contexts (continuations) with requests 
@@ -87,12 +106,12 @@ STDERR->print(__FILE__, ' ', __LINE__, "\n");
     require Continuity::Mapper;
     $self->{mapper} = Continuity::Mapper->new(
       debug => $self->{debug},
-      new_cont_sub => $self->{new_cont_sub},
+      callback => $self->{callback},
       server => $self,
+      $self->{port} ? (LocalPort => $self->{port}) : (),
     );
   }
 
-STDERR->print(__FILE__, ' ', __LINE__, "\n");
   # Set up the default adaptor.
   # The adapater plugs the system into a server (probably a Web server)
   # The default has its very own HTTP::Daemon running.
@@ -101,14 +120,13 @@ STDERR->print(__FILE__, ' ', __LINE__, "\n");
     $self->{adaptor} = Continuity::Adapt::HttpDaemon->new(
       docroot => $self->{docroot},
       server => $self,
+      debug => $self->{debug},
     );
   } elsif(! ref $self->{adaptor}) {
     die "Not a ref, $self->{adaptor}\n";
   }
 
-STDERR->print(__FILE__, ' ', __LINE__, "\n");
   async {
-STDERR->print(__FILE__, ' ', __LINE__, "\n");
     while(my $r = $self->{adaptor}->get_request()) {
 STDERR->print(__FILE__, ' ', __LINE__, "\n");
       unless($r->method eq 'GET' or $r->method eq 'POST') {
@@ -120,6 +138,13 @@ STDERR->print(__FILE__, ' ', __LINE__, "\n");
       # Don't think the can method will work with the AUTOLOAD trick and wrapper
       $r->conn->send_basic_header();
   
+      if($self->{staticp}->($r)) {
+          $self->debug(3, "Sending static content... ");
+          $self->{adaptor}->send_static($r);
+          $self->debug(3, "done sending static content.");
+          next;
+      }
+
       # We need some way to decide if we should send static or dynamic
       # content.
       # To save users from having to re-implement (likely incorrecty)
@@ -135,10 +160,6 @@ STDERR->print(__FILE__, ' ', __LINE__, "\n");
       $self->debug(3, "done mapping.");
       # $continuation->($r, $c); # or $self->debug(1, "Error: $@");
       $self->{mapper}->exec_cont($r);
-
-      #  $self->debug(3, "Sending static content... ");
-      #  $self->{adaptor}->send_static($r, $c);
-      #  $self->debug(3, "done sending static content.");
 
     }
   
