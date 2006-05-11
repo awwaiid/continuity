@@ -172,7 +172,7 @@ sub send_static {
        $self->debug(1, "can't map path: " . $r->url->path); $c->send_error(404); return; 
   };
   # STDERR->print("XXX: send_static with path: $path\n");
-  substr($path, 0, 1) eq '/' and substr $path, 0, 1, ''; # remove leading /
+  $path =~ s{^/}{}g;
   unless (-f $path) {
       $c->send_error(404);
       return;
