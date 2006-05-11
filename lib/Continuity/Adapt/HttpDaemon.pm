@@ -122,18 +122,15 @@ L<HTTP::Request> object without consideration  other C<get_request()> is called 
 sub get_request {
   my ($self) = @_;
 
-STDERR->print(__FILE__, ' ', __LINE__, "\n");
-  if(my $c = $self->{daemon}->accept) {
-STDERR->print("debug: c is an ", ref $c, "\n");
-    if(my $r = $c->get_request) {
-STDERR->print(__FILE__, ' ', __LINE__, "\n");
-      return Continuity::Request->new( conn => $c, request => $r, );
-      # return ($c, $r);
-STDERR->print(__FILE__, ' ', __LINE__, "\n");
-    }
+  # STDERR->print(__FILE__, ' ', __LINE__, "\n");
+  while(1) {
+    my $c = $self->{daemon}->accept or next;
+    # STDERR->print("debug: c is an ", ref $c, "\n");
+    my $r = $c->get_request or next;
+    # STDERR->print(__FILE__, ' ', __LINE__, "\n");
+    return Continuity::Request->new( conn => $c, request => $r, );
+    # STDERR->print(__FILE__, ' ', __LINE__, "\n");
   }
-STDERR->print(__FILE__, ' ', __LINE__, " err: $@ $!\n");
-  return ();
 }
 
 =head2 C<< $adapter->map_path($path) >>
