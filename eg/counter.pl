@@ -1,8 +1,10 @@
 #!/usr/bin/perl
 
-use strict;
 use lib '../lib';
-use Continuity::Server::Simple;
+use strict;
+use warnings;
+use Coro;
+use Coro::Event;
 use URI::Escape;
 
 =head1 Summary
@@ -14,48 +16,42 @@ code. We even implement our own 'prompt'...
 
 =cut
 
-my $server = Continuity::Server::Simple->new(
-    port => 8081,
-    app_path => '/app',
-    debug => 3,
-    # all other requests go through the static sender by default
-    # sdw: mapper => \&foo (or mapper => $ob), etc
-);
+use Continuity;
+my $server = new Continuity;
 
-$server->loop;
+Event::loop();
 
 # Ask a question and keep asking until they answer
 sub prompt {
-  my ($msg, @ops) = @_;
-  print "$msg<br>";
+  my ($request, $msg, @ops) = @_;
+  $request->print("$msg<br>");
   foreach my $option (@ops) {
     my $uri_option = uri_escape($option);
-    print qq{<a href="?option=$uri_option">$option</a><br>};
+    $request->print(qq{<a href="?option=$uri_option">$option</a><br>});
   }
-  my $params = $server->get_request->params;
-  my $option = $params->{option};
+  my $option = $request->next->param('option');
   return $option || prompt($msg, @ops);
 }
 
 sub main {
+  my $request = shift;
   # When we are first called we get a chance to initialize stuff
   my $count = 0;
 
   # After we're done with that we enter a loop. Forever.
   while(1) {
-    my $params = $server->get_request->params;
-    my $add = $params->{add};
+    my $add = $request->next->param('add');
     if($count >= 0 && $count + $add < 0) {
-      my $choice = prompt("Do you really want to GO NEGATIVE?", "Yes", "No");
+      my $choice = prompt($request, "Do you really want to GO NEGATIVE?", "Yes", "No");
       $add = 0 if $choice eq 'No';
     }
     $count += $add;
-    print qq{
+    $request->print(qq{
       Count: $count<br>
       <a href="?add=1">++</a> &nbsp;&nbsp; <a href="?add=-1">--</a><br>
-    };
+    });
     if($count == 42) {
-      print "<h1>The Answer to Life, The Universe, and Everything</h1>";
+      $request->print("<h1>The Answer to Life, The Universe, and Everything</h1>");
     }
   }
 }
