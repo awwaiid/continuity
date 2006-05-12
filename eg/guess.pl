@@ -1,32 +1,36 @@
 #!/usr/bin/perl
 
-use strict;
 use lib '../lib';
-use Continuity::Server::Simple;
+use strict;
+use warnings;
+use Coro;
+use Coro::Event;
 
-my $server = Continuity::Server::Simple->new(
-    port => 8081,
-    app_path => '/app',
-    debug => 3,
-);
+use Continuity;
+my $server = new Continuity;
 
-$server->loop;
+Event::loop();
 
-sub getNum {
-  print qq{
-    Enter Guess: <input name="num" id=num>
-    <script>document.getElementById('num').focus()</script>
-    </form>
-    </body>
-    </html>
-  };
-  my $f = $server->get_request->params;
-  return $f->{'num'};
-}
 
 sub main {
+
+  my $request = shift;
+
+  sub getNum {
+    print qq{
+      Enter Guess: <input name="num" id=num>
+      <script>document.getElementById('num').focus()</script>
+      </form>
+      </body>
+      </html>
+    };
+    $request = $request->next;
+    my $num = $request->param('num');
+    return $num;
+  }
+
   # Ignore the first input, it just means they are viewing us
-  $server->get_request;
+  $request = $request->next;
   my $guess;
   my $number = int(rand(100)) + 1;
   my $tries = 0;
