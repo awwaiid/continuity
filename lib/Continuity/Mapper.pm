@@ -46,6 +46,9 @@ sub new {
   my $class = shift; 
   my $self = bless { 
       continuations => { },
+      ip_session => 1,
+      path_session => 0,
+      cookie_session => 0,
       @_,
   }, $class;
   $self->{callback} or die "Mapper: callback not set.\n";
@@ -71,8 +74,15 @@ sub get_session_id_from_hit {
   }
 STDERR->print("uri: ", $request->{request}->uri, "\n");
   (my $path) = $request->{request}->uri =~ m{/([^?]*)};
-  STDERR->print('=' x 30, ' ', $ip.$path, ' ', '=' x 30, "\n");
-  return $ip.$path;
+  my $session_id;
+  if($self->{ip_session}) {
+    $session_id .= $ip;
+  }
+  if($self->{path_session}) {
+    $session_id .= $path;
+  }
+  STDERR->print('=' x 30, ' ', $session_id, ' ', '=' x 30, "\n");
+  return $session_id;
   # our $sessionIdCounter;
   # print "Headers: " . $request->as_string();
   #  my $pid = $request->params->{pid};
