@@ -62,9 +62,8 @@ sub param {
 
 sub next {
     # called by the user's program from the context of their coroutine
-    my $self = shift;
-    $self->conn and $self->conn->close;
-    $self->queue->get; 
+    $_[0]->conn and $_[0]->conn->close;
+    $_[0] = $_[0]->queue->get; 
 }
 
 sub conn :lvalue { $_[0]->{conn} }
