@@ -150,12 +150,6 @@ This default implementation creates them from the C<main::> routine of the progr
 
 =cut
 
-sub xx_new_continuation {
-    my ($self) = @_;
-STDERR->print(__FILE__, ' ', __LINE__, "\n");
-    csub { ::main(@_) };
-}
-
 sub new_continuation {
     my $self = shift;
     my $request = shift or die;
