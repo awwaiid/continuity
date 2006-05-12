@@ -127,13 +127,17 @@ sub new {
   }
 
   async {
-    while(my $r = $self->{adaptor}->get_request()) {
-STDERR->print(__FILE__, ' ', __LINE__, "\n");
+    while(1) {
+      my $r = $self->{adaptor}->get_request();
+STDERR->print(__FILE__, ' ', __LINE__, "\n", $r->{request}->as_string, "\n");
       # these just give undefined value warnings
-      #unless($r->{request}->method eq 'GET' or $r->{request}->method eq 'POST') {
-      #  #$c->send_error(RC_NOT_FOUND)
-      #  #print $c "ERROR\r\n\r\n";
-      #}
+
+      unless($r->{request}->method eq 'GET' or $r->{request}->method eq 'POST') {
+         $r->conn->send_error(RC_BAD_REQUEST);
+         $r->conn->print("ERROR -- GET and POST only for now\r\n\r\n");
+         $r->conn->close;
+         next;
+      }
   
       # Send the basic headers all the time
       # Don't think the can method will work with the AUTOLOAD trick and wrapper

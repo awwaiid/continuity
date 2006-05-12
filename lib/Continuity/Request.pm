@@ -28,8 +28,8 @@ sub new {
     my %args = @_;
     my $self = bless { @_ }, $class;
     # $self->request->isa('HTTP::Request') or die;
-    $self->conn or die;
-    $self->queue;
+    # $self->conn or die;
+    # $self->queue or die;
     return $self;
 }
 
@@ -63,7 +63,7 @@ sub param {
 sub next {
     # called by the user's program from the context of their coroutine
     my $self = shift;
-    $self->conn->close;
+    $self->conn and $self->conn->close;
     $self->queue->get; 
 }
 

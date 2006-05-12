@@ -104,7 +104,7 @@ sub map {
 STDERR->print(__FILE__, ' ', __LINE__, "\n");
   if(! $queue) {
 STDERR->print(__FILE__, ' ', __LINE__, "\n");
-      $queue = $self->new_continuation($request);
+      $queue = $self->new_continuation($request, $session_id);
   }
 
   # And send our session cookie
@@ -142,11 +142,12 @@ STDERR->print(__FILE__, ' ', __LINE__, "\n");
 sub new_continuation {
     my $self = shift;
     my $request = shift or die;
+    my $session_id = shift or die;
     my $queue = Coro::Channel->new(2);
+    my $fake_request = Continuity::Request->new( queue => $queue, );
     # break the chicken-and-egg problem and roll up a starting null request object
-    # no, wait, there is no chicken-and-egg problem: we're only asked to create a new coro when we've got a hit and we're going to run the damn thing
     # my $req = Continuity::Request->new( conn => $conn, queue => $queue, );
-    async { $self->{callback} ? $self->{callback}->($request, @_) : ::main($request, @_ ); };
+    async { $self->{callback} ? $self->{callback}->($fake_request, @_) : ::main($fake_request, @_ ); delete $self->{continuations}->{$session_id}; STDERR->print("XXX debug: session $session_id closed\n"); }; 
     $queue;
 }
 
