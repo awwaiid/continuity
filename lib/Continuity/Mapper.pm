@@ -48,6 +48,7 @@ sub new {
       continuations => { },
       @_,
   }, $class;
+  $self->{callback} or die "Mapper: callback not set.\n";
   return $self;
 
 }
@@ -147,7 +148,16 @@ sub new_continuation {
     my $fake_request = Continuity::Request->new( queue => $queue, );
     # break the chicken-and-egg problem and roll up a starting null request object
     # my $req = Continuity::Request->new( conn => $conn, queue => $queue, );
-    async { $self->{callback} ? $self->{callback}->($fake_request, @_) : ::main($fake_request, @_ ); delete $self->{continuations}->{$session_id}; STDERR->print("XXX debug: session $session_id closed\n"); }; 
+    async {
+        $self->{callback}->($fake_request, @_);
+        # No need to default to ::main, that assumption was made for us already
+        # Though if $self->{callback} _isn't_ defined, we should throw a fit in new
+        #$self->{callback} ?
+        #  $self->{callback}->($fake_request, @_)
+        #  : ::main($fake_request, @_ );
+        delete $self->{continuations}->{$session_id};
+        STDERR->print("XXX debug: session $session_id closed\n");
+    }; 
     $queue;
 }
 
