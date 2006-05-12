@@ -8,23 +8,27 @@ Continuity - Abstract away statelessness of HTTP using continuations for statefu
 
 =head1 SYNOPSIS
 
+  #!/usr/bin/perl
   use strict;
   use warnings;
+  use Coro;
+  use Coro::Event;
 
   use Continuity;
   my $server = new Continuity;
 
   sub main {
-      my $request = shift;
-      # must do a substr to chop the leading '/'
-      $name = substr($request->url->path, 1) || 'World';
-      $request->conn->print("Hello, $name!");
-      $request = $request->next();
-      $name = substr($request->url->path, 1) || 'World';
-      $request->conn->print(print "Hello to you too, $name!");
+    my $request = shift;
+    $request = $request->next();
+    # must do a substr to chop the leading '/'
+    my $name = substr($request->{request}->url->path, 1) || 'World';
+    $request->print("Hello, $name!");
+    $request = $request->next();
+    $name = substr($request->{request}->url->path, 1) || 'World';
+    $request->print("Hello to you too, $name!");
   }
 
-  Event::loop;
+  Event::loop();
 
 =head1 DESCRIPTION
 
