@@ -17,13 +17,13 @@ sub main {
   my $request = shift;
 
   sub getNum {
-    print qq{
+    $request->print( qq{
       Enter Guess: <input name="num" id=num>
       <script>document.getElementById('num').focus()</script>
       </form>
       </body>
       </html>
-    };
+    });
     $request = $request->next;
     my $num = $request->param('num');
     return $num;
@@ -43,16 +43,15 @@ sub main {
   };
   do {
     $tries++;
-    print $out;
+    $request->print($out);
     $guess = getNum();
     $out .= "It is smaller than $guess.<br>\n" if $guess > $number;
     $out .= "It is bigger than $guess.<br>\n" if $guess < $number;
   } until ($guess == $number);
-  print "You got it! My number was in fact $number.<br>\n";
-  print "It took you $tries tries.<br>\n";
-  print '<a href="/app">Play Again</a>';
+  $request->print("You got it! My number was in fact $number.<br>\n");
+  $request->print("It took you $tries tries.<br>\n");
+  $request->print('<a href="/app">Play Again</a>');
 }
-
 
 1;
 
