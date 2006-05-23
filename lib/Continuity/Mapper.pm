@@ -79,10 +79,10 @@ STDERR->print("uri: ", $request->{request}->uri, "\n");
   (my $path) = $request->{request}->uri =~ m{/([^?]*)};
   my $session_id;
   if($self->{ip_session}) {
-    $session_id .= $ip;
+    $session_id .= '.'.$ip;
   }
   if($self->{path_session}) {
-    $session_id .= $path;
+    $session_id .= '.'.$path;
   }
   STDERR->print('=' x 30, ' ', $session_id, ' ', '=' x 30, "\n");
   return $session_id;
