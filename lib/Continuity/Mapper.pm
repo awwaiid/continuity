@@ -73,11 +73,8 @@ sub get_session_id_from_hit {
   # There must be a more general-purpose way of deciding if we were proxied,
   # and if so to use the Remote-Address header (maybe even just look for
   # Remote-address in the first place to decide) -- awwaiid
-  my $ip = $request->conn->peerhost;
-  if($ip eq '192.168.0.1') { 
-      $ip = $request->{request}->headers->header('Remote-Address')
-            || $ENV{REMOTE_ADDR} || undef; # || CGI->remote_host 
-  }
+  my $ip = $request->{request}->headers->header('Remote-Address')
+           || $request->conn->peerhost;
 STDERR->print("uri: ", $request->{request}->uri, "\n");
   (my $path) = $request->{request}->uri =~ m{/([^?]*)};
   my $session_id;
