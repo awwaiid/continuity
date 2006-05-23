@@ -33,6 +33,7 @@ sub new {
     return $self;
 }
 
+# XXX check request content-type, if it isn't x-form-data then throw an error
 sub param {
     my $self = shift; 
     my $req = $self->{request};
