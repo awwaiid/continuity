@@ -137,7 +137,7 @@ sub new {
   async {
     while(1) {
       my $r = $self->{adaptor}->get_request();
-STDERR->print(__FILE__, ' ', __LINE__, "\n", $r->{request}->as_string, "\n");
+      # STDERR->print(__FILE__, ' ', __LINE__, "\n", $r->{request}->as_string, "\n");
       # these just give undefined value warnings
 
       unless($r->{request}->method eq 'GET' or $r->{request}->method eq 'POST') {

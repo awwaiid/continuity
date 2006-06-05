@@ -41,7 +41,7 @@ sub param {
         my $in = $req->uri; $in .= '&' . $req->content if $req->content;
         $in =~ s{^.*\?}{};
         my @params;
-        for(split/[&]/, $in) { tr/+/ /; s{%(..)}{pack('c',hex($1))}ge; s{(.*?)=(.*)}{ push @params, $1, $2; STDERR->print("debug: setting $1 to $2\n"); ''; }e; };
+        for(split/[&]/, $in) { tr/+/ /; s{%(..)}{pack('c',hex($1))}ge; s{(.*?)=(.*)}{ push @params, $1, $2; ''; }e; };
         \@params;
     } };
     if(@_) {
