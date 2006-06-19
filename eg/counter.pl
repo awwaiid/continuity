@@ -21,6 +21,7 @@ my $server = new Continuity;
 
 Event::loop();
 
+
 # Ask a question and keep asking until they answer
 sub prompt {
   my ($request, $msg, @ops) = @_;

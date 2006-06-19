@@ -2,7 +2,9 @@
 
 use strict;
 use lib '../lib';
-use Continuity::Server::Simple;
+use Continuity;
+use Coro;
+use Coro::Event;
 use Data::Dumper;
 
 # This is the A MODIFIED VERSION written by awwaiid.
@@ -18,20 +20,17 @@ use Data::Dumper;
 
 my $info = "dog";
 
-my $server = Continuity::Server::Simple->new(
-    port => 8081,
-    new_cont_sub => \&main,
-    app_path => '/app',
-    debug => 3,
-);
+use Continuity;
+my $server = new Continuity;
 
-$server->loop;
+Event::loop();
 
 sub main {
+  my $request = shift;
   # Ignore the first input, it just indicates that they are viewing the page
-  $server->get_request;
+  $request->next;
   {
-    try($info);
+    try($request, $info);
     redo if (yes("play again?"));
   }
   print "<pre>Bye!\n";
@@ -39,12 +38,13 @@ sub main {
 }
 
 sub try {
-  my $this = $_[0];
+  my $request = $_[0];
+  my $this = $_[1];
   if (ref $this) {
-    return try($this->{yes($this->{Question}) ? 'Yes' : 'No' });
+    return try($request, $this->{yes($request,$this->{Question}) ? 'Yes' : 'No' });
   }
-  if (yes("Is it a $this")) {
-    print "I got it!\n";
+  if (yes($request,"Is it a $this")) {
+    $request->print("I got it!\n");
     return 1;
   };
   print "no!?  What was it then? ";
@@ -52,7 +52,7 @@ sub try {
   print "And a question that distinguishes a $this from a $new would be? ";
   chomp(my $question = stdin());
   my $yes = yes("And for a $new, the answer would be...");
-  $_[0] = {
+  $_[1] = {
            Question => $question,
            Yes => $yes ? $new : $this,
            No => $yes ? $this : $new,
