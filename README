@@ -1,16 +1,13 @@
-Continuity version 0.5
+Continuity version 0.7
 ======================
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+Continuity - Abstract away statelessness of HTTP using continuations, for stateful Web applications
 
-A README file is required for CPAN modules since CPAN extracts the
-README file from a module distribution so that people browsing the
-archive can use it get an idea of the modules uses. It is usually a
-good idea to provide version information here so that people can
-decide whether fixes for the module are worth downloading.
+Status: It works, using the HTTP::Daemon adaptor at least. Now we're
+        stabalizing the API and stabalizing the stabalizers.
+
+See Continuity.pm for an overview, and also check the wiki
+at http://continuity.tlt42.org/ for ongoing development.
 
 INSTALLATION
 
@@ -23,23 +20,15 @@ To install this module type the following:
 
 DEPENDENCIES
 
-I installed the following on a clean debian system:
+Probably missing some, but at least:
 
-libfcgi-perl
-Bundle::CPAN
-Coro
-Bundle::LWP
-HTTP::Request::AsCGI
-
+  Coro
+  HTTP::Daemon
+  Data::Alias
 
 COPYRIGHT AND LICENCE
 
-Put the correct copyright and licence information here.
-
-Copyright (C) 2005 by Brock
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.7 or,
-at your option, any later version of Perl 5 you may have available.
-
+Copyright (c) 2004-2006 Brock Wilcox <awwaiid@thelackthereof.org>. All rights
+reserved.  This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
 

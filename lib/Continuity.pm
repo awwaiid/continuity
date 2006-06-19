@@ -1,10 +1,10 @@
 package Continuity;
 
-our $VERSION = '0.5';
+our $VERSION = '0.7';
 
 =head1 NAME
 
-Continuity - Abstract away statelessness of HTTP using continuations for stateful Web applications
+Continuity - Abstract away statelessness of HTTP using continuations, for stateful Web applications
 
 =head1 SYNOPSIS
 
@@ -32,19 +32,19 @@ Continuity - Abstract away statelessness of HTTP using continuations for statefu
 
 =head1 DESCRIPTION
 
-Continuity is a library (not a framework) to simplify Web applications.
-Each session is written and runs as if it were a persistant application, and is able to
-request additional input at any time without exiting.
-Applications call a method, C<get_request()>, which temporarily gives up control of the CPU and then 
-(eventually) returns the next request.
-Put another way, corotines make HTTP Web appear stateful.
+Continuity is a library (not a framework) to simplify Web applications.  Each
+session is written and runs as if it were a persistant application, and is
+able to request additional input at any time without exiting.  Applications
+call a method, C<$request->next>, which temporarily gives up control of the
+CPU and then (eventually) returns the next request.  Put another way,
+coroutines make the HTTP Web appear stateful.
 
-Beyond the basic idea of using coroutines to build Web apps, some logic is 
+Beyond the basic idea of using coroutines to build Web apps, some logic is
 required to decide how to associate incoming requests with coroutines, and
 logic is required to glue the daemonized application server to the Web.
-Sample implementations of both are provided (specifically, an adapter
-to run a dedicated Webserver built out of L<HTTP::Request> is included), 
-and these implementations are useful for simple situations and are subclassable.
+Sample implementations of both are provided (specifically, an adapter to run a
+dedicated Webserver built out of L<HTTP::Request> is included), and these
+implementations are useful for many situations and are subclassable.
 
 This is ALPHA software, and feedback/code is welcomed.
 See the Wiki in the references below for things the authors are unhappy with.
@@ -194,19 +194,19 @@ sub debug {
 
 Website/Wiki: L<http://continuity.tlt42.org/>
 
-L<Continuity::Adapt::HttpDaemon>, L<Continuity::Adapt::FastCGI>, L<Continuity::Mapper>, L<Continuity::Request>,
-L<Coro>.
+L<Continuity::Adapt::HttpDaemon>, L<Continuity::Mapper>,
+L<Continuity::Request>, L<Coro>.
 
 =head1 AUTHOR
 
-  Brock Wilcox <awwaiid@thelackthereof.org>
-  http://thelackthereof.org/
+  Brock Wilcox <awwaiid@thelackthereof.org> - http://thelackthereof.org/
+  Scott Walkters <scott@slowass.net> - http://slowass.net/
 
 =head1 COPYRIGHT
 
-  Copyright (c) 2004-2006 Brock Wilcox <awwaiid@thelackthereof.org>. All rights
-  reserved.  This program is free software; you can redistribute it and/or
-  modify it under the same terms as Perl itself.
+  Copyright (c) 2004-2006 Brock Wilcox <awwaiid@thelackthereof.org>. All
+  rights reserved.  This program is free software; you can redistribute it
+  and/or modify it under the same terms as Perl itself.
 
 =cut
 
