@@ -1,3 +1,60 @@
+
+package Continuity::Request::Wrapper;
+
+=for comment
+
+We've got three layers of abstraction here:
+
+* Continuity::Request::Wrapper stands in front of Continuity::Request objects
+* Continuity::Request objects stand in front of HTTP::Request objects
+* An of course there's HTTP::Request
+
+=cut
+
+sub new {
+    my $class = shift;
+    my %args = @_;
+    exists $args{queue} or die;
+    # exists $args{request} or die;
+    bless \%args, $class;
+}
+
+sub next {
+    # called by the user's program from the context of their coroutine
+    my $self = shift;
+    $self->request and $self->request->conn and $self->request->conn->close;
+    $self->request = $self->queue->get;
+    $self;
+}
+
+sub param {
+    my $self = shift;
+    $self->request->param(@_);    
+}
+
+sub print {
+    my $self = shift; 
+    fileno $self->request->conn or return undef;
+    Coro::Event->io( fd => $self->request->conn, poll => 'w', )->next->stop;
+    for my $watcher (Event::all_running) { eval { $watcher->stop } }
+    $self->request->conn->print(@_); 
+}
+
+sub request :lvalue { $_[0]->{request} }
+
+sub queue :lvalue { $_[0]->{queue} }
+
+sub AUTOLOAD {
+    my $method = $AUTOLOAD; $method =~ s/.*:://;
+    return if $method eq 'DESTROY';
+    my $self = shift;
+    $self->request->request->can($method) ? $self->request->request->can($method)->($self->request->request, @_) : warn "Continuity::Request::AUTOLOAD: HTTP::Request method ``$method'' failed to exist for us";
+}
+
+#
+#
+#
+
 package Continuity::Request;
 
 use base 'HTTP::Request';
@@ -34,6 +91,7 @@ sub new {
 }
 
 # XXX check request content-type, if it isn't x-form-data then throw an error
+# XXX pass in multiple param names, get back multiple param values
 sub param {
     my $self = shift; 
     my $req = $self->{request};
@@ -61,32 +119,8 @@ sub param {
     }
 } 
 
-sub next {
-    # called by the user's program from the context of their coroutine
-    $_[0]->conn and $_[0]->conn->close;
-    $_[0] = $_[0]->queue->get; 
-}
-
 sub conn :lvalue { $_[0]->{conn} }
 
-sub print { 
-    my $self = shift; 
-    fileno $self->{conn} or return undef;
-    Coro::Event->io( fd => $self->{conn}, poll => 'w', )->next;
-    $self->{conn}->print(@_); 
-}
-
 sub request :lvalue { $_[0]->{request} }
-
-sub queue :lvalue { $_[0]->{queue} }
-
-sub AUTOLOAD {
-    my $method = $AUTOLOAD; $method =~ s/.*:://;
-    return if $method eq 'DESTROY';
-    my $self = shift;
-STDERR->print("debug XXX: ", ref $self, " proxying call to method $method in ob ", ref $self->{request}, "\n");
-    $self->{request}->can($method)->($self->{request}, @_);
-}
-
 
 1;

@@ -123,13 +123,11 @@ STDERR->print(__FILE__, ' ', __LINE__, "\n");
 
   # And send our session cookie
   # Perhaps instead we should be adding this to a list of headers to be sent
-  # Yikes... we're mapping coroutines, not translating protocol.
-  # # print $conn "Set-Cookie: sessionid=$sessionId\r\n";
-  # print STDERR "Setting client pid = $sessionId\n";
-  # $request->uri->query( $request->uri->query() . '&pid=' . $sessionId );
+  # XXX mapping is generic based on... a callback? subclass? config? all of the above?
 
-  $request->queue = $queue;
+  # $request->queue = $queue;
 
+  $self->exec_cont($request, $queue);
   return $request;
 
 }
@@ -152,23 +150,18 @@ sub new_continuation {
     my $request = shift or die;
     my $session_id = shift or die;
     my $queue = Coro::Channel->new(2);
-    my $fake_request = Continuity::Request->new( queue => $queue, );
+    my $request_wrapper = Continuity::Request::Wrapper->new( queue => $queue, );
     # break the chicken-and-egg problem and roll up a starting null request object
     # my $req = Continuity::Request->new( conn => $conn, queue => $queue, );
     async {
-        $self->{callback}->($fake_request, @_);
-        # No need to default to ::main, that assumption was made for us already
-        # Though if $self->{callback} _isn't_ defined, we should throw a fit in new
-        #$self->{callback} ?
-        #  $self->{callback}->($fake_request, @_)
-        #  : ::main($fake_request, @_ );
+        $self->{callback}->($request_wrapper, @_);
         delete $self->{continuations}->{$session_id};
         STDERR->print("XXX debug: session $session_id closed\n");
     }; 
     $queue;
 }
 
-=head2 C<< $mapper->exec_cont($subref, $request) >>
+=head2 C<< $mapper->exec_cont($subref, $request) (XXX wrong) >>
 
 Override in subclasses for more specific behavior.
 This default implementation sends HTTP headers, selects C<$conn> as the
@@ -181,6 +174,7 @@ sub exec_cont {
  
   my $self = shift;
   my $request = shift;
+  my $queue = shift;
  
   # my $prev_select = select $request->{conn}; # Should maybe do fancier trick than this
   *STDOUT = $request->{conn};
@@ -198,7 +192,7 @@ sub exec_cont {
 STDERR->print(__FILE__, ' ', __LINE__, "\n");
   # $cont->($request);
 
-  $request->queue->put($request);
+  $queue->put($request);
 
 STDERR->print(__FILE__, ' ', __LINE__, "\n");
 

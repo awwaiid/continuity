@@ -169,10 +169,8 @@ sub new {
 STDERR->print(__FILE__, ' ', __LINE__, "\n");
 
       $self->debug(3, "Calling map... ");
-      $r = $self->{mapper}->map($r);
+      $self->{mapper}->map($r);
       $self->debug(3, "done mapping.");
-      # $continuation->($r, $c); # or $self->debug(1, "Error: $@");
-      $self->{mapper}->exec_cont($r);
 
     }
   

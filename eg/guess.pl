@@ -24,7 +24,7 @@ sub main {
       </body>
       </html>
     });
-    $request = $request->next;
+    $request->next;
     my $num = $request->param('num');
     return $num;
   }
