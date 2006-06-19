@@ -129,6 +129,7 @@ sub new {
       docroot => $self->{docroot},
       server => $self,
       debug => $self->{debug},
+      $self->{port} ? (LocalPort => $self->{port}) : (),
     );
   } elsif(! ref $self->{adaptor}) {
     die "Not a ref, $self->{adaptor}\n";
