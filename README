@@ -4,7 +4,8 @@ Continuity version 0.7
 Continuity - Abstract away statelessness of HTTP using continuations, for stateful Web applications
 
 Status: It works, using the HTTP::Daemon adaptor at least. Now we're
-        stabalizing the API and stabalizing the stabalizers.
+        stabalizing the API and stabalizing the stabalizers. Lots of debugging
+        is turned on.
 
 See Continuity.pm for an overview, and also check the wiki
 at http://continuity.tlt42.org/ for ongoing development.
