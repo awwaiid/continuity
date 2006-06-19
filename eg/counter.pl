@@ -30,7 +30,8 @@ sub prompt {
     $request->print(qq{<a href="?option=$uri_option">$option</a><br>});
   }
   my $option = $request->next->param('option');
-  return $option || prompt($msg, @ops);
+  print STDERR "*** Got option: $option\n";
+  return $option || prompt($request, $msg, @ops);
 }
 
 sub main {
@@ -40,9 +41,12 @@ sub main {
 
   # After we're done with that we enter a loop. Forever.
   while(1) {
+    print STDERR "Just about to suspend...\n";
     my $add = $request->next->param('add');
+    print STDERR "*** Just grabed next param\n";
     if($count >= 0 && $count + $add < 0) {
       my $choice = prompt($request, "Do you really want to GO NEGATIVE?", "Yes", "No");
+      print STDERR "... again, they chose $choice\n";
       $add = 0 if $choice eq 'No';
     }
     $count += $add;
