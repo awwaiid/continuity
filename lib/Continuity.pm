@@ -200,7 +200,7 @@ L<Continuity::Request>, L<Coro>.
 =head1 AUTHOR
 
   Brock Wilcox <awwaiid@thelackthereof.org> - http://thelackthereof.org/
-  Scott Walkters <scott@slowass.net> - http://slowass.net/
+  Scott Walters <scott@slowass.net> - http://slowass.net/
 
 =head1 COPYRIGHT
 
