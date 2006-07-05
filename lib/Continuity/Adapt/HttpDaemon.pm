@@ -36,7 +36,7 @@ do {
             ${*$sock}{'httpd_daemon'} = $self;
             return wantarray ? ($sock, $peer) : $sock;
         } elsif($!{EAGAIN}) {
-            Coro::Event->io(fd => fileno $self, poll => 'r', )->next;
+            Coro::Event->io(fd => fileno $self, poll => 'r', )->next->cancel;
             goto try_again; 
         } else {
             return;
@@ -49,7 +49,7 @@ do {
         my $self = shift;
         #my($buf,$timeout,$fdset) = @_;
         print STDERR "sysread()\n";
-        Coro::Event->io(fd => fileno $self, poll => 'r', $_[1] ? ( timeout => $_[1] ) : ( ), )->next;
+        Coro::Event->io(fd => fileno $self, poll => 'r', $_[1] ? ( timeout => $_[1] ) : ( ), )->next->cancel;
         my $n = sysread($self, $_[0], 2048, length($_[0]));
         print STDERR "sysread() done: $@ $!\n";
         $self->reason(defined($n) ? "Client closed" : "sysread: $!") unless $n;

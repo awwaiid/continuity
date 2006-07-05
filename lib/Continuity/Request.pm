@@ -35,8 +35,7 @@ sub param {
 sub print {
     my $self = shift; 
     fileno $self->request->conn or return undef;
-    Coro::Event->io( fd => $self->request->conn, poll => 'w', )->next->stop;
-    for my $watcher (Event::all_running) { eval { $watcher->stop } }
+    Coro::Event->io( fd => $self->request->conn, poll => 'w', )->next->cancel;
     $self->request->conn->print(@_); 
 }
 
