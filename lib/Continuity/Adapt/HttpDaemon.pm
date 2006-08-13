@@ -12,14 +12,15 @@ use IO::Handle;
 use HTTP::Daemon; 
 use HTTP::Status;
 
-use Continuity::Request;
+use Continuity::Adapt::HttpDaemon::Request;
 
 do {
 
-    # HTTP::Daemon isn't Coro-friendly and attempting to diddle HTTP::Daemon's inheritence
-    # to use Coro::Socket instead was a dissaster.  So, instead, we provide reimplementations
-    # of just a couple of functions to make it all Coro-friendly.  This kind of meddling-
-    # under-the-hood is still just asking for breaking from future versions of HTTP::Daemon.
+    # HTTP::Daemon isn't Coro-friendly and attempting to diddle HTTP::Daemon's
+    # inheritence to use Coro::Socket instead was a dissaster.  So, instead, we
+    # provide reimplementations of just a couple of functions to make it all
+    # Coro-friendly.  This kind of meddling- under-the-hood is still just
+    # asking for breaking from future versions of HTTP::Daemon.
 
     package HTTP::Daemon;
 
@@ -60,16 +61,17 @@ do {
 
 =head1 NAME
 
-Continuity::Adapt::HttpDaemon - Use HTTP::Daemon as a continuation server
+Continuity::Adapt::HttpDaemon - Use HTTP::Daemon to get HTTP requests
 
 =head1 DESCRIPTION
 
-This is the default and reference adaptor for L<Continuity>. 
+This is the default and reference HTTP adaptor for L<Continuity>. 
 
-An adaptor interfaces between the continuation server (L<Continuity::Server>) and the web
-server (HTTP::Daemon, FastCGI, etc).
+An adaptor interfaces between the continuation server (L<Continuity>) and the
+web server (HTTP::Daemon, FastCGI, etc). It provides incoming HTTP requests to
+the continuation server.
 
-This adapter adapts between an L<HTTP::Daemon> server and L<Contuinity>. 
+This adapter interfaces with L<HTTP::Daemon>.
 
 This module was designed to be subclassed to fine-tune behavior.
 
@@ -77,13 +79,15 @@ This module was designed to be subclassed to fine-tune behavior.
 
 =head2 C<< $adapter = Continuity::Adapt::HttpDaemon->new(...) >>
 
-Create a new continuation adaptor and HTTP::Daemon. 
-This actually starts the HTTP server which is embeded.
-It takes the same arguments as the L<HTTP::Daemon> module, and those arguments are passed along.
-It also takes the optional argument C<< docroot => '/path' >>.
-This adapter may then be specified for use with the following code:
+Create a new continuation adaptor and HTTP::Daemon. This actually starts the
+HTTP server, which is embeded. It takes the same arguments as the
+L<HTTP::Daemon> module, and those arguments are passed along.  It also takes
+the optional argument C<< docroot => '/path' >>. This adapter may then be
+specified for use with the following code:
 
   my $server = Contuinity->new(adapter => $adapter);
+
+This method is required for all adaptors.
 
 =cut
 
@@ -106,16 +110,20 @@ sub new {
   return $self;
 }
 
+sub new_requestHolder {
+  my ($self, @ops) = @_;
+  my $holder = Continuity::Adapt::HttpDaemon::RequestHolder->new( @ops );
+  return $holder;
+}
+
 =head2 get_request() - map a URL path to a filesystem path
 
-Called in a loop from L<Contuinity::Server>.
+Called in a loop from L<Contuinity>.
+
 Returns the empty list on failure, which aborts the server process.
 Aside from the constructor, this is the heart of this module.
 
-Note that this method has a confusingly same name as C<get_request()> in
-L<Continuity>.  
-The C<get_request()> here is called from C<Continuity> and pulls down a raw
-L<HTTP::Request> object without consideration  other C<get_request()> is called by 
+This method is required for all adaptors.
 
 =cut
 
@@ -125,11 +133,11 @@ sub get_request {
   # STDERR->print(__FILE__, ' ', __LINE__, "\n");
   while(1) {
     my $c = $self->{daemon}->accept or next;
-    # STDERR->print("debug: c is an ", ref $c, "\n");
     my $r = $c->get_request or next;
-    # STDERR->print(__FILE__, ' ', __LINE__, "\n");
-    return Continuity::Request->new( conn => $c, request => $r, );
-    # STDERR->print(__FILE__, ' ', __LINE__, "\n");
+    return Continuity::Adapt::HttpDaemon::Request->new(
+      conn => $c,
+      http_request => $r
+    );
   }
 }
 
@@ -168,10 +176,9 @@ sent text or HTML on, MIME aside.
 sub send_static {
   my ($self, $r) = @_;
   my $c = $r->conn or die;
-  my $path = $self->map_path($r->{request}->url->path) or do { 
+  my $path = $self->map_path($r->http_request->url->path) or do { 
        $self->debug(1, "can't map path: " . $r->url->path); $c->send_error(404); return; 
   };
-  # STDERR->print("XXX: send_static with path: $path\n");
   $path =~ s{^/}{}g;
   unless (-f $path) {
       $c->send_error(404);

@@ -1,6 +1,6 @@
 package Continuity;
 
-our $VERSION = '0.7';
+our $VERSION = '0.8';
 
 =head1 NAME
 
@@ -10,25 +10,23 @@ Continuity - Abstract away statelessness of HTTP using continuations, for statef
 
   #!/usr/bin/perl
   use strict;
-  use warnings;
   use Coro;
-  use Coro::Event;
 
   use Continuity;
   my $server = new Continuity;
 
   sub main {
     my $request = shift;
-    $request = $request->next();
+    $request->next; # Get the first actual request
     # must do a substr to chop the leading '/'
-    my $name = substr($request->{request}->url->path, 1) || 'World';
+    my $name = substr($request->url->path, 1) || 'World';
     $request->print("Hello, $name!");
     $request = $request->next();
-    $name = substr($request->{request}->url->path, 1) || 'World';
+    $name = substr($request->url->path, 1) || 'World';
     $request->print("Hello to you too, $name!");
   }
 
-  Event::loop();
+  $server->loop;
 
 =head1 DESCRIPTION
 
@@ -59,6 +57,7 @@ use warnings; # XXX -- while in devolopment
 use IO::Handle;
 use Coro;
 use Coro::Cont;
+use Coro::Event;
 use HTTP::Status; # to grab static response codes. Probably shouldn't be here
 
 =head2 C<< $server = Continuity->new(...) >>
@@ -102,6 +101,24 @@ sub new {
     @_,  
   }, $class;
 
+  # Set up the default adaptor.
+  # The adapater plugs the system into a server (probably a Web server)
+  # The default has its very own HTTP::Daemon running.
+  if(!$self->{adaptor}) {
+    require Continuity::Adapt::HttpDaemon;
+    $self->{adaptor} = Continuity::Adapt::HttpDaemon->new(
+      docroot => $self->{docroot},
+      server => $self,
+      debug => $self->{debug},
+      $self->{port} ? (LocalPort => $self->{port}) : (),
+    );
+  } elsif(! ref $self->{adaptor}) {
+    die "Not a ref, $self->{adaptor}\n";
+  } else {
+    # Make sure that the provided adaptor knows who we are
+    $self->{adaptor}->{server} = $self;
+  }
+
   # Set up the default mapper.
   # The mapper associates execution contexts (continuations) with requests 
   # according to some criteria.  The default version uses a combination of
@@ -118,39 +135,25 @@ sub new {
       cookie_session => $self->{cookie_session} || 0,
       param_session => $self->{param_session} || 0,
     );
-  }
-
-  # Set up the default adaptor.
-  # The adapater plugs the system into a server (probably a Web server)
-  # The default has its very own HTTP::Daemon running.
-  if(!$self->{adaptor}) {
-    require Continuity::Adapt::HttpDaemon;
-    $self->{adaptor} = Continuity::Adapt::HttpDaemon->new(
-      docroot => $self->{docroot},
-      server => $self,
-      debug => $self->{debug},
-      $self->{port} ? (LocalPort => $self->{port}) : (),
-    );
-  } elsif(! ref $self->{adaptor}) {
-    die "Not a ref, $self->{adaptor}\n";
+  } else {
+    # Make sure that the provided mapper knows who we are
+    $self->{mapper}->{server} = $self;
   }
 
   async {
     while(1) {
-      my $r = $self->{adaptor}->get_request();
-      # STDERR->print(__FILE__, ' ', __LINE__, "\n", $r->{request}->as_string, "\n");
-      # these just give undefined value warnings
+      my $r = $self->adaptor->get_request;
 
-      unless($r->{request}->method eq 'GET' or $r->{request}->method eq 'POST') {
-         $r->conn->send_error(RC_BAD_REQUEST);
-         $r->conn->print("ERROR -- GET and POST only for now\r\n\r\n");
-         $r->conn->close;
+      unless($r->method eq 'GET' or $r->method eq 'POST') {
+         $r->send_error(RC_BAD_REQUEST);
+         $r->print("ERROR -- GET and POST only for now\r\n\r\n");
+         $r->close;
          next;
       }
   
       # Send the basic headers all the time
       # Don't think the can method will work with the AUTOLOAD trick and wrapper
-      $r->conn->send_basic_header();
+      $r->send_basic_header;
   
       if($self->{staticp}->($r)) {
           $self->debug(3, "Sending static content... ");
@@ -167,10 +170,10 @@ sub new {
       # Here's a way: ask the mapper.
       # Right now, map takes one of our Continuity::Request objects (with conn and request set) and sets queue
 
-STDERR->print(__FILE__, ' ', __LINE__, "\n");
-
+      # This actually finds the thing that wants it, and gives it to it
+      # (executes the continuation)
       $self->debug(3, "Calling map... ");
-      $self->{mapper}->map($r);
+      $self->mapper->map($r);
       $self->debug(3, "done mapping.");
 
     }
@@ -183,6 +186,12 @@ STDERR->print(__FILE__, ' ', __LINE__, "\n");
 
 }
 
+# This never returns, and all it does is execute Coro's Event:: loop
+sub loop {
+  my ($self) = @_;
+  Coro::Event::loop;
+}
+
 sub debug {
   my ($self, $level, $msg) = @_;
   if(defined $self->{debug} and $level >= $self->{debug}) {
@@ -190,12 +199,16 @@ sub debug {
   }
 }
 
+sub adaptor :lvalue { $_[0]->{adaptor} }
+
+sub mapper :lvalue { $_[0]->{mapper} }
+
 =head1 SEE ALSO
 
 Website/Wiki: L<http://continuity.tlt42.org/>
 
 L<Continuity::Adapt::HttpDaemon>, L<Continuity::Mapper>,
-L<Continuity::Request>, L<Coro>.
+L<Continuity::Adapt::HttpDaemon::Request>, L<Coro>.
 
 =head1 AUTHOR
 
