@@ -174,7 +174,7 @@ sub exec_cont {
   my $request_queue = shift;
  
   # my $prev_select = select $request->{conn}; # Should maybe do fancier trick than this
-  *STDOUT = $request->{conn};
+  #*STDOUT = $request->{conn};
  
   if(!$self->{no_content_type}) {
     $request->print(
@@ -186,8 +186,6 @@ sub exec_cont {
     );
   }
  
-  # $cont->($request);
-
   # Drop the request into this end of the request_queue
   $request_queue->put($request);
 
