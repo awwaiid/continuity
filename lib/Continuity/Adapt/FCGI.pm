@@ -51,18 +51,17 @@ sub new {
   return $self;
 }
 
-sub debug {
-  my ($self, $level, $msg) = @_;
-  if($level >= $self->{debug}) {
-   print STDERR "$msg\n";
-  }
+sub new_requestHolder {
+  my ($self, @ops) = @_;
+  my $holder = Continuity::Adapt::FCGI::RequestHolder->new( @ops );
+  return $holder;
 }
 
 =item mapPath($path) - map a URL path to a filesystem path
 
 =cut
 
-sub mapPath {
+sub map_path {
   my ($self, $path) = @_;
   my $docroot = $self->{docroot};
   # some massaging, also makes it more secure
@@ -84,25 +83,29 @@ file
 
 =cut
 
-sub sendStatic {
-  my ($self, $r, $c) = @_;
-  my $path = $self->mapPath($r->url->path);
-  my $file;
-  if(-f $path) {
-    local $\;
-    open($file, $path);
-    # For now we'll cheat (badly) and use file
-    my $mimetype = `file -bi $path`;
-    chomp $mimetype;
-    # And for now we'll make a raw exception for .html
-    $mimetype = 'text/html' if $path =~ /\.html$/;
-    print $c "Content-type: $mimetype\r\n\r\n";
-    print $c (<$file>);
-    $self->debug(3, "Static send '$path', Content-type: $mimetype");
-  } else {
-    #$c->send_error(404)
-    print $c "STATUS: 404\r\n\r\n";
+sub send_static {
+  my ($self, $r) = @_;
+  my $c = $r->conn or die;
+  my $path = $self->map_path($r->url->path) or do { 
+       $self->debug(1, "can't map path: " . $r->url->path); $c->send_error(404); return; 
+  };
+  $path =~ s{^/}{}g;
+  unless (-f $path) {
+      $c->send_error(404);
+      return;
   }
+  # For now we'll cheat and use file -- perhaps later this will be overridable
+  open my $magic, '-|', 'file', '-bi', $path;
+  my $mimetype = <$magic>;
+  chomp $mimetype;
+  # And for now we'll make a raw exception for .html
+  $mimetype = 'text/html' if $path =~ /\.html$/ or ! $mimetype;
+  print $c "Content-type: $mimetype\r\n\r\n";
+  open my $file, '<', $path or return;
+  while(read $file, my $buf, 8192) {
+      $c->print($buf);
+  } 
+  print STDERR "Static send '$path', Content-type: $mimetype\n";
 }
 
 sub get_request {
@@ -111,15 +114,14 @@ sub get_request {
   my $r = $self->{fcgi_request};
   if($r->Accept() >= 0) {
     print STDERR "Accepted FCGI request.\n";
-    #my $c = \*STDOUT;
     my $content;
     my $in = $self->{in};
     local $/;
-    $content = <$in>;
+    #$content = <$in>;
     my $c = $self->{out};
-    my $r = Continuity::Adapt::FCGI::Request->new($self->{env}, $content);
-    # TODO: Also fill in $r->content
-    return ($c, $r);
+    return Continuity::Adapt::FCGI::Request->new(
+      fcgi_request => $r,
+    );
   }
   return undef;
 }
