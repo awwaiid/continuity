@@ -5,7 +5,6 @@ use strict;
 use warnings;  # XXX dev
 
 use Coro;
-use Coro::Channel;
 
 use IO::Handle;
 
@@ -32,7 +31,7 @@ do {
         my $pkg = shift || "HTTP::Daemon::ClientConn";  
         fcntl $self, &Fcntl::F_SETFL, &Fcntl::O_NONBLOCK or die "fcntl(O_NONBLOCK): $!";
         try_again:
-        (my $sock, my $peer) = $self->SUPER::accept($pkg);
+        my ($sock, $peer) = $self->SUPER::accept($pkg);
         if($sock) {
             ${*$sock}{'httpd_daemon'} = $self;
             return wantarray ? ($sock, $peer) : $sock;
@@ -48,11 +47,8 @@ do {
 
     sub _need_more {   
         my $self = shift;
-        #my($buf,$timeout,$fdset) = @_;
-        print STDERR "sysread()\n";
         Coro::Event->io(fd => fileno $self, poll => 'r', $_[1] ? ( timeout => $_[1] ) : ( ), )->next->cancel;
         my $n = sysread($self, $_[0], 2048, length($_[0]));
-        print STDERR "sysread() done: $@ $!\n";
         $self->reason(defined($n) ? "Client closed" : "sysread: $!") unless $n;
         $n;
     }   
@@ -176,7 +172,7 @@ sent text or HTML on, MIME aside.
 sub send_static {
   my ($self, $r) = @_;
   my $c = $r->conn or die;
-  my $path = $self->map_path($r->http_request->url->path) or do { 
+  my $path = $self->map_path($r->url->path) or do { 
        $self->debug(1, "can't map path: " . $r->url->path); $c->send_error(404); return; 
   };
   $path =~ s{^/}{}g;

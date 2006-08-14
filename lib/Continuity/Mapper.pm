@@ -6,6 +6,7 @@ use warnings; # XXX -- development only
 use Data::Alias;
 use Coro;
 use Coro::Cont;
+use Coro::Channel;
 
 =head1 NAME
 
@@ -108,8 +109,8 @@ sub map {
   alias my $request_queue = $self->{sessions}->{$session_id};
 
   if(! $request_queue) {
-      $request_queue = $self->new_request_queue($request, $session_id);
-      # Don't need to stick it back into $self->{sessions} because of the alias
+    $request_queue = $self->new_request_queue($request, $session_id);
+    # Don't need to stick it back into $self->{sessions} because of the alias
   }
 
   $self->exec_cont($request, $request_queue);
