@@ -109,6 +109,7 @@ sub new {
     # $self->http_request->isa('HTTP::Request') or die;
     # $self->conn or die;
     # $self->queue or die;
+    print STDERR "Set up request. conn: $self->{conn} ($self)\n";
     return $self;
 }
 

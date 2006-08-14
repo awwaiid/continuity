@@ -113,6 +113,7 @@ sub map {
     # Don't need to stick it back into $self->{sessions} because of the alias
   }
 
+  print STDERR "Executing request: $request, $request_queue\n";
   $self->exec_cont($request, $request_queue);
 
   return $request;
