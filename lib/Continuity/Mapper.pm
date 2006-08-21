@@ -71,10 +71,10 @@ sub get_session_id_from_hit {
   STDERR->print("uri: ", $request->uri, "\n");
   (my $path) = $request->uri =~ m{/([^?]*)};
   my $session_id = '';
-  if($self->{ip_session}) {
+  if($self->{ip_session} && $ip) {
     $session_id .= '.'.$ip;
   }
-  if($self->{path_session}) {
+  if($self->{path_session} && $path) {
     $session_id .= '.'.$path;
   }
   STDERR->print('=' x 30, ' ', $session_id, ' ', '=' x 30, "\n");
@@ -109,6 +109,7 @@ sub map {
   alias my $request_queue = $self->{sessions}->{$session_id};
 
   if(! $request_queue) {
+    print STDERR "No request queue for this session, making a new one.\n";
     $request_queue = $self->new_request_queue($request, $session_id);
     # Don't need to stick it back into $self->{sessions} because of the alias
   }
@@ -137,7 +138,6 @@ later resumed, they act like normal subroutine references.
 
 sub new_request_queue {
   my $self = shift;
-  my $request = shift or die;
   my $session_id = shift or die;
 
   # Create a request_queue, and hook the adaptor up to feed it
@@ -173,22 +173,25 @@ sub exec_cont {
   my $self = shift;
   my $request = shift;
   my $request_queue = shift;
- 
-  # my $prev_select = select $request->{conn}; # Should maybe do fancier trick than this
-  #*STDOUT = $request->{conn};
+
+  # TODO: This might be one spot to hook STDOUT onto this request
  
   if(!$self->{no_content_type}) {
     $request->print(
         "Cache-Control: private, no-store, no-cache\r\n",
          "Pragma: no-cache\r\n",
          "Expires: 0\r\n",
-         "Content-type: text/html\r\n",
-         "\r\n",
+         "Content-type: text/html\r\n\r\n"
     );
   }
  
   # Drop the request into this end of the request_queue
   $request_queue->put($request);
+  print STDERR "OK, put the request ($request) into the request_queue ($request_queue)\n";
+
+  # XXX needed for FastCGI (because it is blocking...)
+  print STDERR "yielding to other things\n";
+  cede;
 
   # select $prev_select;
 }

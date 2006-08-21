@@ -117,6 +117,7 @@ sub new {
   } else {
     # Make sure that the provided adaptor knows who we are
     $self->{adaptor}->{server} = $self;
+    print STDERR "Continuity using adaptor: $self->{adaptor}\n";
   }
 
   # Set up the default mapper.
@@ -190,6 +191,7 @@ sub new {
 sub loop {
   my ($self) = @_;
   Coro::Event::loop;
+  return $self;
 }
 
 sub debug {

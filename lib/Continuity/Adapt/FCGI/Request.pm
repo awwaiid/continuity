@@ -21,7 +21,11 @@ sub next {
       and $self->request->fcgi_request->Finish;
 
     # Here is where we actually wait, if necessary
+    my $r = $self->request;
+    print STDERR "RequestHolder->next ($r) looking for request.\n";
     $self->request = $self->request_queue->get;
+    my $r = $self->request;
+    print STDERR "RequestHolder->next got: $r\n";
 
     return $self;
 }
@@ -52,7 +56,10 @@ sub AUTOLOAD {
   my $self = shift;
   print STDERR "RequestHolder AUTOLOAD: $method ( @_ )\n";
   my @args = @_;
-  my $retval = eval { $self->request->$method->(@args) };
+  my $r = $self->request;
+  print STDERR "********** Request: $r\n\n";
+  print STDERR "EVAL: \$self->request->$method->(@args)\n";
+  my $retval = eval { $self->request->$method(@args) };
   if($@) {
     warn "Continuity::Adapt::FCGI::RequestHolder::AUTOLOAD: "
        . "Error calling FCGI method ``$method'', $@";
@@ -99,19 +106,19 @@ use base qw/HTTP::Request/;
 
 Creates a new C<Continuity::Adapt::FCGI::Request> object. This deletes values
 from C<$cgi> while converting it into a L<HTTP::Request> object.
-It also assumes $cgi contains certain CGI variables. This generally should
-not be used directly, POE::Component::FastCGI creates these objects for you.
+It also assumes $cgi contains certain CGI variables.
+
+This code was borrowed from POE::Component::FastCGI
 
 =cut
 
 sub new {
   my $class = shift;
   my %args = @_;
-  my $self = bless { @_ }, $class;
-  my $cgi = $self->fcgi_request->GetEnvironment;
-  my ($in, $out, $err) = $self->fcgi_request->GetHandles;
-  $self->{out} = $out;
-  print STDERR "Set up request. Out: $out ($self)\n";
+  my $fcgi_request = $args{fcgi_request};
+  my $cgi = $fcgi_request->GetEnvironment;
+  my ($in, $out, $err) = $fcgi_request->GetHandles;
+  #$self->{out} = $out;
   my $content;
   {
     local $/;
@@ -135,6 +142,18 @@ sub new {
      ),
      $content
   );
+  $self->{fcgi_request} = $fcgi_request;
+  $self->{out} = $out;
+  $self->{env} = $fcgi_request->GetEnvironment;
+  use Data::Dumper;
+  my $env_dump = Dumper($self->{env});
+  print STDERR qq{
+    New C:A:FCGI::Request
+         self: $self
+          out: $self->{out}
+      request: $self->{fcgi_request}
+          env: $env_dump
+  };
   return $self;
 }
 
@@ -169,9 +188,19 @@ sub close {
 sub print {
   my ($self, @text) = @_;
   my $out = $self->{out};
+  use Data::Dumper;
+  my $env_dump = Dumper($self->{env});
+  print STDERR qq{
+    C::A::FCGI::Request::print
+         self: $self
+          out: $out
+      request: $self->{fcgi_request}
+          env: $env_dump
+         args: @text
+  };
   print STDERR "($self, $out) Printing: '@text'\n";
-  #$out->print(@text) if $out;
   $out->print(@text);
+  print STDERR "Done printing.\n";
 }
 
 =item $request->env($name)

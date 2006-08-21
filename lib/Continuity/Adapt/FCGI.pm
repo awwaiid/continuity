@@ -35,18 +35,25 @@ sub new {
   $self = {%$self, @_};
   bless $self, $class;
 
-#  my %env;
+  my $env = {};
   my $in = new IO::Handle;
   my $out = new IO::Handle;
   my $err = new IO::Handle;
 
-  $self->{fcgi_request} = FCGI::Request($in,$out,$err,\%ENV);
+  $self->{fcgi_request} = FCGI::Request($in,$out,$err,$env);
   $self->{in} = $in;
   $self->{out} = $out;
   $self->{err} = $err;
-  $self->{env} = \%ENV;
-  #print STDERR "Please contact me at: ", $self->{daemon}->url, "\n";
-  print STDERR "Created FCGI::Request\n";
+  $self->{env} = $env;
+  use Data::Dumper;
+  my $env_dump = Dumper($env);
+  print STDERR qq{
+    New C:A:FCGI
+         self: $self
+          out: $out
+      request: $self->{fcgi_request}
+          env: $env_dump
+  };
 
   return $self;
 }
@@ -54,6 +61,11 @@ sub new {
 sub new_requestHolder {
   my ($self, @ops) = @_;
   my $holder = Continuity::Adapt::FCGI::RequestHolder->new( @ops );
+  print STDERR qq{
+    New C:A:FCGI::RequestHolder
+               self: $self
+      requestHolder: $holder
+  };
   return $holder;
 }
 
@@ -110,18 +122,18 @@ sub send_static {
 
 sub get_request {
   my ($self) = @_;
-  print STDERR "About to get FCGI Request...\n";
+
+  print STDERR "Getting next FCGI Request...\n";
+
   my $r = $self->{fcgi_request};
   if($r->Accept() >= 0) {
     print STDERR "Accepted FCGI request.\n";
-    my $content;
-    my $in = $self->{in};
-    local $/;
-    #$content = <$in>;
-    my $c = $self->{out};
-    return Continuity::Adapt::FCGI::Request->new(
+    #return Continuity::Adapt::FCGI::Request->new(
+    my $request = Continuity::Adapt::FCGI::Request->new(
       fcgi_request => $r,
     );
+    print STDERR "Accepted request: $request\n";
+    return $request;
   }
   return undef;
 }
