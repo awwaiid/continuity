@@ -96,10 +96,16 @@ sub new {
     mapper => undef,
     adapter => undef,
     debug => 4, # XXX
+    reload => 1, # XXX
     callback => (exists &::main ? \&::main : undef),
     staticp => sub { 0 },   
     @_,  
   }, $class;
+
+  if($self->{reload}) {
+    eval "use Module::Reload";
+    $Module::Reload::Debug = 1 if $self->{debug};
+  }
 
   # Set up the default adaptor.
   # The adapater plugs the system into a server (probably a Web server)
@@ -144,6 +150,11 @@ sub new {
   async {
     while(1) {
       my $r = $self->adaptor->get_request;
+      if($self->{reload}) {
+        Module::Reload->check;
+      }
+      print STDERR "Got request: $r\n";
+      print STDERR "Request method: " . ($r->method) . "\n";
 
       unless($r->method eq 'GET' or $r->method eq 'POST') {
          $r->send_error(RC_BAD_REQUEST);
