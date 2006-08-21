@@ -1,13 +1,66 @@
-Semi-automatically generated from darcs patch changlog on 2006.06.18
+#!/usr/bin/perl
+# This is an active-changelog! Run it to update it.
+# See below for the actual Changelog stuff!
+
+open my $out,"+<",$0;
+seek $out,0,0;
+seek DATA,0,0;
+$d = '';
+print $out $l while(($l = <DATA>) ne "__DATA__\n");
+print $out "$l\n";
+# Get the Darcs changelog
+$f = `darcs changes`;
+# Chop off the timestamps (but keep the date)
+$f =~ s/\d\d:\d\d:\d\d ... //g;
+# Combine like sections. This might need a bit of work.
+1 while($f =~ s/^(... ... \d+ \d\d\d\d  [\w@\.\-]+)$(.*)^\1$/$1$2/gms);
+# Clear out the extra space we just made
+$f =~ s/\n\n\n/\n/g;
+print $out $f;
+
+# ***************************************
+# *** This is the actual Changelog :) ***
+# ***************************************
+__DATA__
+
+Sun Aug 20 2006  awwaiid@thelackthereof.org
+  * Add guess.fcgi and update counter.fcgi
+  * Add flag to turn on Module::Reload, enabled by default
+  * TONS of fixes, FCGI now works! TONS of debugging messages!
+
+Sun Aug 13 2006  awwaiid@thelackthereof.org
+  * Add fcgi examples (actually tests right now)
+  * updates to counter, simplify and help debug FCGI
+  * Don't set STDOUT to the conn, it didn't work anyway
+  * Cleanups -- make Mapper include Coro::Channel instead of Adaptor
+  * Updates to make FCGI more like HttpDaemon
+
+Sat Aug 12 2006  awwaiid@thelackthereof.org
+  * All sorts of things -- mostly giving better names for queues and such
+
+Tue Jul  4 2006  awwaiid@thelackthereof.org
+  * Cancel IO event watchers once we've gotten an event
+
+Tue Jul  4 2006  awwaiid@thelackthereof.org
+  * Ooops, fix scott's name on main .PM
+
+Tue Jul  4 2006  awwaiid@thelackthereof.org
+  * Leakfinder (or... indicator I should say)
+
+Mon Jun 19 2006  awwaiid@thelackthereof.org
+  * Update MANIFEST
+  * eg/ updates
+  * More cleaning for release, move broken examples
+  * Updates to prepare for 0.7 release
 
 Sun Jun 18 2006  awwaiid@thelackthereof.org
   * Forward port- param to Adaptor
   * Updates to examples
 
-Sun Jun 18 20:21:26 2006  scott@slowass.net
+Sun Jun 18 2006  scott@slowass.net
   * request ob supplied to user delegates to and remembers actual request object, todo items added as comments
 
-Mon Jun  5 16:56:19 2006  scott@slowass.net
+Mon Jun  5 2006  scott@slowass.net
   * less debugging output
 
 Sun May 28 2006  awwaiid@thelackthereof.org
@@ -31,7 +84,7 @@ Thu May 11 2006  awwaiid@thelackthereof.org
   * Update guess.pl to use new API
   * Remove some junk from eg/
 
-Thu May 11 18:04:10 2006  scott@slowass.net
+Thu May 11 2006  scott@slowass.net
   * $request->next support rather than having to do $request=$request->next
   * fix example to match API change of sending in null request as first arg
   * handle coroutines that exit and need to be recreated; also fixes bug where the initial request a coroutine was created for was sent twice, so now the first request going in is a null request again
@@ -54,7 +107,7 @@ Sat May  6 2006  scott@slowass.net
 Fri May  5 2006  scott@slowass.net
   * fixes
 
-Wed Apr 26 17:31:40 2006  scott@slowass.net
+Wed Apr 26 2006  scott@slowass.net
   * crap, i don't know
 
 Fri Apr 21 2006  awwaiid@thelackthereof.org
@@ -74,11 +127,23 @@ Tue Mar 14 2006  awwaiid@thelackthereof.org
 
 Sat Mar  4 2006  awwaiid@thelackthereof.org
   * Misc updates / additions to examples
+
+Sat Mar  4 2006  awwaiid@thelackthereof.org
   * Use HTTP::Request::AsCGI as a more-simple way to extract request params
+
+Sat Mar  4 2006  awwaiid@thelackthereof.org
   * C::S::Simple can now yield values back to the server
+
+Sat Mar  4 2006  awwaiid@thelackthereof.org
   * Print some extra no-caching headers in C::S::Simple
+
+Sat Mar  4 2006  awwaiid@thelackthereof.org
   * Look for any path starting with app_path (use =~ instead of eq)
+
+Sat Mar  4 2006  awwaiid@thelackthereof.org
   * Make mapper use PID param instead of cookie to track sessions
+
+Sat Mar  4 2006  awwaiid@thelackthereof.org
   * Remove inventory example (now separate project)
 
 Sat Jan 21 2006  awwaiid@thelackthereof.org
@@ -101,7 +166,11 @@ Thu Jan 12 2006  awwaiid@thelackthereof.org
 
 Sat Jan  7 2006  awwaiid@thelackthereof.org
   * Update to inventory eg
+
+Sat Jan  7 2006  awwaiid@thelackthereof.org
   * Add plain red/blue gifs for ataxx
+
+Sat Jan  7 2006  awwaiid@thelackthereof.org
   * Updates to ataxx example
 
 Sat Dec 31 2005  awwaiid@thelackthereof.org
@@ -114,15 +183,29 @@ Tue Dec 13 2005  awwaiid@thelackthereof.org
 
 Thu Dec  8 2005  awwaiid@thelackthereof.org
   * Add simple 'hello world' example
+
+Thu Dec  8 2005  awwaiid@thelackthereof.org
   * in counter.pl, we don't need to specify main as teh entry point any longer
+
+Thu Dec  8 2005  awwaiid@thelackthereof.org
   * remove getParams from (outdated) C:Client::CGI
+
+Thu Dec  8 2005  awwaiid@thelackthereof.org
   * update PHP example
+
+Thu Dec  8 2005  awwaiid@thelackthereof.org
   * make ::main the default starting point
+
+Thu Dec  8 2005  awwaiid@thelackthereof.org
   * oh, add some content to mapper (still not used)
+
+Thu Dec  8 2005  awwaiid@thelackthereof.org
   * add mapper file to archive (not used yet)
 
 Sat Dec  3 2005  awwaiid@thelackthereof.org
   * do not send content-type if no_content_type flag is set
+
+Sat Dec  3 2005  awwaiid@thelackthereof.org
   * If no app-path is specified, send all content -> app
 
 Wed Nov 30 2005  awwaiid@thelackthereof.org
@@ -153,18 +236,38 @@ Fri Nov 11 2005  scott@slowass.net
 
 Sun Nov  6 2005  awwaiid@thelackthereof.org
   * Update countup program for misc stuff
+
+Sun Nov  6 2005  awwaiid@thelackthereof.org
   * Make a server.pl script to start server
+
+Sun Nov  6 2005  awwaiid@thelackthereof.org
   * Change naming of modules
 
 Sat Nov  5 2005  awwaiid@thelackthereof.org
   * oh, apparently I need :form too
+
+Sat Nov  5 2005  awwaiid@thelackthereof.org
   * er... another :standard -> :html from CGI
+
+Sat Nov  5 2005  awwaiid@thelackthereof.org
   * 11 lines and now we have CRUD! (up from RU)
+
+Sat Nov  5 2005  awwaiid@thelackthereof.org
   * Only need :html from CGI (of course, we don't actually NEED that)
+
+Sat Nov  5 2005  awwaiid@thelackthereof.org
   * Doc for inventory table schema
+
+Sat Nov  5 2005  awwaiid@thelackthereof.org
   * Make html_update use all fields. Use strict; and switch order for input names to $table:$col:$id
+
+Sat Nov  5 2005  awwaiid@thelackthereof.org
   * Comments for the HTMLView component base and changed name from html_input to html_text
+
+Sat Nov  5 2005  awwaiid@thelackthereof.org
   * Add a bunch of docs
+
+Sat Nov  5 2005  awwaiid@thelackthereof.org
   * Track continuations by path (in addition to the cookie)
 
 Fri Nov  4 2005  awwaiid@thelackthereof.org
@@ -172,6 +275,8 @@ Fri Nov  4 2005  awwaiid@thelackthereof.org
 
 Thu Nov  3 2005  awwaiid@thelackthereof.org
   * Move stuff around
+
+Thu Nov  3 2005  awwaiid@thelackthereof.org
   * Inventory demo, and misc changes
 
 Mon Oct 24 2005  awwaiid@thelackthereof.org
