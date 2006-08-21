@@ -1,7 +1,6 @@
 lib/Continuity/Adapt/FCGI/Request.pm
 lib/Continuity/Adapt/HttpDaemon.pm
 lib/Continuity/Adapt/FCGI.pm
-lib/Continuity/Request.pm
 lib/Continuity/Mapper.pm
 lib/Continuity.pm
 eg/counter.pl
