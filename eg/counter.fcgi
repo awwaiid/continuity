@@ -4,7 +4,6 @@ use lib '../lib';
 use strict;
 use warnings;
 use Coro;
-use Coro::Event;
 use URI::Escape;
 
 =head1 Summary
@@ -21,8 +20,7 @@ use Continuity::Adapt::FCGI;
 my $server = new Continuity(
   adaptor => Continuity::Adapt::FCGI->new
 );
-
-Event::loop();
+$server->loop;
 
 
 # Ask a question and keep asking until they answer
