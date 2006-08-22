@@ -21,11 +21,7 @@ sub next {
       and $self->request->fcgi_request->Finish;
 
     # Here is where we actually wait, if necessary
-    my $r = $self->request;
-    print STDERR "RequestHolder->next ($r) looking for request.\n";
     $self->request = $self->request_queue->get;
-    my $r = $self->request;
-    print STDERR "RequestHolder->next got: $r\n";
 
     return $self;
 }
@@ -54,11 +50,7 @@ sub AUTOLOAD {
   my $method = $AUTOLOAD; $method =~ s/.*:://;
   return if $method eq 'DESTROY';
   my $self = shift;
-  print STDERR "RequestHolder AUTOLOAD: $method ( @_ )\n";
   my @args = @_;
-  my $r = $self->request;
-  print STDERR "********** Request: $r\n\n";
-  print STDERR "EVAL: \$self->request->$method->(@args)\n";
   my $retval = eval { $self->request->$method(@args) };
   if($@) {
     warn "Continuity::Adapt::FCGI::RequestHolder::AUTOLOAD: "
@@ -145,15 +137,6 @@ sub new {
   $self->{fcgi_request} = $fcgi_request;
   $self->{out} = $out;
   $self->{env} = $fcgi_request->GetEnvironment;
-  use Data::Dumper;
-  my $env_dump = Dumper($self->{env});
-  print STDERR qq{
-    New C:A:FCGI::Request
-         self: $self
-          out: $self->{out}
-      request: $self->{fcgi_request}
-          env: $env_dump
-  };
   return $self;
 }
 
@@ -188,19 +171,7 @@ sub close {
 sub print {
   my ($self, @text) = @_;
   my $out = $self->{out};
-  use Data::Dumper;
-  my $env_dump = Dumper($self->{env});
-  print STDERR qq{
-    C::A::FCGI::Request::print
-         self: $self
-          out: $out
-      request: $self->{fcgi_request}
-          env: $env_dump
-         args: @text
-  };
-  print STDERR "($self, $out) Printing: '@text'\n";
   $out->print(@text);
-  print STDERR "Done printing.\n";
 }
 
 =item $request->env($name)

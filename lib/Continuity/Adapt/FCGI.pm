@@ -45,15 +45,6 @@ sub new {
   $self->{out} = $out;
   $self->{err} = $err;
   $self->{env} = $env;
-  use Data::Dumper;
-  my $env_dump = Dumper($env);
-  print STDERR qq{
-    New C:A:FCGI
-         self: $self
-          out: $out
-      request: $self->{fcgi_request}
-          env: $env_dump
-  };
 
   return $self;
 }
@@ -61,11 +52,6 @@ sub new {
 sub new_requestHolder {
   my ($self, @ops) = @_;
   my $holder = Continuity::Adapt::FCGI::RequestHolder->new( @ops );
-  print STDERR qq{
-    New C:A:FCGI::RequestHolder
-               self: $self
-      requestHolder: $holder
-  };
   return $holder;
 }
 
@@ -132,7 +118,6 @@ sub get_request {
     my $request = Continuity::Adapt::FCGI::Request->new(
       fcgi_request => $r,
     );
-    print STDERR "Accepted request: $request\n";
     return $request;
   }
   return undef;

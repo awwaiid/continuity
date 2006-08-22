@@ -68,7 +68,7 @@ sub get_session_id_from_hit {
   # Remote-address in the first place to decide) -- awwaiid
   my $ip = $request->headers->header('Remote-Address')
            || $request->peerhost;
-  STDERR->print("uri: ", $request->uri, "\n");
+  STDERR->print("Requested URI: ", $request->uri, "\n");
   (my $path) = $request->uri =~ m{/([^?]*)};
   my $session_id = '';
   if($self->{ip_session} && $ip) {
@@ -114,7 +114,6 @@ sub map {
     # Don't need to stick it back into $self->{sessions} because of the alias
   }
 
-  print STDERR "Executing request: $request, $request_queue\n";
   $self->exec_cont($request, $request_queue);
 
   return $request;
@@ -187,10 +186,9 @@ sub exec_cont {
  
   # Drop the request into this end of the request_queue
   $request_queue->put($request);
-  print STDERR "OK, put the request ($request) into the request_queue ($request_queue)\n";
 
   # XXX needed for FastCGI (because it is blocking...)
-  print STDERR "yielding to other things\n";
+  print STDERR "yielding to other things (for FCGI's sake)\n";
   cede;
 
   # select $prev_select;

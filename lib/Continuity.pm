@@ -153,8 +153,6 @@ sub new {
       if($self->{reload}) {
         Module::Reload->check;
       }
-      print STDERR "Got request: $r\n";
-      print STDERR "Request method: " . ($r->method) . "\n";
 
       unless($r->method eq 'GET' or $r->method eq 'POST') {
          $r->send_error(RC_BAD_REQUEST);
