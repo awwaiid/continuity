@@ -218,41 +218,33 @@ sub mapper :lvalue { $_[0]->{mapper} }
 
 For the curious or the brave, here is an ASCII diagram of how the pieces fit:
 
-  +---------+      +---------+      +--------+                         
-  | Browser | <--> | Adaptor | ---> | Mapper |                         
-  +---------+      +---------+      +--------+                         
-                        ^               |                              
-                        |               |                              
-   +--------------------+               |                              
-   |                                    |                              
-   |        +-------------+-------------+                              
-   |        |             |             |                              
-   |        V             V             V                              
-   |   +---------+   +---------+   +---------+                         
-   |   | Session |   | Session |   | Session |                         
-   |   | Request |   | Request |   | Request |                         
-   |   | Queue   |   | Queue   |   | Queue   |                         
-   |   |         |   |         |   |         |                         
-   |   |    |    |   |    |    |   |    |    |                         
-   |   |    |    |   |    |    |   |    |    |                         
-   |   |    V    |   |    V    |   |    V    |                         
-   |   |         |   |         |   |         |                         
-   |   +---------+   +---------+   +---------+                         
-   |        |             |             |                              
-   |        V             V             V                              
-   |   +---------+   +---------+   +---------+                         
-   |   | Current |   | Current |   | Current |                         
-   |   | Request |   | Request |   | Request |                         
-   |   +---------+   +---------+   +---------+                         
-   |        |             |             |                              
-   |        V             V             V                              
-   |    +------+      +------+      +------+                           
-   |    | Your |      | Your |      | Your |                           
-   |    | Code |      | Code |      | Code |                           
-   |    +------+      +------+      +------+                           
-   |        |             |             |                              
-   |        V             V             V                              
-   +--------+-------------+-------------+                              
+  +---------+      +---------+     +--------+                         
+  | Browser | <--> | Adaptor | --> | Mapper |                         
+  +---------+      +---------+     +--------+                         
+                        ^              |                              
+                        |              |                              
+  +---------------------+              |                              
+  |      +-------------------+---------+----------+          
+  |      |                   |                    |              
+  |      V                   V                    V              
+  |    +---------+         +---------+          +---------+         
+  |    | Session |         | Session |          | Session |            
+  |    | Request |         | Request |          | Request |         
+  |    | Queue   |         | Queue   |          | Queue   |         
+  |    |    |    |         |    |    |          |    |    |        
+  |    |    V    |         |    V    |          |    V    |         
+  |    +---------+         +---------+          +---------+          
+  |      |                   |                    |             
+  |      V                   V                    V              
+  |  +-----+   +------+   +-----+   +------+   +-----+   +------+
+  |  | Cur |<->| Your |   | Cur |<->| Your |   | Cur |<->| Your |
+  |  | Req |   | Code |   | Req |   | Code |   | Req |   | Code |
+  |  +-----+   +------+   +-----+   +------+   +-----+   +------+
+  |     |                    |                    |
+  |     V                    V                    V
+  +-----+--------------------+--------------------+
+
+** "Cur Req" == "Current Request"
 
 Basically, the Adaptor accepts requests from the browser, hands them off to the
 Mapper, which then queues them into the correct session queue (or creates a new
