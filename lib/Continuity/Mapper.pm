@@ -14,19 +14,17 @@ Continuity::Mapper - Map a request onto a session
 
 =head1 DESCRIPTION
 
-This is the session dictionary and mapper. Given an HTTP request it gives it to
-the correct session. It makes sessions as needed and stores them. This class
-may be subclassed to implement other strategies for associating requests with
-continuations. The default strategy is (in limbo but quite possibily) based on
-client IP address plus URL.
+This is the session dictionary and mapper. Given an HTTP request, mapper gives
+said request to the correct session. Mapper makes sessions as needed and stores
+them. Mapper may be subclassed to implement other strategies for associating
+requests with continuations. The default strategy is (in limbo but quite
+possibily) based on client IP address plus URL.
 
 =head1 METHODS
 
-=head2 new()
+=head2 $mapper = Continuity::Mapper->new( callback => sub { ... } )
 
 Create a new session mapper.
-
-  $mapper = Continuity::Mapper->new( callback => sub { ... } )
 
 L<Contuinity::Server> does the following by default:
 
@@ -54,6 +52,17 @@ sub new {
   return $self;
 
 }
+
+=head2 $session_id = $mapper->get_session_id_from_hit($request)
+
+Uses the defined strategies (ip, path, cookie) to create a session identifier
+for the given request. This is what you'll most likely want to override, if
+anything.
+
+$request is generally an HTTP::Request, though technically may only have a
+subset of the functionality.
+
+=cut
 
 # Needs the request to support: headers->header, peerhost, uri
 sub get_session_id_from_hit {
@@ -86,18 +95,16 @@ sub get_session_id_from_hit {
   #  if($cookieHeader =~ /sessionid=(\d+)/) 
 }
 
-=head2 map()
+=head2 $mapper->map($request)
 
-Accepts a request object and returns an existing or new coroutine as appropriate.
-
-  $mapper->map($request)
+Send the given request to the correct session, creating it if necessary.
 
 This implementation uses the C<get_session_id_from_hit()> method of this same class
 to get an identifying string from information in the request object.
-This is used as an index into C<< $self->{continuations}->{$session_id} >>, which holds
-a code ref (probably a coroutine code ref) if one exists already.
-This implementation wraps the C<main::main()> method in a C<csub { }> to create a new
-coroutine, which is done as necessary.
+This is used as an index into C<< $self->{sessions}->{$session_id} >>, which holds
+a queue of pending requests for the session to process.
+
+So actually C<< map() >> just drops the request into the correct session queue.
 
 =cut
 
@@ -122,16 +129,10 @@ sub map {
 
 sub server :lvalue { $_[0]->{server} }
 
-=head2 new_continuation()
+=head2 $request_queue = $mapper->new_request_queue($session_id)
 
-Returns a special coroutine reference.
-
-  $mapper->new_continuation()
-
-C<csub { }> from L<Coro::Cont> creates these.
-
-Aside from keeping execution context which can be C<yield>ed from and then
-later resumed, they act like normal subroutine references.
+Returns a brand new session request queue, and starts a session to pull
+requests out the other side.
 
 =cut
 
@@ -158,12 +159,13 @@ sub new_request_queue {
   return $request_queue;
 }
 
-=head2 C<< $mapper->exec_cont($subref, $request) (XXX wrong) >>
+=head2 C<< $mapper->enqueue($request, $request_queue) >>
 
-Override in subclasses for more specific behavior.
-This default implementation sends HTTP headers, selects C<$conn> as the
-default filehandle for output, and invokes C<$subref> (which is presumabily
-a continuation) with C<$request> and C<$conn> as arguments.
+Add the given request to the given request queue.
+
+This is a good spot to override for some tricky behaviour... mostly for
+pre-processing requests before they get to the session handler. This particular
+implementation will optionally print the HTTP headers for you.
 
 =cut
 

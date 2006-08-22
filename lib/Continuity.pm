@@ -214,6 +214,56 @@ sub adaptor :lvalue { $_[0]->{adaptor} }
 
 sub mapper :lvalue { $_[0]->{mapper} }
 
+=head1 Internal Structure
+
+For the curious or the brave, here is an ASCII diagram of how the pieces fit:
+
+  +---------+      +---------+      +--------+                         
+  | Browser | <--> | Adaptor | ---> | Mapper |                         
+  +---------+      +---------+      +--------+                         
+                        ^               |                              
+                        |               |                              
+   +--------------------+               |                              
+   |                                    |                              
+   |        +-------------+-------------+                              
+   |        |             |             |                              
+   |        V             V             V                              
+   |   +---------+   +---------+   +---------+                         
+   |   | Session |   | Session |   | Session |                         
+   |   | Request |   | Request |   | Request |                         
+   |   | Queue   |   | Queue   |   | Queue   |                         
+   |   |         |   |         |   |         |                         
+   |   |    |    |   |    |    |   |    |    |                         
+   |   |    |    |   |    |    |   |    |    |                         
+   |   |    V    |   |    V    |   |    V    |                         
+   |   |         |   |         |   |         |                         
+   |   +---------+   +---------+   +---------+                         
+   |        |             |             |                              
+   |        V             V             V                              
+   |   +---------+   +---------+   +---------+                         
+   |   | Current |   | Current |   | Current |                         
+   |   | Request |   | Request |   | Request |                         
+   |   +---------+   +---------+   +---------+                         
+   |        |             |             |                              
+   |        V             V             V                              
+   |    +------+      +------+      +------+                           
+   |    | Your |      | Your |      | Your |                           
+   |    | Code |      | Code |      | Code |                           
+   |    +------+      +------+      +------+                           
+   |        |             |             |                              
+   |        V             V             V                              
+   +--------+-------------+-------------+                              
+
+Basically, the Adaptor accepts requests from the browser, hands them off to the
+Mapper, which then queues them into the correct session queue (or creates a new
+queue).
+
+When Your Code calls "$request->next" the Current Request overwrites itself
+with the next item in the queue (or waits until there is one).
+
+Most of the time you will have pretty empty queues -- they are mostly there for
+safety.
+
 =head1 SEE ALSO
 
 Website/Wiki: L<http://continuity.tlt42.org/>
