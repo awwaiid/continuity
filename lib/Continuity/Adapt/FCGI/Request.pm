@@ -150,7 +150,11 @@ sub send_basic_header {
   #$self->print("Error");
 }
 
-sub peerhost { undef }
+sub peerhost {
+  my ($self) = @_;
+  my $env = $self->fcgi_request->GetEnvironment;
+  return $env->{REMOTE_ADDR};
+}
 
 =item $request->error($code[, $text])
 
