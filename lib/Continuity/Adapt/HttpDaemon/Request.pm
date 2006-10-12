@@ -51,6 +51,7 @@ sub print {
     # Effectively, wait until we are ready to write (but no longer!)
     Coro::Event->io( fd => $self->request->conn, poll => 'w', )->next->cancel;
     $self->request->conn->print(@_); 
+    return $self;
 }
 
 # This holds our current request
