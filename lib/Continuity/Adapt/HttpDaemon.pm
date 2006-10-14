@@ -26,6 +26,7 @@ do {
     use Errno;
     use Fcntl uc ':default';
 
+    no warnings; # Don't warn for this override (this should be narrowed)
     sub accept {
         my $self = shift;
         my $pkg = shift || "HTTP::Daemon::ClientConn";  
@@ -44,6 +45,8 @@ do {
     }
 
     package HTTP::Daemon::ClientConn;
+
+    no warnings; # Don't warn for this override (this should be narrowed)
 
     sub _need_more {   
         my $self = shift;

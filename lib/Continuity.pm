@@ -197,10 +197,14 @@ sub new {
 }
 
 # This never returns, and all it does is execute Coro's Event:: loop
-sub loop {
-  my ($self) = @_;
-  Coro::Event::loop;
-  return $self;
+
+{
+  no warnings;
+  sub loop {
+    my ($self) = @_;
+    Coro::Event::loop;
+    return $self;
+  }
 }
 
 sub debug {
