@@ -1,6 +1,7 @@
+lib/Continuity/Adapt/FCGI.pm
 lib/Continuity/Adapt/FCGI/Request.pm
 lib/Continuity/Adapt/HttpDaemon.pm
-lib/Continuity/Adapt/FCGI.pm
+lib/Continuity/Adapt/HttpDaemon/Request.pm
 lib/Continuity/Mapper.pm
 lib/Continuity.pm
 eg/counter.pl
@@ -18,7 +19,12 @@ eg/old/bleh.php
 eg/old/client.php
 eg/old/phpcontize.pl
 eg/addtwo.pl
+eg/counter.fcgi
+eg/fcgi_nocont.fcgi
+eg/guess.fcgi
+eg/leakfinder.pl
 t/Continuity.t
+t/fcgi.t
 Changes
 Makefile.PL
 MANIFEST
