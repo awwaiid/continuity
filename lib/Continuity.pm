@@ -258,7 +258,7 @@ When Your Code calls "$request->next" the Current Request overwrites itself
 with the next item in the queue (or waits until there is one).
 
 Most of the time you will have pretty empty queues -- they are mostly there for
-safety.
+safety, in case you have a lot of incoming requests and running sessions.
 
 =head1 SEE ALSO
 
