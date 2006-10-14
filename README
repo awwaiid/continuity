@@ -1,11 +1,12 @@
-Continuity version 0.7
+Continuity version 0.8
 ======================
 
-Continuity - Abstract away statelessness of HTTP using continuations, for stateful Web applications
+Continuity - Abstract away statelessness of HTTP using continuations, for
+stateful Web applications
 
-Status: It works, using the HTTP::Daemon adaptor at least. Now we're
-        stabalizing the API and stabalizing the stabalizers. Lots of debugging
-        is turned on.
+Status: Ready for large applications and libraries to be implemented on top, so
+        that we can tune the API. Both the HTTP::Daemon and the FCGI backends
+        work, though the FCGI backend does not provde fully async coroutines.
 
 See Continuity.pm for an overview, and also check the wiki
 at http://continuity.tlt42.org/ for ongoing development.
