@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# This is an active-changelog! Run it to update it.
+# This is an active-changelog! Run it to update it using Darcs.
 # See below for the actual Changelog stuff!
 
 open my $out,"+<",$0;
@@ -22,6 +22,26 @@ print $out $f;
 # *** This is the actual Changelog :) ***
 # ***************************************
 __DATA__
+
+Sat Oct 14 2006  awwaiid@thelackthereof.org
+  * Add fcgi.t to darcs
+  * Update MANIFEST before 0.8
+  * Don't warn about the known sub re-declarations
+  * Update README for 0.8 release
+  * Update Makefile.PL for 0.8 release
+
+Thu Oct 12 2006  awwaiid@thelackthereof.org
+  * Return self in $request->print(..) so we can do $request->print('hi!')->next
+
+Tue Aug 22 2006  awwaiid@thelackthereof.org
+  * Update ascii art to fit on 24-ish lines and be more technicaly accurate
+  * Documentation clean-up (plus bonus ascii art diagram!)
+  * Fix up FCGI's peerhost to look at $ENV{REMOTE_ADDR}
+  * Remove a Whole Lot of those debugging messages I added for testing FCGI
+
+Mon Aug 21 2006  awwaiid@thelackthereof.org
+  * Remove Continuity::Request from Manifest
+  * Update Changes file to be self-updating. Scary!
 
 Sun Aug 20 2006  awwaiid@thelackthereof.org
   * Add guess.fcgi and update counter.fcgi
