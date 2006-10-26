@@ -35,7 +35,7 @@ function setup_poll() {
 
 function poll_server() {
   document.getElementById('status').innerHTML = 'Polling ('+(poll_count++)+')...';
-  do_request('http://localhost:16001/pushstream/' + sid + '/' + Math.random(), got_update);
+  do_request('pushstream/' + sid + '/' + Math.random(), got_update);
 }
 
 function got_update(txt) {
@@ -53,7 +53,9 @@ function message_sent(result) {
 function send_message() {
   var username = document.getElementById("username").value;
   var message = document.getElementById("message").value;
-  do_request('http://localhost:16001/' + sid + '?x=' + Math.random() + '&username=' + username + '&message=' + message, message_sent);
+  username = encodeURIComponent(username);
+  message = encodeURIComponent(message);
+  do_request( sid + '?x=' + Math.random() + '&username=' + username + '&message=' + message, message_sent);
   return false;
 }
 
