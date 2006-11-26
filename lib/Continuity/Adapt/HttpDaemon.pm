@@ -96,6 +96,7 @@ sub new {
   my %args = @_;
   my $self = bless { 
     docroot => delete $args{docroot},
+    server => delete $args{server},
   }, $class;
 
   # Set up our http daemon
