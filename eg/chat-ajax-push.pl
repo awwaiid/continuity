@@ -10,7 +10,9 @@ my $got_message;
 my $server = Continuity->new(
   port => 16001,
   path_session => 1,
-  staticp => sub { $_[0]->url->path =~ m/\.(jpg|gif|png|css|ico|js)$/ },   
+  staticp => sub {
+    $_[0]->url->path =~ m/\.(jpg|gif|png|css|ico|js)$/
+  },   
 );
 
 $server->loop;
