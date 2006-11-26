@@ -184,7 +184,7 @@ sub exec_cont {
   $request_queue->put($request);
 
   # XXX needed for FastCGI (because it is blocking...)
-  print STDERR "yielding to other things (for FCGI's sake)\n";
+  # print STDERR "yielding to other things (for FCGI's sake)\n";
   cede;
 
   # select $prev_select;
