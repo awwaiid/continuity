@@ -36,6 +36,18 @@ sub next {
 
     # Here is where we actually wait for the next request
     $self->request = $self->request_queue->get;
+  
+    unless($self->{no_content_type}) {
+      $self->request->conn->send_basic_header;
+      $self->print(
+          "Cache-Control: private, no-store, no-cache\r\n",
+           "Pragma: no-cache\r\n",
+           "Expires: 0\r\n",
+           "Content-type: text/html\r\n\r\n"
+      );
+    }
+
+    print STDERR "-----------------------------\n";
 
     return $self;
 }
@@ -110,7 +122,9 @@ sub new {
     # $self->http_request->isa('HTTP::Request') or die;
     # $self->conn or die;
     # $self->queue or die;
-    print STDERR "Set up request. conn: $self->{conn} ($self)\n";
+    print STDERR "\n====== Got new request ======\n"
+               . "       Conn: $self->{conn}\n"
+               . "    Request: $self\n";
     return $self;
 }
 
@@ -155,7 +169,7 @@ sub AUTOLOAD {
   #print STDERR "Request AUTOLOAD: $method ( @_ )\n";
   my $self = shift;
   my $retval;
-  if({peerhost=>1,send_basic_header=>1,'print'=>1}->{$method}) {
+  if({peerhost=>1,send_basic_header=>1,'print'=>1,'send_redirect'=>1}->{$method}) {
     $retval = eval { $self->conn->$method(@_) };
     if($@) {
       warn "Continuity::Adapt::HttpDaemon::Request::AUTOLOAD: "

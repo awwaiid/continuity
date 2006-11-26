@@ -163,7 +163,7 @@ sub new {
   
       # Send the basic headers all the time
       # Don't think the can method will work with the AUTOLOAD trick and wrapper
-      $r->send_basic_header;
+      # $r->send_basic_header;
   
       if($self->{staticp}->($r)) {
           $self->debug(3, "Sending static content... ");

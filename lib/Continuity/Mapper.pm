@@ -77,7 +77,7 @@ sub get_session_id_from_hit {
   # Remote-address in the first place to decide) -- awwaiid
   my $ip = $request->headers->header('Remote-Address')
            || $request->peerhost;
-  STDERR->print("Requested URI: ", $request->uri, "\n");
+  STDERR->print("        URI: ", $request->uri, "\n");
   (my $path) = $request->uri =~ m{/([^?]*)};
   my $session_id = '';
   if($self->{ip_session} && $ip) {
@@ -86,7 +86,7 @@ sub get_session_id_from_hit {
   if($self->{path_session} && $path) {
     $session_id .= '.'.$path;
   }
-  STDERR->print('=' x 30, ' ', $session_id, ' ', '=' x 30, "\n");
+  STDERR->print(" Session ID: ", $session_id, "\n");
   return $session_id;
   # our $sessionIdCounter;
   # print "Headers: " . $request->as_string();
@@ -116,7 +116,8 @@ sub map {
   alias my $request_queue = $self->{sessions}->{$session_id};
 
   if(! $request_queue) {
-    print STDERR "No request queue for this session, making a new one.\n";
+    print STDERR
+    "    Session: No request queue for this session, making a new one.\n";
     $request_queue = $self->new_request_queue($request, $session_id);
     # Don't need to stick it back into $self->{sessions} because of the alias
   }
@@ -177,14 +178,14 @@ sub exec_cont {
 
   # TODO: This might be one spot to hook STDOUT onto this request
  
-  if(!$self->{no_content_type}) {
-    $request->print(
-        "Cache-Control: private, no-store, no-cache\r\n",
-         "Pragma: no-cache\r\n",
-         "Expires: 0\r\n",
-         "Content-type: text/html\r\n\r\n"
-    );
-  }
+  #if(!$self->{no_content_type}) {
+  #  $request->print(
+  #      "Cache-Control: private, no-store, no-cache\r\n",
+  #       "Pragma: no-cache\r\n",
+  #       "Expires: 0\r\n",
+  #       "Content-type: text/html\r\n\r\n"
+  #  );
+  #}
  
   # Drop the request into this end of the request_queue
   $request_queue->put($request);
