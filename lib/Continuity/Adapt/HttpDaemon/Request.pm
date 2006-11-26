@@ -34,7 +34,7 @@ sub next {
       and $self->request->conn
       and $self->request->conn->close;
 
-    # Here is where we actually wait
+    # Here is where we actually wait for the next request
     $self->request = $self->request_queue->get;
 
     return $self;
