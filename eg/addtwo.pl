@@ -3,22 +3,25 @@
 use strict;
 use lib '../lib';
 use Continuity;
-use Coro;
-use Coro::Event;
 
-my $server = new Continuity;
-Event::loop();
+my $server = new Continuity(port => 16001);
+$server->loop;
 
 sub main {
   my $request = shift;
-  $request->next;
+  $request->next; # Get the initial request
+  my ($num1, $num2);
+  do {
   $request->print(qq{
     <form>
       Enter first number:
       <input type=text name=num><input type=submit>
     </form>
   });
-  my $num1 = $request->next->param('num');
+  $request->next;
+  $num1 = $request->param('num');
+
+  } while($num1 !~ /\d+/);
   $request->print(qq{
     <form>
       Enter second number:
