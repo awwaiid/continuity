@@ -98,7 +98,8 @@ sub new {
     debug => 4, # XXX
     reload => 1, # XXX
     callback => (exists &::main ? \&::main : undef),
-    staticp => sub { 0 },   
+    #staticp => sub { 0 },   
+    staticp => sub { $_[0]->url->path =~ m/\.(jpg|gif|png|css|ico|js)$/ },   
     @_,  
   }, $class;
 
