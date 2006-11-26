@@ -68,13 +68,6 @@ subset of the functionality.
 sub get_session_id_from_hit {
   my ($self, $request) = @_;
   alias my $hit_to_session_id = $self->{hit_to_session_id};
-  # this ip business is higherport.c-centric -- if the hit is from the local
-  # server, assume that is wrong, and go looking for something else. of course,
-  # this has problems -- what about proxies sending hits to other machines on
-  # the lan?
-  # There must be a more general-purpose way of deciding if we were proxied,
-  # and if so to use the Remote-Address header (maybe even just look for
-  # Remote-address in the first place to decide) -- awwaiid
   my $ip = $request->headers->header('Remote-Address')
            || $request->peerhost;
   STDERR->print("        URI: ", $request->uri, "\n");
