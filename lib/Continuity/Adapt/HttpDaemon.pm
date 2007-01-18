@@ -13,6 +13,7 @@ use HTTP::Status;
 
 use Continuity::Adapt::HttpDaemon::Request;
 
+
 do {
 
     # HTTP::Daemon isn't Coro-friendly and attempting to diddle HTTP::Daemon's
@@ -37,7 +38,10 @@ do {
             ${*$sock}{'httpd_daemon'} = $self;
             return wantarray ? ($sock, $peer) : $sock;
         } elsif($!{EAGAIN}) {
-            Coro::Event->io(fd => fileno $self, poll => 'r', )->next->cancel;
+            # Coro::Event->io(fd => fileno $self, poll => 'r', )->next->cancel;
+            my $socket_read_event = Coro::Event->io(fd => fileno $self, poll => 'r', );
+            $socket_read_event->next;
+            $socket_read_event->cancel;
             goto try_again; 
         } else {
             return;
@@ -50,7 +54,9 @@ do {
 
     sub _need_more {   
         my $self = shift;
-        Coro::Event->io(fd => fileno $self, poll => 'r', $_[1] ? ( timeout => $_[1] ) : ( ), )->next->cancel;
+        my $e = Coro::Event->io(fd => fileno $self, poll => 'r', $_[1] ? ( timeout => $_[1] ) : ( ), );
+        $e->next;
+        $e->cancel;
         my $n = sysread($self, $_[0], 2048, length($_[0]));
         $self->reason(defined($n) ? "Client closed" : "sysread: $!") unless $n;
         $n;

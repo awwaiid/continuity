@@ -56,7 +56,6 @@ use warnings; # XXX -- while in devolopment
 
 use IO::Handle;
 use Coro;
-use Coro::Cont;
 use Coro::Event;
 use HTTP::Status; # to grab static response codes. Probably shouldn't be here
 
@@ -194,19 +193,13 @@ sub new {
   };
 
   return $self;
-
 }
 
-# This never returns, and all it does is execute Coro's Event:: loop
+=head2 C<< $server->loop() >>
 
-{
-  no warnings;
-  sub loop {
-    my ($self) = @_;
-    Coro::Event::loop;
-    return $self;
-  }
-}
+Calls Coro::Event::loop (through exportation). This never returns!
+
+=cut
 
 sub debug {
   my ($self, $level, $msg) = @_;

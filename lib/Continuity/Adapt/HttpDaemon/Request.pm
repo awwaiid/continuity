@@ -61,7 +61,10 @@ sub print {
     my $self = shift; 
     fileno $self->request->conn or return undef;
     # Effectively, wait until we are ready to write (but no longer!)
-    Coro::Event->io( fd => $self->request->conn, poll => 'w', )->next->cancel;
+    #Coro::Event->io( fd => $self->request->conn, poll => 'w', )->next->cancel;
+    my $e = Coro::Event->io( fd => $self->request->conn, poll => 'w', );
+    $e->next;
+    $e->cancel;
     $self->request->conn->print(@_); 
     return $self;
 }
