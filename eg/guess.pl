@@ -4,12 +4,11 @@ use lib '../lib';
 use strict;
 use warnings;
 use Coro;
-use Coro::Event;
 
 use Continuity;
 my $server = new Continuity;
-
-Event::loop();
+print STDERR "Starting main loop...\n";
+$server->loop;
 
 sub getNum {
   my $request = shift;
