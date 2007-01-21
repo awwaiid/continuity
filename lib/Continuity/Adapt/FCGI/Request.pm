@@ -31,14 +31,6 @@ sub param {
     $self->request->param(@_);    
 }
 
-#sub print {
-#    my $self = shift; 
-#    fileno $self->request->conn or return undef;
-#    # Effectively, wait until we are ready to write (but no longer!)
-#    Coro::Event->io( fd => $self->request->conn, poll => 'w', )->next->cancel;
-#    $self->request->conn->print(@_); 
-#}
-
 # This holds our current request
 sub request :lvalue { $_[0]->{request} }
 
@@ -256,6 +248,23 @@ sub _parse {
 sub conn :lvalue { $_[0]->{out} }
 
 sub fcgi_request :lvalue { $_[0]->{fcgi_request} }
+
+=head1 SEE ALSO
+
+L<Continuity>
+
+=head1 AUTHOR
+
+  Brock Wilcox <awwaiid@thelackthereof.org> - http://thelackthereof.org/
+  Scott Walters <scott@slowass.net> - http://slowass.net/
+
+=head1 COPYRIGHT
+
+  Copyright (c) 2004-2007 Brock Wilcox <awwaiid@thelackthereof.org>. All rights
+  reserved.  This program is free software; you can redistribute it and/or
+  modify it under the same terms as Perl itself.
+
+=cut
 
 1;
 
