@@ -38,7 +38,6 @@ do {
             ${*$sock}{'httpd_daemon'} = $self;
             return wantarray ? ($sock, $peer) : $sock;
         } elsif($!{EAGAIN}) {
-            # Coro::Event->io(fd => fileno $self, poll => 'r', )->next->cancel;
             my $socket_read_event = Coro::Event->io(fd => fileno $self, poll => 'r', );
             $socket_read_event->next;
             $socket_read_event->cancel;
