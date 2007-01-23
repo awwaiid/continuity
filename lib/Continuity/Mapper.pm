@@ -5,7 +5,6 @@ use strict;
 use warnings; # XXX -- development only
 use Data::Alias;
 use Coro;
-use Coro::Cont;
 use Coro::Channel;
 
 =head1 NAME
@@ -198,8 +197,6 @@ sub exec_cont {
 =item L<Continuity>
 
 =item L<Coro>
-
-=item L<Coro::Cont>
 
 =back
 
