@@ -163,21 +163,9 @@ implementation will optionally print the HTTP headers for you.
 =cut
 
 sub exec_cont {
- 
-  my $self = shift;
-  my $request = shift;
-  my $request_queue = shift;
+  my ($self, $request, $request_queue) = @_;
 
   # TODO: This might be one spot to hook STDOUT onto this request
- 
-  #if(!$self->{no_content_type}) {
-  #  $request->print(
-  #      "Cache-Control: private, no-store, no-cache\r\n",
-  #       "Pragma: no-cache\r\n",
-  #       "Expires: 0\r\n",
-  #       "Content-type: text/html\r\n\r\n"
-  #  );
-  #}
  
   # Drop the request into this end of the request_queue
   $request_queue->put($request);
