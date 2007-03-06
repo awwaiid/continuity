@@ -41,5 +41,5 @@ sub main {
   }
 }
 
-Event::loop();
+$server->loop;
 
