@@ -193,8 +193,9 @@ sub send_static {
   open my $magic, '-|', 'file', '-bi', $path;
   my $mimetype = <$magic>;
   chomp $mimetype;
-  # And for now we'll make a raw exception for .html
+  # And for now we'll make a raw exception for .html and .js
   $mimetype = 'text/html' if $path =~ /\.html$/ or ! $mimetype;
+  $mimetype = 'application/javascript' if $path =~ /\.js$/;
   print $c "Content-type: $mimetype\r\n\r\n";
   open my $file, '<', $path or return;
   while(read $file, my $buf, 8192) {
