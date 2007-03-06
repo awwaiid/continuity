@@ -19,7 +19,7 @@ my $server = new Continuity;
 
 $server->loop;
 
-# Ask a question and keep asking until they answer
+# Ask a question and keep asking until they answer. General purpose prompt.
 sub prompt {
   my ($request, $msg, @ops) = @_;
   $request->print("$msg<br>");
