@@ -191,6 +191,7 @@ sub new {
     STDERR->print("Done processing request, waiting for next\n");
     
   };
+  #cede;
 
   return $self;
 }
@@ -200,6 +201,16 @@ sub new {
 Calls Coro::Event::loop (through exportation). This never returns!
 
 =cut
+
+sub loop {
+  my ($self) = @_;
+
+  # XXX passing $self is completely invalid. loop is supposed to take a timeout
+  # as the parameter, but by passing self it creates a semi-valid timeout.
+  # Without this, with the current Coro and Event, it doesn't work.
+  Coro::Event::loop($self);
+  #Coro::Event::loop();
+}
 
 sub debug {
   my ($self, $level, $msg) = @_;
