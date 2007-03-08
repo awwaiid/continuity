@@ -10,9 +10,16 @@ use IO::Handle;
 
 use HTTP::Daemon; 
 use HTTP::Status;
+use LWP::MediaTypes qw(add_type);
 
 use Continuity::Adapt::HttpDaemon::Request;
 
+# HTTP::Daemon::send_file_response uses LWP::MediaTypes to guess the
+# Content-Type of a file.  Unfortunately, its list of known extensions is
+# rather anemic so we're adding a few more.
+add_type('image/png'       => qw(png));
+add_type('text/css'        => qw(css));
+add_type('text/javascript' => qw(js));
 
 do {
 
@@ -189,19 +196,8 @@ sub send_static {
       $c->send_error(404);
       return;
   }
-  # For now we'll cheat and use file -- perhaps later this will be overridable
-  open my $magic, '-|', 'file', '-bi', $path;
-  my $mimetype = <$magic>;
-  chomp $mimetype;
-  # And for now we'll make a raw exception for .html and .js
-  $mimetype = 'text/html' if $path =~ /\.html$/ or ! $mimetype;
-  $mimetype = 'application/javascript' if $path =~ /\.js$/;
-  print $c "Content-type: $mimetype\r\n\r\n";
-  open my $file, '<', $path or return;
-  while(read $file, my $buf, 8192) {
-      $c->print($buf);
-  } 
-  $self->debug(3, "Static send '$path', Content-type: $mimetype");
+  $c->send_file_response($path);
+  $self->debug(3, "Static send '$path'");
 }
 
 sub debug {
