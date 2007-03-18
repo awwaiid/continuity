@@ -25,15 +25,31 @@ possibily) based on client IP address plus URL.
 
 Create a new session mapper.
 
-L<Contuinity::Server> does the following by default:
+L<Contuinity> does the following by default:
 
-  $server = Continuity::Server->new( 
+  $server = Continuity->new( 
     adapter  => Continuity::Adapter::HttpDaemon->new,
     mapper   => Continuity::Mapper->new( callback => \::main )
   );
 
-If you subclass this, you'll need to explicitly pass an instance of your mapper
-during server creation (including the callback).
+L<Continuity::Mapper> fills in the following defaults:
+
+    ip_session => 1,
+    path_session => 0,
+    cookie_session => 0,   # unimplemented!
+
+Cookies
+
+To get more sophisticated or specialized session ID computing logic,
+subclass this object, re-implement C<get_session_id_from_hit()> to
+suit your needs, and then pass in an instance of your subclass to 
+as the value for C<mapper> in the call to
+C<< Continuity->new) >>.
+Here's an example of that sort of constructor call:
+
+  $server = Continuity->new( 
+    mapper   => Continuity::Mapper::StrongRandomSessionCookies->new( callback => \::main )
+  );
 
 =cut
 
@@ -52,7 +68,7 @@ sub new {
 
 }
 
-=head2 $session_id = $mapper->get_session_id_from_hit($request)
+=head2 $mapper->get_session_id_from_hit($request)
 
 Uses the defined strategies (ip, path, cookie) to create a session identifier
 for the given request. This is what you'll most likely want to override, if

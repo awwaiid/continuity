@@ -7,6 +7,7 @@ use warnings;  # XXX dev
 use Coro;
 
 use IO::Handle;
+use Cwd;
 
 use HTTP::Daemon; 
 use HTTP::Status;
@@ -117,10 +118,13 @@ sub new {
     %args,
   ) or die $@;
 
-  print STDERR "Please contact me at: ", $self->{daemon}->url, "\n";
+  $self->{docroot} = Cwd::getcwd() if $self->{docroot} eq '.' or $self->{docroot} eq './';
+
+  STDERR->print("Please contact me at: ", $self->{daemon}->url, "\n");
 
   return $self;
 }
+
 
 sub new_requestHolder {
   my ($self, @ops) = @_;
@@ -161,11 +165,12 @@ Returns the processed path.
 =cut
 
 sub map_path {
-  my ($self, $path) = @_;
-  my $docroot = $self->{docroot};
+  my $self = shift;
+  my $path = shift() || '';
+  my $docroot = $self->{docroot} || '';
   # some massaging, also makes it more secure
   $path =~ s/%([0-9a-fA-F][0-9a-fA-F])/chr hex $1/ge;
-  $path =~ s%//+%/%g;
+  $path =~ s%//+%/%g unless $docroot;
   $path =~ s%/\.(?=/|$)%%g;
   1 while $path =~ s%/[^/]+/\.\.(?=/|$)%%;
 
@@ -191,7 +196,7 @@ sub send_static {
   my $path = $self->map_path($r->url->path) or do { 
        $self->debug(1, "can't map path: " . $r->url->path); $c->send_error(404); return; 
   };
-  $path =~ s{^/}{}g;
+  # $path =~ s{^/}{}g;
   unless (-f $path) {
       $c->send_error(404);
       return;
