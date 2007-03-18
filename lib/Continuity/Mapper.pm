@@ -38,7 +38,40 @@ L<Continuity::Mapper> fills in the following defaults:
     path_session => 0,
     cookie_session => 0,   # unimplemented!
 
-Cookies
+For each incoming HTTP hit, L<Continuity> must use some criteria for 
+deciding which execution context to send that hit to.
+For each of these that are set true, that element of the request
+will be used as part of the key that maps requests to execution
+context (remembering that Continuity hopes to give each user one
+unique execution context).
+An "execution context" is just a unique call to the
+whichever function is specified or passed as the callback, where
+several such instances of the same function will be running at the
+same time, each being paused to wait for more data or
+unpaused when data comes in.
+
+In the simple case, each "user" gets their own execution context.
+By default, users are distinguished by their IP address, which is a very bad
+way to try to make this distinction.
+Corporate users behind NATs and AOL users (also behind a NAT) will all
+appear to be the same few users.
+
+C<path_session> may be set true to use the pathname of the request, such as C<foo>
+in C<http://bar.com/foo?baz=quux>, as part of the criteria for deciding which
+execution context to associate with that hit.
+This makes it possible to write applications that give one user more than
+one execution contexts.
+This is necessary to run server-push concurrently with push from the user
+back to the server (see the examples directory) or to have sub-applications
+running on the same port, each having its own state seperate from the others.
+
+Cookies aren't issued or read by L<Continuity>, but we plan to add
+support for reading them.
+I expect the name of the cookie to look for would be passed in,
+or perhaps a subroutine that validates the cookies and returns it
+(possibily stripped of a secure hash) back out.
+Other code (the main application, or another session handling module
+from CPAN, or whatnot) will have the work of picking session IDs.
 
 To get more sophisticated or specialized session ID computing logic,
 subclass this object, re-implement C<get_session_id_from_hit()> to
