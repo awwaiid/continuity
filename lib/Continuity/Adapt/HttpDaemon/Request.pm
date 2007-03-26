@@ -74,6 +74,9 @@ sub request :lvalue { $_[0]->{request} }
 # Our queue of incoming requests
 sub request_queue :lvalue { $_[0]->{request_queue} }
 
+# Our session_id -- this is used by the mapper to identify the whole queue
+sub session_id :lvalue { $_[0]->{session_id} }
+
 # If we don't know how to do something, pass it on to the current http_request
 sub AUTOLOAD {
   my $method = $AUTOLOAD; $method =~ s/.*:://;

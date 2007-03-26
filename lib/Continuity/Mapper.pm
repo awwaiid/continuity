@@ -37,6 +37,7 @@ L<Continuity::Mapper> fills in the following defaults:
     ip_session => 1,
     path_session => 0,
     cookie_session => 0,   # unimplemented!
+    query_session => 0,    # unimplemented!
 
 For each incoming HTTP hit, L<Continuity> must use some criteria for 
 deciding which execution context to send that hit to.
@@ -94,6 +95,7 @@ sub new {
       ip_session => 1,
       path_session => 0,
       cookie_session => 0,
+      query_session => 0,
       @_,
   }, $class;
   $self->{callback} or die "Mapper: callback not set.\n";
@@ -116,17 +118,31 @@ subset of the functionality.
 sub get_session_id_from_hit {
   my ($self, $request) = @_;
   alias my $hit_to_session_id = $self->{hit_to_session_id};
+  my $session_id = '';
+  STDERR->print("        URI: ", $request->uri, "\n");
+
+  # IP based sessions
   my $ip = $request->headers->header('Remote-Address')
            || $request->peerhost;
-  STDERR->print("        URI: ", $request->uri, "\n");
-  (my $path) = $request->uri =~ m{/([^?]*)};
-  my $session_id = '';
   if($self->{ip_session} && $ip) {
     $session_id .= '.'.$ip;
   }
+
+  # Path sessions
+  my ($path) = $request->uri =~ m{/([^?]*)};
   if($self->{path_session} && $path) {
     $session_id .= '.'.$path;
   }
+
+  # Query sessions
+  #my $sid = $request->params->{sid};
+  my ($uri) = $request->uri;
+  my ($sid) = $request->uri =~ m{.*\?(?:.+[;&])?sid=([^;&]+)};
+  STDERR->print("URI: $uri\tSID: $sid\n");
+  if($self->{query_session} && $sid) {
+    $session_id .= '.'.$sid;
+  }
+
   STDERR->print(" Session ID: ", $session_id, "\n");
   return $session_id;
   # our $sessionIdCounter;
@@ -155,6 +171,7 @@ sub map {
   my $session_id = $self->get_session_id_from_hit($request);
 
   alias my $request_queue = $self->{sessions}->{$session_id};
+  STDERR->print("SESSION COUNT: " . (scalar keys %{$self->{sessions}}) . "\n");
 
   if(! $request_queue) {
     print STDERR
@@ -185,7 +202,8 @@ sub new_request_queue {
   # Create a request_queue, and hook the adaptor up to feed it
   my $request_queue = Coro::Channel->new(2);
   my $request_holder = $self->server->adaptor->new_requestHolder(
-    request_queue => $request_queue
+    request_queue => $request_queue,
+    session_id    => $session_id,
   );
 
   # async just puts the contents into the global event queue to be executed

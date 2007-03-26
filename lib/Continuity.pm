@@ -140,7 +140,7 @@ sub new {
       ip_session => $self->{ip_session} || 1,
       path_session => $self->{path_session} || 0,
       cookie_session => $self->{cookie_session} || 0,
-      param_session => $self->{param_session} || 0,
+      query_session => $self->{query_session} || 0,
     );
   } else {
     # Make sure that the provided mapper knows who we are
