@@ -9,6 +9,8 @@ WriteMakefile(
       HTTP::Daemon    => 1.36,
       Data::Alias     => 1.01,
       Coro            => 3.3,
+      Module::Reload  => 1.07,
+      FCGI            => 0.67,
     },
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/Continuity.pm', # retrieve abstract from module
