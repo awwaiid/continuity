@@ -28,9 +28,9 @@ Continuity's guts, we have:
 sub new {
     my $class = shift;
     my %args = @_;
-    exists $args{request_queue} or die;
-    # exists $args{request} or die;
-    STDERR->print("new requestWrapper. session_id: $args{session_id}\n");
+    exists $args{$_} or warn "new_requestHolder wants $_ as a parameter" for qw/request_queue session_id/;
+    $args{request} = undef;
+    STDERR->print("new RequestHolder. session_id: $args{session_id}\n");
     bless \%args, $class;
 }
 
@@ -44,7 +44,7 @@ sub next {
     # Here is where we actually wait for the next request
     $self->request = $self->request_queue->get;
   
-    $self->send_basic_header;
+    $self->request->send_basic_header;
 
     print STDERR "-----------------------------\n";
 
@@ -75,9 +75,9 @@ sub session_id :lvalue { $_[0]->{session_id} }
 sub AUTOLOAD {
   my $method = $AUTOLOAD; $method =~ s/.*:://;
   return if $method eq 'DESTROY';
-  STDERR->print("RequestHolder AUTOLOAD: $method ( @_ )\n");
+  STDERR->print("RequestHolder AUTOLOAD: method: ``$method'' ( @_ )\n");
   my $self = shift;
-  my $retval = eval { $self->continuity_request->$method->(@_) };
+  my $retval = eval { $self->{request}->can($method)->($self->{request}, @_) };
   if($@) {
     warn "Continuity::::RequestHolder::AUTOLOAD: Error delegating method ``$method'': $@";
   }

@@ -7,6 +7,8 @@ use Data::Alias;
 use Coro;
 use Coro::Channel;
 
+use Continuity::RequestHolder;
+
 =head1 NAME
 
 Continuity::Mapper - Map a request onto a session
@@ -136,12 +138,15 @@ sub get_session_id_from_hit {
 
   # Query sessions
   #my $sid = $request->params->{sid};
+  # XXXmy $ = $request->params('sid');
   my $uri = $request->uri;
   my ($sid) = $request->uri =~ m{.*\?(?:.+[;&])?sid=([^;&]+)};
   STDERR->print("URI: $uri\tSID: $sid\n");
   if($self->{query_session} && $sid) {
     $session_id .= '.'.$sid;
   }
+
+  #
 
   # Param sessions
 
@@ -205,7 +210,7 @@ sub new_request_queue {
 
   # Create a request_queue, and hook the adaptor up to feed it
   my $request_queue = Coro::Channel->new(2);
-  my $request_holder = $self->server->adaptor->new_requestHolder(
+  my $request_holder = Continuity::RequestHolder->new(
     request_queue => $request_queue,
     session_id    => $session_id,
   );

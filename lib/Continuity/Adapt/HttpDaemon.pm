@@ -128,13 +128,6 @@ sub new {
   return $self;
 }
 
-
-sub new_requestHolder {
-  my ($self, @ops) = @_;
-  my $holder = Continuity::RequestHolder->new( @ops );
-  return $holder;
-}
-
 =head2 get_request() - map a URL path to a filesystem path
 
 Called in a loop from L<Contuinity>.
