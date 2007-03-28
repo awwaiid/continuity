@@ -1,5 +1,5 @@
 
-package Continuity::Adapt::HttpDaemon::RequestHolder;
+package Continuity::RequestHolder;
 use strict;
 use vars qw( $AUTOLOAD );
 
@@ -84,4 +84,5 @@ sub AUTOLOAD {
   return $retval;
 }
 
+1;
 

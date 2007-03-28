@@ -58,6 +58,7 @@ use IO::Handle;
 use Coro;
 use Coro::Event;
 use HTTP::Status; # to grab static response codes. Probably shouldn't be here
+use Continuity::RequestHolder;
 
 =head2 C<< $server = Continuity->new(...) >>
 

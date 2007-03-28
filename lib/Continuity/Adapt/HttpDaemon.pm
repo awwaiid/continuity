@@ -4,6 +4,7 @@ package Continuity::Adapt::HttpDaemon;
 use strict;
 use warnings;  # XXX dev
 
+use Continuity::Request;
 use base 'Continuity::Request';
 
 use Coro;
