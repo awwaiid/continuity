@@ -120,10 +120,6 @@ sub new {
     );
   } elsif(! ref $self->{adaptor}) {
     die "Not a ref, $self->{adaptor}\n";
-  } else {
-    # Make sure that the provided adaptor knows who we are
-    $self->{adaptor}->{server} = $self;
-    print STDERR "Continuity using adaptor: $self->{adaptor}\n";
   }
 
   # Set up the default mapper.

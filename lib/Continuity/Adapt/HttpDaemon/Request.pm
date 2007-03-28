@@ -22,6 +22,7 @@ sub new {
     my %args = @_;
     exists $args{request_queue} or die;
     # exists $args{request} or die;
+    STDERR->print("new requestWrapper. session_id: $args{session_id}\n");
     bless \%args, $class;
 }
 

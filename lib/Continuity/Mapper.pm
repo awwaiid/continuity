@@ -171,12 +171,12 @@ sub map {
   my $session_id = $self->get_session_id_from_hit($request);
 
   alias my $request_queue = $self->{sessions}->{$session_id};
-  STDERR->print("SESSION COUNT: " . (scalar keys %{$self->{sessions}}) . "\n");
+  STDERR->print("    Session: count " . (scalar keys %{$self->{sessions}}) . "\n");
 
   if(! $request_queue) {
     print STDERR
     "    Session: No request queue for this session, making a new one.\n";
-    $request_queue = $self->new_request_queue($request, $session_id);
+    $request_queue = $self->new_request_queue($session_id);
     # Don't need to stick it back into $self->{sessions} because of the alias
   }
 
