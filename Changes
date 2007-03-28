@@ -13,7 +13,7 @@ $f = `darcs changes`;
 # Chop off the timestamps (but keep the date)
 $f =~ s/\d\d:\d\d:\d\d ... //g;
 # Combine like sections. This might need a bit of work.
-1 while($f =~ s/^(... ... \d+ \d\d\d\d  [\w@\.\-]+)$(.*)^\1$/$1$2/gms);
+1 while($f =~ s/^(... ...\s+\d+ \d\d\d\d  [\w@\.\-]+)$(.*)^\1$/$1$2/gms);
 # Clear out the extra space we just made
 $f =~ s/\n\n\n/\n/g;
 print $out $f;
