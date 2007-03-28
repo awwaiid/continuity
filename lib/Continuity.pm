@@ -174,7 +174,7 @@ sub new {
       # basic security checks like .. abuse in GET paths, we should provide
       # a default implementation -- preferably one already on CPAN.
       # Here's a way: ask the mapper.
-      # Right now, map takes one of our Continuity::Request objects (with conn and request set) and sets queue
+      # Right now, map takes one of our Continuity::RequestHolder objects (with conn and request set) and sets queue
 
       # This actually finds the thing that wants it, and gives it to it
       # (executes the continuation)

@@ -136,20 +136,24 @@ sub get_session_id_from_hit {
 
   # Query sessions
   #my $sid = $request->params->{sid};
-  my ($uri) = $request->uri;
+  my $uri = $request->uri;
   my ($sid) = $request->uri =~ m{.*\?(?:.+[;&])?sid=([^;&]+)};
   STDERR->print("URI: $uri\tSID: $sid\n");
   if($self->{query_session} && $sid) {
     $session_id .= '.'.$sid;
   }
 
-  STDERR->print(" Session ID: ", $session_id, "\n");
-  return $session_id;
+  # Param sessions
+
   # our $sessionIdCounter;
   # print "Headers: " . $request->as_string();
   #  my $pid = $request->params->{pid};
   #  my $cookieHeader = $request->header('Cookie');
   #  if($cookieHeader =~ /sessionid=(\d+)/) 
+
+  STDERR->print(" Session ID: ", $session_id, "\n");
+  return $session_id;
+
 }
 
 =head2 $mapper->map($request)
