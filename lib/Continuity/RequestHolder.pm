@@ -50,7 +50,7 @@ sub next {
         goto go_again;
     }
   
-    $self->request->send_basic_header;
+    $self->request->send_basic_header();
 
     print STDERR "-----------------------------\n";
 

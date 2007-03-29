@@ -98,8 +98,7 @@ sub new {
     debug => 4, # XXX
     reload => 1, # XXX
     callback => (exists &::main ? \&::main : undef),
-    #staticp => sub { 0 },   
-    staticp => sub { $_[0]->url->path =~ m/\.(jpg|gif|png|css|ico|js)$/ },   
+    staticp => sub { $_[0]->url->path =~ m/\.(jpg|gif|png|css|ico|js)$/ },
     @_,  
   }, $class;
 
@@ -127,21 +126,30 @@ sub new {
   # The mapper associates execution contexts (continuations) with requests 
   # according to some criteria.  The default version uses a combination of
   # client IP address and the path in the request.  
+
   if(!$self->{mapper}) {
+
     require Continuity::Mapper;
+
+    my %optional;
+    $optional{LocalPort} = $self->{port} if defined $self->{port};
+    for(qw/ip_session path_session query_session cookie_session assign_session_id/) {
+        # be careful to pass 0 too if the user specified 0 to turn it off
+        $optional{$_} = $self->{$_} if defined $self->{$_}; 
+    }
+
     $self->{mapper} = Continuity::Mapper->new(
       debug => $self->{debug},
       callback => $self->{callback},
       server => $self,
-      $self->{port} ? (LocalPort => $self->{port}) : (),
-      ip_session => $self->{ip_session} || 1,
-      path_session => $self->{path_session} || 0,
-      cookie_session => $self->{cookie_session} || 0,
-      query_session => $self->{query_session} || 0,
+      %optional,
     );
+
   } else {
+
     # Make sure that the provided mapper knows who we are
     $self->{mapper}->{server} = $self;
+
   }
 
   async {

@@ -113,6 +113,7 @@ sub new {
   my $self = bless { 
     docroot => delete $args{docroot},
     server => delete $args{server},
+    cookies => '',
   }, $class;
 
   # Set up our http daemon
@@ -286,8 +287,17 @@ sub end_request {
     $self->{conn}->close if $self->{conn};
 }
 
+sub set_cookie {
+    my $self = shift;
+    my $cookie = shift;
+    # record cookies and then send them the next time send_basic_header() is called and a header is sent.
+    $self->{cookies} .= "Set-Cookie: $cookie\r\n";
+}
+
 sub send_basic_header {
     my $self = shift;
+    my $cookies = $self->{cookies};
+    $self->{cookies} = '';
     unless($self->{no_content_type}) {
       $self->{conn}->send_basic_header;
       $self->print(
@@ -295,19 +305,20 @@ sub send_basic_header {
            "Pragma: no-cache\r\n",
            "Expires: 0\r\n",
            "Content-type: text/html\r\n",
+           $cookies,
            "\r\n"
       );
     }
     1;
 }
 
+sub print { my $self = shift; $self->{conn}->print(@_); }
+
 sub immediate { }
 
 sub conn :lvalue { $_[0]->{conn} } # private
 
 sub http_request :lvalue { $_[0]->{http_request} } # private
-
-sub print { my $self = shift; $self->{conn}->print(@_); }
 
 # If we don't know how to do something, pass it on to the current http_request
 

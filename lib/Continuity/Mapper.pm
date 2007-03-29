@@ -3,6 +3,7 @@ package Continuity::Mapper;
 
 use strict;
 use warnings; # XXX -- development only
+use CGI;
 use Data::Alias;
 use Coro;
 use Coro::Channel;
@@ -38,8 +39,22 @@ L<Continuity::Mapper> fills in the following defaults:
 
     ip_session => 1,
     path_session => 0,
-    cookie_session => 0,   # unimplemented!
-    query_session => 0,    # unimplemented!
+    cookie_session => 'sid',
+    query_session => 'sid',
+    assign_session_id => sub { join '', map int rand 10, 1..20 },
+
+Only C<cookie_session> or C<query_session> should be set, but not both.
+C<assign_session_id> specifies a call-back that generates a new session id value
+for when C<cookie_session> is enabled and no cookie of the given name (C<sid> 
+in this example) is passed.
+C<assign_session_id> likewise gets called when C<query_session> is set but
+no GET/POST parameter of the specified name (C<sid> in this example) is
+passed.
+Use of C<query_session> is not recommended as to keep the user associated 
+with their session, every link and form in the application must be written to
+include the session id.
+XXX todo: how the user can find out what assign_session_id came up for
+the current user to pass this value back to itself.
 
 For each incoming HTTP hit, L<Continuity> must use some criteria for 
 deciding which execution context to send that hit to.
@@ -98,8 +113,10 @@ sub new {
       path_session => 0,
       cookie_session => 0,
       query_session => 0,
+      assign_session_id => sub { join '', 1+int rand 9, map int rand 10, 2..20 },
       @_,
   }, $class;
+  STDERR->print("cookie_session: $self->{cookie_session} ip_session: $self->{ip_session}\n");
   $self->{callback} or die "Mapper: callback not set.\n";
   return $self;
 
@@ -116,47 +133,53 @@ subset of the functionality.
 
 =cut
 
-# Needs the request to support: headers->header, peerhost, uri
 sub get_session_id_from_hit {
   my ($self, $request) = @_;
   alias my $hit_to_session_id = $self->{hit_to_session_id};
   my $session_id = '';
+  my $sid;
   STDERR->print("        URI: ", $request->uri, "\n");
 
   # IP based sessions
   my $ip = $request->headers->header('Remote-Address')
            || $request->peerhost;
   if($self->{ip_session} && $ip) {
-    $session_id .= '.'.$ip;
+    $session_id .= '.' . $ip;
   }
 
   # Path sessions
   my ($path) = $request->uri =~ m{/([^?]*)};
   if($self->{path_session} && $path) {
-    $session_id .= '.'.$path;
+    $session_id .= '.' . $path;
   }
 
   # Query sessions
-  #my $sid = $request->params->{sid};
-  # XXXmy $ = $request->params('sid');
-  my $uri = $request->uri;
-  my ($sid) = $request->uri =~ m{.*\?(?:.+[;&])?sid=([^;&]+)};
-  STDERR->print("URI: $uri\tSID: $sid\n");
-  if($self->{query_session} && $sid) {
-    $session_id .= '.'.$sid;
+  if($self->{query_session}) {
+    $sid = $request->param($self->{query_session});
+    STDERR->print("got query session: $sid\n");
   }
 
-  #
+  # Cookie sessions
+  if($self->{cookie_session}) {
+    # use Data::Dumper 'Dumper'; STDERR->print("request->headers->header(Cookie): ", Dumper($request->headers->header('Cookie')));
+    (my $cookie) = grep /^$self->{cookie_session}=/, $request->headers->header('Cookie');
+    $cookie =~ s/.*?=//;
+    $sid = $cookie if $cookie;
+    STDERR->print("got cookie session: $sid\n");
+  }
 
-  # Param sessions
+  if(($self->{query_session} or $self->{cookie_session}) and ! $sid) {
+      $sid = $self->{assign_session_id}->($request);
+      $request->set_cookie( CGI->cookie( -name => $self->{cookie_session}, -value => $sid, -expires => '+2d', ) ) if $self->{cookie_session};
+      # XXX somehow record the sid in the request object in case of query_session
+      STDERR->print("New SID: $sid\n");
+  }
 
-  # our $sessionIdCounter;
-  # print "Headers: " . $request->as_string();
-  #  my $pid = $request->params->{pid};
-  #  my $cookieHeader = $request->header('Cookie');
-  #  if($cookieHeader =~ /sessionid=(\d+)/) 
+  $session_id .= '.' . $sid if $sid;
 
-  STDERR->print(" Session ID: ", $session_id, "\n");
+  STDERR->print("SID: $sid\n");
+  STDERR->print("Session ID: ", $session_id, "\n");
+
   return $session_id;
 
 }
@@ -176,8 +199,8 @@ So actually C<< map() >> just drops the request into the correct session queue.
 
 sub map {
 
-  my ($self, $request) = @_;
-  my $session_id = $self->get_session_id_from_hit($request);
+  my ($self, $request, $adapter) = @_;
+  my $session_id = $self->get_session_id_from_hit($request, $adapter);
 
   alias my $request_queue = $self->{sessions}->{$session_id};
   STDERR->print("    Session: count " . (scalar keys %{$self->{sessions}}) . "\n");
