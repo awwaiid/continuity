@@ -310,6 +310,8 @@ sub send_basic_header {
     1;
 }
 
+sub immediate { }
+
 =head1 SEE ALSO
 
 L<Continuity>

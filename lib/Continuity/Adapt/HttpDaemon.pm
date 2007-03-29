@@ -301,6 +301,8 @@ sub send_basic_header {
     1;
 }
 
+sub immediate { }
+
 sub conn :lvalue { $_[0]->{conn} } # private
 
 sub http_request :lvalue { $_[0]->{http_request} } # private

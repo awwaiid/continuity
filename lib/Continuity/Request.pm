@@ -35,6 +35,11 @@ Internal use.  Continuity does this for you, but it's still part of the API of C
 
 Internal use.  Ditto above.
 
+  $request->send_static();
+
+Internal use.  Controlled by the C<< staticp => sub { ... } >> argument pair to the
+main constructor call to C<< Continuity->new() >>.
+
 
 =head1 DESCRIPTION
 

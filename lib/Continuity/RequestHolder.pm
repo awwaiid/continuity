@@ -38,11 +38,17 @@ sub next {
     # called by the user's program from the context of their coroutine
     my $self = shift;
 
+    go_again:
+
     # If we still have an open request, close it
     $self->request->end_request() if $self->request;
 
     # Here is where we actually wait for the next request
     $self->request = $self->request_queue->get;
+
+    if($self->request->immediate) {
+        goto go_again;
+    }
   
     $self->request->send_basic_header;
 
