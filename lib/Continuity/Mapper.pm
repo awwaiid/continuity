@@ -156,7 +156,7 @@ sub get_session_id_from_hit {
   # Query sessions
   if($self->{query_session}) {
     $sid = $request->param($self->{query_session});
-    STDERR->print("got query session: $sid\n");
+    STDERR->print("    Session: got query '$sid'\n");
   }
 
   # Cookie sessions
@@ -165,20 +165,19 @@ sub get_session_id_from_hit {
     (my $cookie) = grep /^$self->{cookie_session}=/, $request->headers->header('Cookie');
     $cookie =~ s/.*?=//;
     $sid = $cookie if $cookie;
-    STDERR->print("got cookie session: $sid\n");
+    STDERR->print("    Session: got cookie '$sid'\n");
   }
 
   if(($self->{query_session} or $self->{cookie_session}) and ! $sid) {
       $sid = $self->{assign_session_id}->($request);
       $request->set_cookie( CGI->cookie( -name => $self->{cookie_session}, -value => $sid, -expires => '+2d', ) ) if $self->{cookie_session};
       # XXX somehow record the sid in the request object in case of query_session
-      STDERR->print("New SID: $sid\n");
+      STDERR->print("    New SID: $sid\n");
   }
 
   $session_id .= '.' . $sid if $sid;
 
-  STDERR->print("SID: $sid\n");
-  STDERR->print("Session ID: ", $session_id, "\n");
+  STDERR->print(" Session ID: ", $session_id, "\n");
 
   return $session_id;
 
@@ -207,7 +206,7 @@ sub map {
 
   if(! $request_queue) {
     print STDERR
-    "    Session: No request queue for this session, making a new one.\n";
+    "    Session: No request queue for this session ($session_id), making a new one.\n";
     $request_queue = $self->new_request_queue($session_id);
     # Don't need to stick it back into $self->{sessions} because of the alias
   }
