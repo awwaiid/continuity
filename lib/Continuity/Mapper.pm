@@ -141,15 +141,15 @@ sub get_session_id_from_hit {
   STDERR->print("        URI: ", $request->uri, "\n");
 
   # IP based sessions
-  my $ip = $request->headers->header('Remote-Address')
-           || $request->peerhost;
-  if($self->{ip_session} && $ip) {
+  if($self->{ip_session}) {
+    my $ip = $request->headers->header('Remote-Address')
+             || $request->peerhost;
     $session_id .= '.' . $ip;
   }
 
   # Path sessions
-  my ($path) = $request->uri =~ m{/([^?]*)};
-  if($self->{path_session} && $path) {
+  if($self->{path_session}) {
+    my ($path) = $request->uri =~ m{/([^?]*)};
     $session_id .= '.' . $path;
   }
 
