@@ -30,7 +30,7 @@ sub new {
     my %args = @_;
     exists $args{$_} or warn "new_requestHolder wants $_ as a parameter" for qw/request_queue session_id/;
     $args{request} = undef;
-    STDERR->print("new RequestHolder. session_id: $args{session_id}\n");
+    STDERR->print("  ReqHolder: created, session_id: $args{session_id}\n");
     bless \%args, $class;
 }
 
