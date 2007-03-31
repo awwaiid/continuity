@@ -3,11 +3,12 @@
 use lib '../lib';
 use strict;
 use warnings;
-use Coro;
-
 use Continuity;
-my $server = new Continuity;
-print STDERR "Starting main loop...\n";
+
+my $server = new Continuity(
+      ip_session => 0,
+      cookie_session => 'sid',
+);
 $server->loop;
 
 sub getNum {
