@@ -5,8 +5,6 @@ use strict;
 use warnings;
 use Continuity;
 
-my $peeker = new Peeker;
-
 my $server = new Continuity(
       port => 8080,
       ip_session => 0,
@@ -29,21 +27,26 @@ sub getNum {
   return $num;
 }
 
-
 sub peek {
   my ($request) = @_;
   while(1) {
-    my $session_id = $request->session_id;
-    my $mapper = $server->{mapper};
-    my $sessions = $mapper->{sessions};
-    my $session_count = scalar keys %$sessions;
-    $request->print("Session count: $session_count<br>");
-    my $vars;
-    foreach my $sess (keys %$sessions) {
-      next unless $sess =~ /^\.\./;
-      $sessions->{$sess}->put($peeker);
-      Coro::cede;
-      $request->print("$sess secret number: " . ${$peeker->{v}->{'$number'}} . "<br>\n");
+    my $sessions = $server->{mapper}->{sessions};
+    $request->print(sprintf "Session count: %d<br>\n", scalar keys %$sessions);
+    my $sess;
+    my $inspector = Inspector->new( callback => sub {
+      use PadWalker 'peek_my';
+      for my $i (1..100) { 
+print STDERR "bjork\n";
+        my $vars = peek_my($i) or last;
+        next unless exists $vars->{'$number'};
+        $request->print("$sess: secret number: ", ${ $vars->{'$number'} }, "<br>\n");
+        last;
+      }
+    });
+    foreach $sess (keys %$sessions) {
+      # next unless $sess =~ /^\.\./;
+      next if $sess =~ /peek/;  # don't try to peek on ourself.  that would be bad.
+      $inspector->inspect( $sessions->{$sess} );
     }
     $request->next;
   }
@@ -87,22 +90,43 @@ sub main {
     $request->next;
 }}
 
-package Peeker;
-use PadWalker qw(peek_my);
+package Inspector;
 use Data::Dumper;
+use Coro::Event;
 
 sub new {
   my $class = shift;
-  my $self = {};
+  my %args = @_;
+  my $self = { 
+    peeks_pending => \my $peeks_pending, 
+    requester => $args{requester},
+    callback => $args{callback},
+  };
   bless $self, $class;
   return $self;
 }
 
+sub inspect {
+    my $self = shift;
+    my $queue = shift;
+    ${ $self->{peeks_pending} } = 1;
+    $queue->put($self);
+    my $var_watcher = Coro::Event->var( var => $self->{peeks_pending}, poll => 'w', );
+    while( ${ $self->{peeks_pending} } ) {
+print STDERR "spin\n";
+        $var_watcher->next;
+print STDERR "spun\n";
+    }
+    $var_watcher->stop;
+    $var_watcher->cancel;
+    return undef;
+}
+
 sub immediate {
-  my ($self) = @_;
-  STDERR->print("PEEKER ($self) called!\n");
-  $self->{v} = peek_my(3);
-  STDERR->print("Peeked at: " . Dumper($self->{v}) . "\n");
+  my $self = shift;
+  my $requester = $self->{requester};
+  $self->{callback}->(requester => $requester); # XXX API?  pass $self and solidify?  or just pass a few vars?
+  ${ $self->{peeks_pending} } = 0;
   return 1;
 }
 

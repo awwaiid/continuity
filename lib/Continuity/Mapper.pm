@@ -231,7 +231,7 @@ sub new_request_queue {
   my $session_id = shift or die;
 
   # Create a request_queue, and hook the adaptor up to feed it
-  my $request_queue = Coro::Channel->new(2);
+  my $request_queue = Coro::Channel->new();
   my $request_holder = Continuity::RequestHolder->new(
     request_queue => $request_queue,
     session_id    => $session_id,
