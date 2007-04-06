@@ -262,7 +262,12 @@ sub param {
         my $in = $req->uri; $in .= '&' . $req->content if $req->content;
         $in =~ s{^.*\?}{};
         my @params;
-        for(split/[&]/, $in) { tr/+/ /; s{%(..)}{pack('c',hex($1))}ge; s{(.*?)=(.*)}{ push @params, $1, $2; ''; }e; };
+        for(split/[&]/, $in) { 
+            tr/+/ /; 
+            s{%(..)}{pack('c',hex($1))}ge; 
+            my($k, $v); ($k, $v) = m/(.*?)=(.*)/s or ($k, $v) = ($_, 1);
+            push @params, $k, $v; 
+        };
         \@params;
     } };
     if(@_) {
