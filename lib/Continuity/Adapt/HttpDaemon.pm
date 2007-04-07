@@ -113,6 +113,7 @@ sub new {
   my $self = bless { 
     docroot => delete $args{docroot},
     server => delete $args{server},
+    no_content_type => delete $args{no_content_type},
     cookies => '',
   }, $class;
 
@@ -149,7 +150,8 @@ sub get_request {
     my $r = $c->get_request or next;
     return Continuity::Adapt::HttpDaemon::Request->new(
       conn => $c,
-      http_request => $r
+      http_request => $r,
+      no_content_type => $self->{no_content_type},
     );
   }
 }
@@ -303,8 +305,8 @@ sub send_basic_header {
     my $self = shift;
     my $cookies = $self->{cookies};
     $self->{cookies} = '';
+    $self->{conn}->send_basic_header;  # perhaps another flag should cover sending this, but it shouldn't be called "no_content_type"
     unless($self->{no_content_type}) {
-      $self->{conn}->send_basic_header;
       $self->print(
            "Cache-Control: private, no-store, no-cache\r\n",
            "Pragma: no-cache\r\n",

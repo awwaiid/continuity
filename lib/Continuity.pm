@@ -99,6 +99,7 @@ sub new {
     reload => 1, # XXX
     callback => (exists &::main ? \&::main : undef),
     staticp => sub { $_[0]->url->path =~ m/\.(jpg|gif|png|css|ico|js)$/ },
+    no_content_type => 0,
     @_,  
   }, $class;
 
@@ -116,6 +117,7 @@ sub new {
       docroot => $self->{docroot},
       server => $self,
       debug => $self->{debug},
+      no_content_type => $self->{no_content_type},
       $self->{port} ? (LocalPort => $self->{port}) : (),
     );
   } elsif(! ref $self->{adaptor}) {
