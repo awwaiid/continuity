@@ -64,7 +64,14 @@ sub param {
 
 sub print {
     my $self = shift; 
-    $self->request->print(@_);
+    goto big_print if length $_[0] > 4096; # trying to fix some bug that truncates output... 
+    return $self->request->print(@_);
+    big_print:
+    while(@_) {
+        my $x = shift;
+        $self->request->print(substr $x, 0, 4096, '') while length $x > 4096;
+        $self->request->print($x);
+    }
 }
 
 # This holds our current request
