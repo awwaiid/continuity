@@ -109,9 +109,9 @@ sub new {
   my $class = shift; 
   my $self = bless { 
       sessions => { },
-      ip_session => 1,
+      ip_session => 0,
       path_session => 0,
-      cookie_session => 0,
+      cookie_session => 'sid',
       query_session => 0,
       assign_session_id => sub { join '', 1+int rand 9, map int rand 10, 2..20 },
       @_,
