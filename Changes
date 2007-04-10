@@ -5,7 +5,6 @@
 open my $out,"+<",$0;
 seek $out,0,0;
 seek DATA,0,0;
-$d = '';
 print $out $l while(($l = <DATA>) ne "__DATA__\n");
 print $out "$l\n";
 # Get the Darcs changelog
