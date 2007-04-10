@@ -33,7 +33,7 @@ Makefile.PL
 lib/Continuity/Mapper.pm
 lib/Continuity/Adapt/FCGI.pm
 lib/Continuity/Adapt/HttpDaemon.pm
-lib/Continuity/Adapt/FCGI/Request.pm
-lib/Continuity/Adapt/HttpDaemon/Request.pm
+lib/Continuity/RequestHolder.pm
+lib/Continuity/Request.pm
 lib/Continuity.pm
 README
