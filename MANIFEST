@@ -15,8 +15,10 @@ eg/post-redirect.pl
 eg/guess.fcgi
 eg/counter.fcgi
 eg/chat.pl
+eg/jquery.js
 eg/merlyn-animals.pl.txt
 eg/chat-ajax-push.js
+eg/guess-peek.pl
 eg/addtwo.pl
 eg/counter.pl
 eg/old/phpcontize.pl
