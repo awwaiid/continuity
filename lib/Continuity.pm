@@ -27,22 +27,95 @@ Continuity - Abstract away statelessness of HTTP using continuations, for statef
 
 =head1 DESCRIPTION
 
-Continuity is a library (not a framework) to simplify Web applications.  Each
-session is written and runs as if it were a persistant application, and is
-able to request additional input at any time without exiting.  Applications
-call a method, C<$request->next>, which temporarily gives up control of the
-CPU and then (eventually) returns the next request.  Put another way,
-coroutines make the HTTP Web appear stateful.
+Continuity is a library to simplify web applications. Each session is written
+and runs as a persistant application, and is able to request additional input
+at any time without exiting. This is significantly different than the
+traditional CGI model of web application in which a program is restarted for
+each new request.
 
-Beyond the basic idea of using coroutines to build Web apps, some logic is
-required to decide how to associate incoming requests with coroutines, and
-logic is required to glue the daemonized application server to the Web.
-Sample implementations of both are provided (specifically, an adapter to run a
-dedicated Webserver built out of L<HTTP::Request> is included), and these
-implementations are useful for many situations and are subclassable.
+The program is passed a $request variable which holds the request (including
+any form data) sent from the browser. In concept, this is a lot like a $cgi
+object from CGI.pm with one very very significant difference. At any point in
+the code you can call $request->next. Your program will then block, waiting for
+the next request in the session. Since the program doesn't actually halt, all
+state is preserved, including lexicals -- similar to doing C<$line = E<lt>E<gt>>.
+
+=head1 GETTING STARTED
+
+First, check out the small demo applications in the eg/ directory of the
+distribution. Sample code there rages from simple counters to more complex
+multi-user ajax applications.
+
+Continuity must have a starting point for creating a new instance of your
+application. The default is to C<main>, which is passed the C<$request> handle.
+See the L<Continuity::Request> documentation for details on the methods
+available from the C<$request> object.
+
+  sub main {
+    my $request = shift;
+    # ...
+  }
+
+Outputting to the client (that is, sending text to the browser) is done by
+calling the C<$request-E<gt>print(...)> method, rather than the plain C<print> used
+in CGI.pm applications.
+
+  $request->print("Hello, guvne'<br>");
+  $request->print("'ow ya been?");
+
+HTTP query parameters (both GET and POST) are also gotten through the
+C<$request> handle, by calling C<$p = $request-E<gt>param('p')>.
+
+  # If they go to http://webapp/?x=7
+  my $input = $request->param('x');
+  # now $input is 7
+
+Once you have output your HTML, call C<$request-E<gt>next> to wait for the next
+response from the client browser. While waiting other sessions will handle
+other requests, allowing the single process to handle many simultaneous
+sessions.
+
+  $request->print("Name: <form><input type=text name=n></form>");
+  $request->next;                   # <-- this is where we suspend execution
+  my $name = $request->param('n');  # <-- start here once they submit
+
+Anything declared lexically (using my) inside of C<main> is private to the
+session, and anything you make global is available to all sessions. When
+C<main> returns the session is terminated, so that another request from the
+same client will get a new session.  Only one continuation is ever executing at
+a given time, so there is no immediate need to worry about locking shared
+global variables when modifying them.
+
+=head1 ADVANCED USAGE
+
+Just using the above code can completely change the way you think about web
+application infrastructure. But why stop there? Here are a few more things to
+ponder.
+
+Since Continuity is based on L<Coro>, we also get to use L<Coro::Event>. This
+means that you can set timers to wake a continuation up after a wait, or you
+can have inner-continuation signaling by watching shared variables.
+
+=head1 EXTENDING AND CUSTOMIZING
+
+This library is designed to be extensible but have good defaults. There are two
+important components which you can extend or replace.
+
+The Adaptor, such as L<Continuity::Adapt::HttpDaemon>, actually makes the HTTP
+connections with the client web broswer. If you want to use FastCGI or even a
+non-HTTP protocol, then you will create an adaptor.
+
+The Mapper, such as the default L<Continuity::Mapper>, identifies incoming
+requests from The Adaptor and maps them to instances of your program. In other
+words, Mappers keep track of sessions, figuring out which requests belong to
+which session. The default mapper can identify sessions based on any
+combination of cookie, ip address, and URL path. This is what you would
+override to create alternative session identification and management.
 
 This is ALPHA software, and feedback/code is welcomed.
-See the Wiki in the references below for things the authors are unhappy with.
+
+See the Wiki in the references below for development information and more
+waxing philosophic.
 
 =head1 METHODS
 
@@ -78,6 +151,26 @@ Arguments:
 =item C<staticp> -- defaults to C<< sub { 0 } >>, used to indicate whether any request is for static content
 
 =item C<debug> -- defaults to C<4> at the moment ;)
+
+=back
+
+Arguments passed to the default adaptor:
+
+=over 1
+
+=item C<port> -- the port on which to listen
+
+=back
+
+Arguments passed to the default mapper:
+
+=over 1
+
+=item C<cookie_session> -- set to name of cookie or undef for no cookies
+
+=item C<ip_session> -- set to true to use ip-addresses for session tracking
+
+=item C<path_session> -- set to true to use URL path for session tracking
 
 =back
 
@@ -274,7 +367,7 @@ safety, in case you have a lot of incoming requests and running sessions.
 Website/Wiki: L<http://continuity.tlt42.org/>
 
 L<Continuity::Adapt::HttpDaemon>, L<Continuity::Mapper>,
-L<Continuity::Adapt::HttpDaemon::Request>, L<Coro>.
+L<Continuity::Request>, L<Coro>.
 
 =head1 AUTHOR
 
