@@ -45,7 +45,7 @@ main constructor call to C<< Continuity->new() >>.
 
 This module contains no actual code.
 It only establishes the interface actually implemented in
-L<Continuity::Adapt::FCGI::Request>, L<Continuity::Adapt::HttpDaemon::Request>, and,
+L<Continuity::Adapt::FCGI>, L<Continuity::Adapt::HttpDaemon>, and,
 perhaps eventually, other places.
 
 =head1 SEE ALSO
@@ -54,9 +54,9 @@ perhaps eventually, other places.
 
 =item L<Continuity>
 
-=item L<Continuity::Adapt::FCGI::Request>
+=item L<Continuity::Adapt::FCGI>
 
-=item L<Continuity::Adapt::HttpDaemon::Request>
+=item L<Continuity::Adapt::HttpDaemon>
 
 =back
 
