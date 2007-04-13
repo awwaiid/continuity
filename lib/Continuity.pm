@@ -9,24 +9,21 @@ Continuity - Abstract away statelessness of HTTP using continuations, for statef
 =head1 SYNOPSIS
 
   #!/usr/bin/perl
-  use strict;
-  use Coro;
 
+  use strict;
   use Continuity;
+
   my $server = new Continuity;
+  $server->loop;
 
   sub main {
     my $request = shift;
     $request->next; # Get the first actual request
-    # must do a substr to chop the leading '/'
-    my $name = substr($request->url->path, 1) || 'World';
-    $request->print("Hello, $name!");
-    $request = $request->next();
-    $name = substr($request->url->path, 1) || 'World';
-    $request->print("Hello to you too, $name!");
+    $request->print("Your name: <form><input type=text name=name></form>");
+    $request->next;
+    my $name = $request->param('name');
+    $request->print("Hello $name!");
   }
-
-  $server->loop;
 
 =head1 DESCRIPTION
 
