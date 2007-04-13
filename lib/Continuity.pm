@@ -115,25 +115,39 @@ long-running request (aka COMET) and watches the globally shared chat message
 log. When a new message is put into the log, it pushes to all of the ajax
 listeners.
 
-To scale a Continuity-based application beyond a single process you need one
-important thing - session affinity. The Seaside folks have a few articles on
-various experiments they've done for scaling, see the wiki for links and ideas.
+Don't forget about those pretty little lexicals you have at your disposal.
+Taking a hint from the Seaside folks, instead of regular links you could have
+callbacks that trigger a anonymous subs. Your code could easily look like:
+
+  my $x;
+  $link1 = gen_link('This is a link to stuff', sub { $x = 7  });
+  $link2 = gen_link('This is another link',    sub { $x = 42 });
+  $request->print($link1, $link2);
+  $request->next;
+  process_links($request);
+  # Now use $x
+
+To scale a Continuity-based application beyond a single process you need to
+investigate the keywords "session affinity". The Seaside folks have a few
+articles on various experiments they've done for scaling, see the wiki for
+links and ideas. Note, however, that premature optimization is evil. We
+shouldn't even be talking about this.
 
 =head1 EXTENDING AND CUSTOMIZING
 
 This library is designed to be extensible but have good defaults. There are two
 important components which you can extend or replace.
 
-The Adaptor, such as L<Continuity::Adapt::HttpDaemon>, actually makes the HTTP
-connections with the client web broswer. If you want to use FastCGI or even a
-non-HTTP protocol, then you will create an adaptor.
+The Adaptor, such as the default L<Continuity::Adapt::HttpDaemon>, actually
+makes the HTTP connections with the client web broswer. If you want to use
+FastCGI or even a non-HTTP protocol, then you will create an adaptor.
 
 The Mapper, such as the default L<Continuity::Mapper>, identifies incoming
 requests from The Adaptor and maps them to instances of your program. In other
 words, Mappers keep track of sessions, figuring out which requests belong to
 which session. The default mapper can identify sessions based on any
-combination of cookie, ip address, and URL path. This is what you would
-override to create alternative session identification and management.
+combination of cookie, ip address, and URL path. Override The Mapper to create
+alternative session identification and management.
 
 =head1 METHODS
 
