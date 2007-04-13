@@ -373,6 +373,7 @@ L<Continuity::Request>, L<Coro>.
 
   Brock Wilcox <awwaiid@thelackthereof.org> - http://thelackthereof.org/
   Scott Walters <scott@slowass.net> - http://slowass.net/
+  Special thanks to Marc Lehmann for creating Coro
 
 =head1 COPYRIGHT
 
