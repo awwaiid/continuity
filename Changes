@@ -20,8 +20,22 @@ print $out $f;
 # *** This is the actual Changelog :) ***
 # ***************************************
 __DATA__
+Fri Apr 13 2007  awwaiid@thelackthereof.org
+  * More documentation, including advancing the link-callback technique
+  * Bump version to 0.92, stairstep-logarithmic-style
+  * Slight simplification of self-modifying Changelog
+  * Make cookies sessions slightly more robust
+  * Fix all the examples to assume implicit_first_next
+  * add and enable implicit_first_next
+  * More minor-ish documentation improvements for Continuity.pm
+  * Give thanks to Marc Lehmann for Coro
+  * Significant improvement of Continuity.pm intro documentation
+  * Simplify the synopsis code in Continuity.pm
+  * Fix references to adaptors' new locations
 
 Tue Apr 10 2007  awwaiid@thelackthereof.org
+  * Apparently 0.1 is less than 0.9! crazy. lets make CPAN happy
+  * Update Changes for 0.10 release
   * Remove dead code from Changes ;)
   * Clean and simplify eg/counter.pl
   * Update version in Continuity.pm and README to 0.10
