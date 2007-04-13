@@ -114,6 +114,7 @@ sub new {
       cookie_session => 'sid',
       query_session => 0,
       assign_session_id => sub { join '', 1+int rand 9, map int rand 10, 2..20 },
+      implicit_first_next => 1,
       @_,
   }, $class;
   STDERR->print("cookie_session: $self->{cookie_session} ip_session: $self->{ip_session}\n");
@@ -240,6 +241,7 @@ sub new_request_queue {
   # async just puts the contents into the global event queue to be executed
   # at some later time
   async {
+    $request_holder->next if $self->{implicit_first_next};
     $self->{callback}->($request_holder, @_);
 
     # If the callback exits, the session is over
