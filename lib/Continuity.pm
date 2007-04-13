@@ -27,18 +27,21 @@ Continuity - Abstract away statelessness of HTTP using continuations, for statef
 
 =head1 DESCRIPTION
 
+This is ALPHA software, and feedback/code is welcomed.
+
 Continuity is a library to simplify web applications. Each session is written
 and runs as a persistant application, and is able to request additional input
-at any time without exiting. This is significantly different than the
-traditional CGI model of web application in which a program is restarted for
+at any time without exiting. This is significantly different from the
+traditional CGI model of web applications in which a program is restarted for
 each new request.
 
 The program is passed a $request variable which holds the request (including
-any form data) sent from the browser. In concept, this is a lot like a $cgi
+any form data) sent from the browser. In concept, this is a lot like a C<$cgi>
 object from CGI.pm with one very very significant difference. At any point in
 the code you can call $request->next. Your program will then block, waiting for
 the next request in the session. Since the program doesn't actually halt, all
-state is preserved, including lexicals -- similar to doing C<$line = E<lt>E<gt>>.
+state is preserved, including lexicals -- similar to doing C<$line=E<lt>E<gt>>
+in a command-line application.
 
 =head1 GETTING STARTED
 
@@ -46,10 +49,19 @@ First, check out the small demo applications in the eg/ directory of the
 distribution. Sample code there rages from simple counters to more complex
 multi-user ajax applications.
 
+Declare all your globals, then declare and create your server. Parameters to
+the server will determine how sessions are tracked, what ports it listens on,
+what will be served as static content, and things of that nature. Then call the
+C<loop> method of the server, which will get things going (and never exits).
+
+  use Continuity;
+  my $server = Continuity->new( port => 8080 );
+  $server->loop;
+
 Continuity must have a starting point for creating a new instance of your
-application. The default is to C<main>, which is passed the C<$request> handle.
-See the L<Continuity::Request> documentation for details on the methods
-available from the C<$request> object.
+application. The default is to C<\&::main>, which is passed the C<$request>
+handle. See the L<Continuity::Request> documentation for details on the methods
+available from the C<$request> object beyond this introduction.
 
   sub main {
     my $request = shift;
@@ -82,19 +94,30 @@ sessions.
 Anything declared lexically (using my) inside of C<main> is private to the
 session, and anything you make global is available to all sessions. When
 C<main> returns the session is terminated, so that another request from the
-same client will get a new session.  Only one continuation is ever executing at
+same client will get a new session. Only one continuation is ever executing at
 a given time, so there is no immediate need to worry about locking shared
 global variables when modifying them.
 
 =head1 ADVANCED USAGE
 
-Just using the above code can completely change the way you think about web
+Merely using the above code can completely change the way you think about web
 application infrastructure. But why stop there? Here are a few more things to
 ponder.
 
 Since Continuity is based on L<Coro>, we also get to use L<Coro::Event>. This
-means that you can set timers to wake a continuation up after a wait, or you
-can have inner-continuation signaling by watching shared variables.
+means that you can set timers to wake a continuation up after a while, or you
+can have inner-continuation signaling by watch-events on shared variables.
+
+For AJAX applications, we've found it handy to give each user multiple
+sessions. In the chat-ajax-push demo each user gets a session for sending
+messages, and a session for receiving them. The receiving session uses a
+long-running request (aka COMET) and watches the globally shared chat message
+log. When a new message is put into the log, it pushes to all of the ajax
+listeners.
+
+To scale a Continuity-based application beyond a single process you need one
+important thing - session affinity. The Seaside folks have a few articles on
+various experiments they've done for scaling, see the wiki for links and ideas.
 
 =head1 EXTENDING AND CUSTOMIZING
 
@@ -111,11 +134,6 @@ words, Mappers keep track of sessions, figuring out which requests belong to
 which session. The default mapper can identify sessions based on any
 combination of cookie, ip address, and URL path. This is what you would
 override to create alternative session identification and management.
-
-This is ALPHA software, and feedback/code is welcomed.
-
-See the Wiki in the references below for development information and more
-waxing philosophic.
 
 =head1 METHODS
 
@@ -216,8 +234,8 @@ sub new {
 
   # Set up the default mapper.
   # The mapper associates execution contexts (continuations) with requests 
-  # according to some criteria.  The default version uses a combination of
-  # client IP address and the path in the request.  
+  # according to some criteria. The default version uses a combination of
+  # client IP address and the path in the request.
 
   if(!$self->{mapper}) {
 
@@ -362,18 +380,24 @@ with the next item in the queue (or waits until there is one).
 Most of the time you will have pretty empty queues -- they are mostly there for
 safety, in case you have a lot of incoming requests and running sessions.
 
+For further internal development documentation, please see the wiki or email
+me.
+
 =head1 SEE ALSO
+
+See the Wiki for development information, more waxing philosophic, and links to
+similar technologies such as L<http://seaside.st/>.
 
 Website/Wiki: L<http://continuity.tlt42.org/>
 
-L<Continuity::Adapt::HttpDaemon>, L<Continuity::Mapper>,
-L<Continuity::Request>, L<Coro>.
+L<Continuity::Request>, L<Continuity::Mapper>,
+L<Continuity::Adapt::HttpDaemon>, L<Coro>
 
 =head1 AUTHOR
 
   Brock Wilcox <awwaiid@thelackthereof.org> - http://thelackthereof.org/
   Scott Walters <scott@slowass.net> - http://slowass.net/
-  Special thanks to Marc Lehmann for creating Coro
+  Special thanks to Marc Lehmann for creating (and maintaining) Coro
 
 =head1 COPYRIGHT
 
