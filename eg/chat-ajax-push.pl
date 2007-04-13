@@ -32,7 +32,6 @@ $server->loop;
 # of these cases, none of which will return (they all loop forever).
 sub main {
   my ($req) = @_;
-  $req->next;
   
   my $path = $req->request->url->path;
   print STDERR "Path: '$path'\n";

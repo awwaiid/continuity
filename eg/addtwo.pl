@@ -9,7 +9,6 @@ $server->loop;
 
 sub main {
   my $request = shift;
-  $request->next; # Get the initial request
   my ($num1, $num2);
   do {
   $request->print(qq{

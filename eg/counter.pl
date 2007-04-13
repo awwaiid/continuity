@@ -37,9 +37,6 @@ sub main {
   # We are given a handle to get new requests
   my $request = shift;
 
-  # We call ->next one time to get the initial request
-  $request->next;
-
   # This keeps track of the number we're currently on
   my $counter = 0;
 

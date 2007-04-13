@@ -54,7 +54,6 @@ print STDERR "bjork\n";
 
 sub main {
   my $request = shift;
-  $request->next;
 
   my $path = $request->request->url->path;
   print STDERR "Path: '$path'\n";

@@ -20,7 +20,6 @@ Continuity->new(port => 8081)->loop;
 
 sub main {
   my ($request) = @_;
-  $request->next;
   my $pageID;
   my $num = 0;
   my $msg = '';

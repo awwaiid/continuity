@@ -15,7 +15,6 @@ $server->loop;
 
 sub main {
   my ($req) = @_;
-  $req->next; # Get the initial request
 
   my $username;
 
