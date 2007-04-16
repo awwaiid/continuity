@@ -226,7 +226,7 @@ sub new {
     debug => 4, # XXX
     reload => 1, # XXX
     callback => (exists &::main ? \&::main : undef),
-    staticp => sub { $_[0]->url->path =~ m/\.(jpg|gif|png|css|ico|js)$/ },
+    staticp => sub { $_[0]->url =~ m/\.(jpg|jpeg|gif|png|css|ico|js)$/ },
     no_content_type => 0,
     @_,  
   }, $class;
