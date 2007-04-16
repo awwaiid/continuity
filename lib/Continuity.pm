@@ -263,7 +263,7 @@ sub new {
 
     my %optional;
     $optional{LocalPort} = $self->{port} if defined $self->{port};
-    for(qw/ip_session path_session query_session cookie_session assign_session_id/) {
+    for(qw/ip_session path_session query_session cookie_session assign_session_id implicit_first_next/) {
         # be careful to pass 0 too if the user specified 0 to turn it off
         $optional{$_} = $self->{$_} if defined $self->{$_}; 
     }
