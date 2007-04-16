@@ -200,6 +200,8 @@ Arguments passed to the default mapper:
 
 =item C<cookie_session> -- set to name of cookie or undef for no cookies
 
+=item C<assign_session_id> -- coderef of routine to custom generate session id numbers
+
 =item C<ip_session> -- set to true to use ip-addresses for session tracking
 
 =item C<path_session> -- set to true to use URL path for session tracking
