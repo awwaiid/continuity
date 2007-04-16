@@ -172,15 +172,15 @@ Arguments:
 
 =over 1
 
+=item C<callback> -- coderef of the main application to run persistantly for each unique visitor -- defaults to C<\&::main>
+
 =item C<adapter> -- defaults to an instance of C<Continuity::Adapt::HttpDaemon>
 
 =item C<mapper> -- defaults to an instance of C<Continuity::Mapper>
 
 =item C<docroot> -- defaults to C<.>
 
-=item C<callback> -- defaults to C<\&::main>
-
-=item C<staticp> -- defaults to C<< sub { 0 } >>, used to indicate whether any request is for static content
+=item C<staticp> -- defaults to C<< sub { $_[0]->url =~ m/\.(jpg|jpeg|gif|png|css|ico|js)$/ } >>, used to indicate whether any request is for static content
 
 =item C<debug> -- defaults to C<4> at the moment ;)
 
@@ -192,19 +192,23 @@ Arguments passed to the default adaptor:
 
 =item C<port> -- the port on which to listen
 
+=item C<no_content_type> -- defaults to 0, set to 1 to disable the C<Content-Type: text/html> header and similar headers
+
 =back
 
 Arguments passed to the default mapper:
 
 =over 1
 
-=item C<cookie_session> -- set to name of cookie or undef for no cookies
+=item C<cookie_session> -- set to name of cookie or undef for no cookies (defaults to undef)
 
-=item C<assign_session_id> -- coderef of routine to custom generate session id numbers
+=item C<assign_session_id> -- coderef of routine to custom generate session id numbers (defaults to a simple random string generator)
 
-=item C<ip_session> -- set to true to use ip-addresses for session tracking
+=item C<ip_session> -- set to true to enable ip-addresses for session tracking (defaults to false)
 
-=item C<path_session> -- set to true to use URL path for session tracking
+=item C<path_session> -- set to true to use URL path for session tracking (defaults to false)
+
+=item C<implicit_first_next> -- set to false to get an empty first request to the main callback (defaults to true)
 
 =back
 
