@@ -151,6 +151,8 @@ sub get_session_id_from_hit {
   # Path sessions
   if($self->{path_session}) {
     my ($path) = $request->uri =~ m{/([^?]*)};
+    $path =~ s/\.//g; # ./ and / are the same thing, and hey -- we use the dot as our seperator anyway
+    $path ||= '/';  # needed to make it consistant
     $session_id .= '.' . $path;
   }
 

@@ -296,9 +296,12 @@ sub new {
          next;
       }
   
-      # Send the basic headers all the time
-      # Don't think the can method will work with the AUTOLOAD trick and wrapper
-      # $r->send_basic_header;
+      # We need some way to decide if we should send static or dynamic
+      # content.
+      # To save users from having to re-implement (likely incorrecty)
+      # basic security checks like .. abuse in GET paths, we should provide
+      # a default implementation -- preferably one already on CPAN.
+      # Here's a way: ask the mapper.
   
       if($self->{staticp}->($r)) {
           $self->debug(3, "Sending static content... ");
@@ -307,12 +310,6 @@ sub new {
           next;
       }
 
-      # We need some way to decide if we should send static or dynamic
-      # content.
-      # To save users from having to re-implement (likely incorrecty)
-      # basic security checks like .. abuse in GET paths, we should provide
-      # a default implementation -- preferably one already on CPAN.
-      # Here's a way: ask the mapper.
       # Right now, map takes one of our Continuity::RequestHolder objects (with conn and request set) and sets queue
 
       # This actually finds the thing that wants it, and gives it to it

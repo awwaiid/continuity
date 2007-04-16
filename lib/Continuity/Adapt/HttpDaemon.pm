@@ -34,7 +34,6 @@ do {
     # asking for breaking from future versions of HTTP::Daemon.
 
     package HTTP::Daemon;
-
     use Errno;
     use Fcntl uc ':default';
 
@@ -167,11 +166,12 @@ sub map_path {
   my $self = shift;
   my $path = shift() || '';
   my $docroot = $self->{docroot} || '';
+  $docroot .= '/' if $docroot and $docroot ne '.' and $docroot !~ m{/$};
   # some massaging, also makes it more secure
   $path =~ s/%([0-9a-fA-F][0-9a-fA-F])/chr hex $1/ge;
   $path =~ s%//+%/%g unless $docroot;
   $path =~ s%/\.(?=/|$)%%g;
-  1 while $path =~ s%/[^/]+/\.\.(?=/|$)%%;
+  $path =~ s%/[^/]+/\.\.(?=/|$)%%g;
 
   # if($path =~ m%^/?\.\.(?=/|$)%) then bad
 
@@ -194,10 +194,11 @@ sent text or HTML on, MIME aside.
 sub send_static {
   my ($self, $r) = @_;
   my $c = $r->conn or die;
-  my $path = $self->map_path($r->url->path) or do { 
-       $self->debug(1, "can't map path: " . $r->url->path); $c->send_error(404); return; 
+  my $url = $r->url;
+  $url =~ s{\?.*}{};
+  my $path = $self->map_path($url) or do { 
+       $self->debug(1, "can't map path: " . $url); $c->send_error(404); return; 
   };
-  # $path =~ s{^/}{}g;
   unless (-f $path) {
       $c->send_error(404);
       return;
