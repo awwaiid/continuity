@@ -292,6 +292,7 @@ sub param {
 
 sub end_request {
     my $self = shift;
+    $self->{write_event}->cancel if $self->{write_event};
     $self->{conn}->close if $self->{conn};
 }
 
@@ -320,7 +321,25 @@ sub send_basic_header {
     1;
 }
 
-sub print { my $self = shift; $self->{conn}->print(@_); }
+sub print { 
+    my $self = shift; 
+    $self->{write_event} ||= Coro::Event->io(fd => fileno $self->{conn}, poll => 'w', );
+    my $e = $self->{write_event};
+    if(length $_[0] > 4096) {
+        while(@_) { 
+            my $x = shift;
+            while(length $x > 4096) { $e->next; $self->{conn}->print(substr $x, 0, 4096, ''); }
+            $e->next; $self->{conn}->print($x) 
+        }
+    } else {
+        $e->next; $self->{conn}->print(@_); 
+    }
+    return 1;
+}
+
+sub uri { $_[0]->{http_request}->uri(); }
+
+# sub query_string { $_[0]->{http_request}->query_string(); } # nope, doesn't exist in HTTP::Headers
 
 sub immediate { }
 
