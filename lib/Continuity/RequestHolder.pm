@@ -49,8 +49,6 @@ sub next {
     if($self->request->immediate) {
         goto go_again;
     }
-  
-    $self->request->send_basic_header();
 
     print STDERR "-----------------------------\n";
 
@@ -64,6 +62,17 @@ sub param {
 
 sub print {
     my $self = shift; 
+    if(!$self->{headers_sent) {
+      $self->request->send_basic_header();
+    } else {
+      $self->{headers_sent} = 0;
+    }
+    return $self->{request}->print(@_);
+}
+
+sub send_headers {
+    my $self = shift; 
+    $self->{headers_sent} = 1;
     return $self->{request}->print(@_);
 }
 
