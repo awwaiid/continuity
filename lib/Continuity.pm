@@ -18,9 +18,8 @@ Continuity - Abstract away statelessness of HTTP using continuations, for statef
 
   sub main {
     my $request = shift;
-    $request->next; # Get the first actual request
     $request->print("Your name: <form><input type=text name=name></form>");
-    $request->next;
+    $request->next; # this waits for the form to be submitted!
     my $name = $request->param('name');
     $request->print("Hello $name!");
   }
