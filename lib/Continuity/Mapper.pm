@@ -117,7 +117,6 @@ sub new {
       implicit_first_next => 1,
       @_,
   }, $class;
-  STDERR->print("cookie_session: $self->{cookie_session} ip_session: $self->{ip_session}\n");
   $self->{callback} or die "Mapper: callback not set.\n";
   return $self;
 
