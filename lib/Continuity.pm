@@ -169,7 +169,7 @@ or if user-supplied instances are provided, it wires those together.
 
 Arguments:
 
-=over 1
+=over
 
 =item C<callback> -- coderef of the main application to run persistantly for each unique visitor -- defaults to C<\&::main>
 
@@ -187,7 +187,7 @@ Arguments:
 
 Arguments passed to the default adaptor:
 
-=over 1
+=over
 
 =item C<port> -- the port on which to listen
 
@@ -197,7 +197,7 @@ Arguments passed to the default adaptor:
 
 Arguments passed to the default mapper:
 
-=over 1
+=over
 
 =item C<cookie_session> -- set to name of cookie or undef for no cookies (defaults to undef)
 
@@ -262,7 +262,8 @@ sub new {
 
     my %optional;
     $optional{LocalPort} = $self->{port} if defined $self->{port};
-    for(qw/ip_session path_session query_session cookie_session assign_session_id implicit_first_next/) {
+    for(qw/ip_session path_session query_session cookie_session assign_session_id 
+           implicit_first_next/) {
         # be careful to pass 0 too if the user specified 0 to turn it off
         $optional{$_} = $self->{$_} if defined $self->{$_}; 
     }
@@ -322,7 +323,6 @@ sub new {
     STDERR->print("Done processing request, waiting for next\n");
     
   };
-  #cede;
 
   return $self;
 }
