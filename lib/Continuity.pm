@@ -333,15 +333,26 @@ Calls Coro::Event::loop (through exportation). This never returns!
 
 =cut
 
+#no warnings; # XXX -- while in devolopment
 sub loop {
   my ($self) = @_;
+
+  # Coro::Event is insane and wants us to have at least one event... or something
+  async {
+     my $timer = Coro::Event->timer(after => 1, interval => 5, hard => 1);
+     while ($timer->next) {
+        print STDERR ".";
+     }
+  };
 
   # XXX passing $self is completely invalid. loop is supposed to take a timeout
   # as the parameter, but by passing self it creates a semi-valid timeout.
   # Without this, with the current Coro and Event, it doesn't work.
-  Coro::Event::loop($self);
-  #Coro::Event::loop();
+  cede;
+  #Coro::Event::loop($self);
+  Coro::Event::loop();
 }
+use warnings; # XXX -- while in devolopment
 
 sub debug {
   my ($self, $level, $msg) = @_;
