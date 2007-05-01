@@ -42,6 +42,8 @@ sub next {
 
     # If we still have an open request, close it
     $self->request->end_request() if $self->request;
+      
+    $self->{headers_sent} = 0;
 
     # Here is where we actually wait for the next request
     $self->request = $self->request_queue->get;
@@ -62,10 +64,9 @@ sub param {
 
 sub print {
     my $self = shift; 
-    if(!$self->{headers_sent) {
+    if(!$self->{headers_sent}) {
       $self->request->send_basic_header();
-    } else {
-      $self->{headers_sent} = 0;
+      $self->{headers_sent} = 1;
     }
     return $self->{request}->print(@_);
 }
