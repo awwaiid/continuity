@@ -10,6 +10,7 @@ WriteMakefile(
       Data::Alias     => 1.01,
       Coro            => 3.3,
       Module::Reload  => 1.07,
+      Coro::Event     => 2.1,
       #FCGI            => 0.67,
     },
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
