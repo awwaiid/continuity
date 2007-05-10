@@ -218,6 +218,26 @@ sub map {
 
 }
 
+sub reap {
+    my $self = shift;
+    my $age = shift or die "pass reap a number of seconds";
+    alias my %sessions = %{ $self->{sessions} };
+    alias my %sessions_last_access = %{ $self->{sessions_last_access} };
+    for my $session_id (keys %sessions) {
+        next if time()-$age > $sessions_last_access{$session_id};
+        warn "$session_id dies";
+        my $request = do {
+            package Continuity::Request::Death;
+            use base 'Continuity::Request';
+            sub immediate { Coro::terminate(0); }
+            bless { }, __PACKAGE__;
+        };
+        $self->exec_cont($request, $sessions{$session_id});
+        delete $sessions{$session_id};
+        delete $sessions_last_access{$session_id};
+    }
+}
+
 sub server :lvalue { $_[0]->{server} }
 
 =head2 $request_queue = $mapper->new_request_queue($session_id)
