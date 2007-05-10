@@ -109,6 +109,7 @@ sub new {
   my $class = shift; 
   my $self = bless { 
       sessions => { },
+      sessions_last_access => { },
       ip_session => 0,
       path_session => 0,
       cookie_session => 'sid',
@@ -201,6 +202,8 @@ sub map {
 
   my ($self, $request, $adapter) = @_;
   my $session_id = $self->get_session_id_from_hit($request, $adapter);
+
+  $self->{sessions_last_access}->{$session_id} = time;
 
   alias my $request_queue = $self->{sessions}->{$session_id};
   STDERR->print("    Session: count " . (scalar keys %{$self->{sessions}}) . "\n");

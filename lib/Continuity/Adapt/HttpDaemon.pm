@@ -48,7 +48,7 @@ do {
             ${*$sock}{'httpd_daemon'} = $self;
             return wantarray ? ($sock, $peer) : $sock;
         } elsif($!{EAGAIN}) {
-            my $socket_read_event = Coro::Event->io(fd => fileno $self, poll => 'r', );
+            my $socket_read_event = Coro::Event->io(fd => fileno $self, poll => 'r', ); # XXX should create this once per call rather than ocne per EGAIN
             $socket_read_event->next;
             $socket_read_event->cancel;
             goto try_again; 
