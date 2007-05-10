@@ -2,9 +2,12 @@
 package Continuity::Adapt::FCGI;
 
 use strict;
+use Continuity::Request;
+use base 'Continuity::Request';
+
 use FCGI;
 use HTTP::Status;
-use Continuity::Adapt::FCGI::Request;
+use Continuity::RequestHolder;
 use IO::Handle;
 
 =head1 NAME
@@ -48,11 +51,11 @@ sub new {
   return $self;
 }
 
-sub new_requestHolder {
-  my ($self, @ops) = @_;
-  my $holder = Continuity::RequestHolder->new( @ops );
-  return $holder;
-}
+#sub new_requestHolder {
+#  my ($self, @ops) = @_;
+#  my $holder = Continuity::RequestHolder->new( @ops );
+#  return $holder;
+#}
 
 =item mapPath($path) - map a URL path to a filesystem path
 
@@ -112,8 +115,16 @@ sub get_request {
   print STDERR "Getting next FCGI Request...\n";
 
   my $r = $self->{fcgi_request};
+  #$SIG{__WARN__} = sub { print STDERR @_ };
+  #$SIG{__DIE__} = sub { print STDERR @_ };
   if($r->Accept() >= 0) {
     print STDERR "Accepted FCGI request.\n";
+    use Data::Dumper;
+    print STDERR "Request env dump: " . Dumper($self->{env}) . "\n\n";
+
+    my $out = $self->{out};
+    print $out "Content-type: text/html\n\nHi :)";
+
     #return Continuity::Adapt::FCGI::Request->new(
     my $request = Continuity::Adapt::FCGI::Request->new(
       fcgi_request => $r,
@@ -126,6 +137,8 @@ sub get_request {
 
 =back
 
+=cut
+
 #
 #
 #
@@ -137,6 +150,7 @@ use strict;
 use CGI::Util qw(unescape);
 use HTTP::Headers;
 use base 'HTTP::Request';
+use Continuity::Request;
 use base 'Continuity::Request';
 
 =item $request = Continuity::Adapt::FCGI::Request->new($client, $id, $cgi, $query)
@@ -216,7 +230,9 @@ sub close {
 sub print {
   my ($self, @text) = @_;
   my $out = $self->{out};
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
   $out->print(@text);
+STDERR->print(__FILE__, ' ', __LINE__, "\n");
 }
 
 =item $request->env($name)
@@ -242,7 +258,6 @@ Gets the value of name from the query (GET or POST data).
 Without a parameter returns a hash reference containing all
 the query data.
 
-=cut
 
 sub param {
    my($self, $param) = @_;
@@ -263,28 +278,48 @@ sub param {
    return undef;
 }
 
-=item $request->cookie([$name])
-
-Gets the value of the cookie with name from the request.
-Without a parameter returns a hash reference containing all
-the cookie data.
-
 =cut
 
-sub cookie {
-   my($self, $name) = @_;
+sub param {
+    my $self = shift; 
+    #my $req = $self->{http_request};
+    my @params = @{ $self->{params} ||= do {
+        my $in = $self->{env}->{QUERY_STRING};
+        $in .= '&' . $self->content_ref if $self->content_ref;
+        $in =~ s{^.*\?}{};
+        my @params;
+        for(split/[&]/, $in) { 
+            tr/+/ /; 
+            s{%(..)}{pack('c',hex($1))}ge; 
+            my($k, $v); ($k, $v) = m/(.*?)=(.*)/s or ($k, $v) = ($_, 1);
+            push @params, $k, $v; 
+        };
+        \@params;
+    } };
+    if(@_) {
+        my $param = shift;
+        my @values;
+        for(my $i = 0; $i < @params; $i += 2) {
+            push @values, $params[$i+1] if $params[$i] eq $param;
+        }
+        return unless @values;
+        return wantarray ? @values : $values[0];
+    } else {
+        my @values;
+        for(my $i = 0; $i < @params; $i += 2) {
+            push @values, $params[$i+1];
+        }
+        return @values;
+    }
+} 
 
-   if(not exists $self->{_cookie}) {
-      return undef unless defined $self->header("Cookie");
-      $self->{_cookie} = _parse(\$self->header("Cookie"));
-   }
-
-   return $self->{_cookie} if not defined $name;
-
-   return $self->{_cookie}->{$name} if exists $self->{_cookie}->{$name};
-
-   return undef;
+sub set_cookie {
+    my $self = shift;
+    my $cookie = shift;
+    # record cookies and then send them the next time send_basic_header() is called and a header is sent.
+    $self->{cookies} .= "Set-Cookie: $cookie\r\n";
 }
+
 
 sub _parse {
    my $string = shift;
@@ -303,10 +338,32 @@ sub end_request {
   $_[0]->{fcgi_request}->Finish;
 }
 
+=for comment
+
 sub send_basic_header {
     # Called unconditionally from C::RequestHolder
     # FCGI apparently has done this already (perhaps elsewhere in the module?), so we don't need to do anything here
     # (unlike in C::A::H::Request, which does do something in this event)
+    1;
+}
+
+=cut
+
+sub send_basic_header {
+    my $self = shift;
+    my $cookies = $self->{cookies};
+    $self->{cookies} = '';
+   # $self->{conn}->send_basic_header;  # perhaps another flag should cover sending this, but it shouldn't be called "no_content_type"
+    unless($self->{no_content_type}) {
+      $self->print(
+           "Cache-Control: private, no-store, no-cache\r\n",
+           "Pragma: no-cache\r\n",
+           "Expires: 0\r\n",
+           "Content-type: text/html\r\n",
+           $cookies,
+           "\r\n"
+      );
+    }
     1;
 }
 
