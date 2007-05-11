@@ -345,6 +345,12 @@ sub print {
 
 sub uri { $_[0]->{http_request}->uri(); }
 
+sub method { $_[0]->{http_request}->method(); }
+
+#
+# end public Continuity::Request API methods
+#
+
 # sub query_string { $_[0]->{http_request}->query_string(); } # nope, doesn't exist in HTTP::Headers
 
 sub immediate { }
