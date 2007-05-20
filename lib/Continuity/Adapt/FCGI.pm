@@ -111,25 +111,13 @@ sub send_static {
 
 sub get_request {
   my ($self) = @_;
-
-  print STDERR "Getting next FCGI Request...\n";
-
   my $r = $self->{fcgi_request};
   #$SIG{__WARN__} = sub { print STDERR @_ };
   #$SIG{__DIE__} = sub { print STDERR @_ };
   if($r->Accept() >= 0) {
-    print STDERR "Accepted FCGI request.\n";
-    use Data::Dumper;
-    print STDERR "Request env dump: " . Dumper($self->{env}) . "\n\n";
-
-    my $out = $self->{out};
-    print $out "Content-type: text/html\n\nHi :)";
-
-    #return Continuity::Adapt::FCGI::Request->new(
-    my $request = Continuity::Adapt::FCGI::Request->new(
+    return Continuity::Adapt::FCGI::Request->new(
       fcgi_request => $r,
     );
-    return $request;
   }
   return undef;
 }
@@ -196,6 +184,11 @@ sub new {
   $self->{fcgi_request} = $fcgi_request;
   $self->{out} = $out;
   $self->{env} = $fcgi_request->GetEnvironment;
+  $self->{content} = $content;
+  STDERR->print( "\n====== Got new request ======\n"
+             . "       Conn: $self->{out}\n"
+             . "    Request: $self\n"
+  );
   return $self;
 }
 
@@ -230,9 +223,7 @@ sub close {
 sub print {
   my ($self, @text) = @_;
   my $out = $self->{out};
-STDERR->print(__FILE__, ' ', __LINE__, "\n");
   $out->print(@text);
-STDERR->print(__FILE__, ' ', __LINE__, "\n");
 }
 
 =item $request->env($name)
@@ -258,37 +249,17 @@ Gets the value of name from the query (GET or POST data).
 Without a parameter returns a hash reference containing all
 the query data.
 
-
-sub param {
-   my($self, $param) = @_;
-   
-   if(not exists $self->{_query}) {
-      if($self->method eq 'GET') {
-         $self->{_query} = _parse(\$self->{env}->{QUERY_STRING});
-      }else{
-         $self->{_query} = _parse($self->content_ref);
-      }
-   }
-   
-   if(not defined $param) {
-      return $self->{_query};
-   }elsif(exists $self->{_query}->{$param}) {
-      return $self->{_query}->{$param};
-   }
-   return undef;
-}
-
 =cut
 
 sub param {
     my $self = shift; 
-    #my $req = $self->{http_request};
     my @params = @{ $self->{params} ||= do {
         my $in = $self->{env}->{QUERY_STRING};
+        $in .= '&' . $self->{content} if $self->{content};
         $in .= '&' . $self->content_ref if $self->content_ref;
         $in =~ s{^.*\?}{};
         my @params;
-        for(split/[&]/, $in) { 
+        for(split/[&]/, $in) {
             tr/+/ /; 
             s{%(..)}{pack('c',hex($1))}ge; 
             my($k, $v); ($k, $v) = m/(.*?)=(.*)/s or ($k, $v) = ($_, 1);

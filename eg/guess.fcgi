@@ -3,11 +3,11 @@
 use lib '../lib';
 use strict;
 use warnings;
-
 use Continuity;
 use Continuity::Adapt::FCGI;
+
 my $server = new Continuity(
-  adaptor => Continuity::Adapt::FCGI->new
+  adaptor => Continuity::Adapt::FCGI->new,
 );
 $server->loop;
 
@@ -28,9 +28,6 @@ sub getNum {
 sub main {
   my $request = shift;
 
-  while(1) {
-    # Ignore the first input, it just means they are viewing us
-    $request->next;
     my $guess;
     my $number = int(rand(100)) + 1;
     my $tries = 0;
@@ -50,7 +47,7 @@ sub main {
     } until ($guess == $number);
     $request->print("You got it! My number was in fact $number.<br>\n");
     $request->print("It took you $tries tries.<br>\n");
-}}
+}
 
 1;
 
