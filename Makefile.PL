@@ -8,7 +8,8 @@ WriteMakefile(
     PREREQ_PM         => {
       HTTP::Daemon    => 1.36,
       Data::Alias     => 1.01,
-      Coro            => 3.3,
+      Coro::Event     => 3.6,
+      Coro            => 3.6,
       Module::Reload  => 1.07,
       Coro::Event     => 2.1,
       #FCGI            => 0.67,
