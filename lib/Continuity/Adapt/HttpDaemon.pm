@@ -77,9 +77,12 @@ do {
 
 Continuity::Adapt::HttpDaemon - Use HTTP::Daemon to get HTTP requests
 
+Continuity::Adapt::HttpDaemon::Request - an HTTP::Daemon based request
+
 =head1 DESCRIPTION
 
-This is the default and reference HTTP adaptor for L<Continuity>. 
+This is the default and reference HTTP adaptor for L<Continuity>. It comes in
+two parts, the server connector and the request interface.
 
 An adaptor interfaces between the continuation server (L<Continuity>) and the
 web server (HTTP::Daemon, FastCGI, etc). It provides incoming HTTP requests to
@@ -242,6 +245,10 @@ that (it's used for file uploads).
 # XXX pass in multiple param names, get back multiple param values
 
 Delegates requests off to the request object it was initialized from.
+
+In other words: Continuity::Adapt::HttpDaemon is the ongoing running HttpDaemon
+process, and Continuity::Adapt::HttpDaemon::Request is individual requests sent
+through.
 
 =cut
 

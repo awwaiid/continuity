@@ -42,7 +42,7 @@ sub next {
 
     # If we still have an open request, close it
     $self->request->end_request() if $self->request;
-      
+
     $self->{headers_sent} = 0;
 
     # Here is where we actually wait for the next request
