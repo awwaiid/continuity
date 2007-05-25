@@ -28,7 +28,8 @@ Continuity's guts, we have:
 sub new {
     my $class = shift;
     my %args = @_;
-    exists $args{$_} or warn "new_requestHolder wants $_ as a parameter" for qw/request_queue session_id/;
+    exists $args{$_} or warn "new_requestHolder wants $_ as a parameter"
+        for qw/request_queue session_id/;
     $args{request} = undef;
     STDERR->print("  ReqHolder: created, session_id: $args{session_id}\n");
     bless \%args, $class;
