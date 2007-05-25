@@ -7,7 +7,7 @@ use warnings;  # XXX dev
 use Continuity::Request;
 use base 'Continuity::Request';
 
-use Coro;
+use Continuity::RequestHolder;
 
 use IO::Handle;
 use Cwd;
@@ -16,7 +16,6 @@ use HTTP::Daemon;
 use HTTP::Status;
 use LWP::MediaTypes qw(add_type);
 
-use Continuity::RequestHolder;
 
 # HTTP::Daemon::send_file_response uses LWP::MediaTypes to guess the
 # Content-Type of a file.  Unfortunately, its list of known extensions is
@@ -223,8 +222,8 @@ sub debug {
 #
 
 package Continuity::Adapt::HttpDaemon::Request;
-use strict;
 
+use strict;
 use vars qw( $AUTOLOAD );
 
 =for comment
