@@ -333,15 +333,15 @@ Calls Coro::Event::loop (through exportation). This never returns!
 
 =cut
 
-#no warnings; # XXX -- while in devolopment
+no warnings;
 sub loop {
   my ($self) = @_;
 
   # Coro::Event is insane and wants us to have at least one event... or something
   async {
-     my $timer = Coro::Event->timer(after => 1, interval => 5, hard => 1);
+     my $timer = Coro::Event->timer(after => 1, interval => 60, hard => 1);
      while ($timer->next) {
-        print STDERR ".";
+        #print STDERR ".";
      }
   };
 
