@@ -20,7 +20,41 @@ print $out $f;
 # *** This is the actual Changelog :) ***
 # ***************************************
 __DATA__
+Sat May 19 2007  awwaiid@thelackthereof.org
+  * Documentation update for Adapt::HttpDaemon
+  * Update dependency versions for Coro and Coro::Event
+  * Updates to FCGI -- works for me now
+
+Thu May 10 2007  awwaiid@thelackthereof.org
+  * FCGI updates, doesn't do cookies yet
+
+Wed May  9 2007  scott@slowass.net
+  * init stuff for reap() logic, and a todo comment
+  * first pass at reap() routine
+  * add Coro::Event or something like that to the deps
+
+Tue May  1 2007  awwaiid@thelackthereof.org
+  * Fix headers-sent checking and setting
+
+Tue Apr 24 2007  awwaiid@thelackthereof.org
+  * Fix the startup warnings, though I create a needless Coro::Event that should be eliminated
+  * Comment and whitespace changes
+  * Fix Continuity.pm documentation to assume implicit_first_request
+  * Remove some annoying debugging
+  * Add send_headers method and delay sending headers until first print
+
+Sun Apr 15 2007  scott@slowass.net
+  * less insane cookie parsing code (I think... maybe I just didn't understand what was there before)
+  * context switch on print to full write buffer like how I thought I had it before
+  * fixes to static file serving to work around bugs in HTTP::Daemon where path names come up blank
+  * implicit_first_next passed through
+  * modularizing the inspector stuff and fixing the example to use the modular module
+  * fix staticp bug where files like //foo.js weren't considred static
+  * more docs patches -- list more of the constructor options and give slight more info about each
+  * mention the assign_session_id callback in Continuity's docs
+
 Fri Apr 13 2007  awwaiid@thelackthereof.org
+  * Update changelog for release
   * More documentation, including advancing the link-callback technique
   * Bump version to 0.92, stairstep-logarithmic-style
   * Slight simplification of self-modifying Changelog
