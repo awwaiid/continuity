@@ -4,7 +4,6 @@ package Continuity::Monitor;
 use strict;
 use Continuity;
 use Continuity::Inspector;
-use Coro;
 use PadWalker 'peek_my';
 use Data::Dumper;
 
