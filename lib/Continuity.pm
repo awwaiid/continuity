@@ -334,7 +334,8 @@ Calls Coro::Event::loop (through exportation). This never returns!
 
 =cut
 
-no warnings;
+no warnings 'redefine';
+
 sub loop {
   my ($self) = @_;
 
@@ -356,7 +357,6 @@ STDERR->print("debug: loop calling reap\n");
   #Coro::Event::loop($self);
   Coro::Event::loop();
 }
-use warnings; # XXX -- while in devolopment
 
 sub debug {
   my ($self, $level, $msg) = @_;

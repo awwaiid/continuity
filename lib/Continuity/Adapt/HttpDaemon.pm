@@ -223,9 +223,6 @@ sub debug {
 
 package Continuity::Adapt::HttpDaemon::Request;
 
-use strict;
-use vars qw( $AUTOLOAD );
-
 =for comment
 
 See L<Continuity::Request> for API documentation.
