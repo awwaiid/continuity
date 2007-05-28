@@ -359,6 +359,7 @@ sub http_request :lvalue { $_[0]->{http_request} } # private
 # If we don't know how to do something, pass it on to the current http_request
 
 sub AUTOLOAD {
+  our $AUTOLOAD;
   my $method = $AUTOLOAD; $method =~ s/.*:://;
   return if $method eq 'DESTROY';
   #print STDERR "Request AUTOLOAD: $method ( @_ )\n";
