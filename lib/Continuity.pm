@@ -227,6 +227,7 @@ sub new {
     callback => (exists &::main ? \&::main : undef),
     staticp => sub { $_[0]->url =~ m/\.(jpg|jpeg|gif|png|css|ico|js)$/ },
     no_content_type => 0,
+    reap_after => undef,
     @_,  
   }, $class;
 
@@ -339,9 +340,12 @@ sub loop {
 
   # Coro::Event is insane and wants us to have at least one event... or something
   async {
-     my $timer = Coro::Event->timer(after => 1, interval => 60, hard => 1);
+     my $timeout = 300;  
+     $timeout = $self->{reap_after} if $self->{reap_after} and $self->{reap_after} < $timeout;
+     my $timer = Coro::Event->timer(interval => $timeout, );
      while ($timer->next) {
-        #print STDERR ".";
+STDERR->print("debug: loop calling reap\n");
+        $self->mapper->reap($self->{reap_after}) if $self->{reap_after};
      }
   };
 
