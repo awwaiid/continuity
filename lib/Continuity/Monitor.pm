@@ -5,6 +5,8 @@ use strict;
 use Continuity;
 use Continuity::Inspector;
 use Coro;
+use PadWalker 'peek_my';
+use Data::Dumper;
 
 =head1 NAME
 
@@ -74,8 +76,6 @@ sub inspect_session {
   my ($self, $session) = @_;
   my $request = $self->{request};
   my $inspector = Continuity::Inspector->new( callback => sub {
-    use PadWalker 'peek_my';
-    use Data::Dumper;
     $Data::Dumper::Sortkeys = 1;
     $Data::Dumper::Terse = 1;
     for my $i (1..100) { 
