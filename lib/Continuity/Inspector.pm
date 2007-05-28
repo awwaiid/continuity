@@ -1,4 +1,4 @@
-package Inspector;
+package Continuity::Inspector;
 use Data::Dumper;
 use Coro::Event;
 
