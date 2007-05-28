@@ -4,7 +4,6 @@ package Continuity::Mapper;
 use strict;
 use warnings; # XXX -- development only
 use CGI;
-use Data::Alias;
 use Coro;
 use Coro::Channel;
 
@@ -136,7 +135,6 @@ subset of the functionality.
 
 sub get_session_id_from_hit {
   my ($self, $request) = @_;
-  alias my $hit_to_session_id = $self->{hit_to_session_id};
   my $session_id = '';
   my $sid;
   STDERR->print("        URI: ", $request->uri, "\n");
@@ -205,15 +203,14 @@ sub map {
 
   $self->{sessions_last_access}->{$session_id} = time;
 
-  alias my $request_queue = $self->{sessions}->{$session_id};
   STDERR->print("    Session: count " . (scalar keys %{$self->{sessions}}) . "\n");
 
-  if(! $request_queue) {
-    print STDERR
-    "    Session: No request queue for this session ($session_id), making a new one.\n";
-    $request_queue = $self->new_request_queue($session_id);
-    # Don't need to stick it back into $self->{sessions} because of the alias
+  if( ! $self->{sessions}->{$session_id} ) {
+      STDERR->print("    Session: No request queue for this session ($session_id), making a new one.\n");
+      $self->{sessions}->{$session_id} = $self->new_request_queue($session_id);
   }
+
+  my $request_queue = $self->{sessions}->{$session_id};
 
   $self->exec_cont($request, $request_queue);
 
@@ -224,10 +221,10 @@ sub map {
 sub reap {
     my $self = shift;
     my $age = shift or die "pass reap a number of seconds";
-    alias my %sessions = %{ $self->{sessions} };
-    alias my %sessions_last_access = %{ $self->{sessions_last_access} };
-    for my $session_id (keys %sessions) {
-        next if time()-$age > $sessions_last_access{$session_id};
+    my $sessions = $self->{sessions};
+    my $sessions_last_access = $self->{sessions_last_access};
+    for my $session_id (keys %$sessions ) {
+        next if time()-$age > $sessions_last_access->{$session_id};
         warn "$session_id dies";
         my $request = do {
             package Continuity::Request::Death;
@@ -235,9 +232,9 @@ sub reap {
             sub immediate { Coro::terminate(0); }
             bless { }, __PACKAGE__;
         };
-        $self->exec_cont($request, $sessions{$session_id});
-        delete $sessions{$session_id};
-        delete $sessions_last_access{$session_id};
+        $self->exec_cont($request, $sessions->{$session_id});
+        delete $sessions->{$session_id};
+        delete $sessions_last_access->{$session_id};
     }
 }
 

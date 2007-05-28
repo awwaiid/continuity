@@ -7,7 +7,6 @@ WriteMakefile(
     VERSION_FROM      => 'lib/Continuity.pm', # finds $VERSION
     PREREQ_PM         => {
       HTTP::Daemon    => 1.36,
-      Data::Alias     => 1.01,
       Coro::Event     => 3.6,
       Coro            => 3.6,
       Module::Reload  => 1.07,
