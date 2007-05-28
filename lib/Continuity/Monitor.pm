@@ -41,7 +41,9 @@ sub new {
 
   bless $self, $class;
 
-  $self->{server} = Continuity->new(
+  # We don't save the server... because we don't need it and because weird
+  # things happen when we do :)
+  Continuity->new(
       port => $self->{port},
       cookie_session => 'monitor_sid',
       callback => sub { $self->main(@_) },
