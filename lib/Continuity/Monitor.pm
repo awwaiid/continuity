@@ -6,26 +6,48 @@ use Continuity;
 use Continuity::Inspector;
 use Coro;
 
+=head1 NAME
+
+Continuity::Monitor - monitor and inspect a Continuity server
+
+=head1 DESCRIPTION
+
+This is an application to monitor and inspect your running application. It has
+its own web interface on a separate port.
+
+The monitor does several things. First, this is a monitoring tool for working
+with the sessions your server is running. You can view and kill each session.
+Secondly it is an inspector for each session -- letting you see the current
+state including variables. And third, it will let you actually change the
+values of these sessions, or even run code in their context.
+
+(well... it _will_ do all those things :) )
+
+=head1 METHODS
+
+=head2 $monitor = Continuity::Monitor->new( server => $server, ... )
+
+This is just like Continuity->new, and takes all of the same parameters, except
+that instead of running your code it is a self-contained application.
+
+=cut
+
 sub new {
   my ($class, @ops) = @_;
   my $self = {
-    port => 8081,
+    port => 8081, # override default port to avoid a conflict
     @ops
   };
+
   bless $self, $class;
 
-  $self->start_server;
-
-  return $self;
-}
-
-sub start_server {
-  my ($self) = @_;
-  my $server = Continuity->new(
+  $self->{server} = Continuity->new(
       port => $self->{port},
       cookie_session => 'monitor_sid',
       callback => sub { $self->main(@_) },
   );
+
+  return $self;
 }
 
 sub main {
@@ -43,31 +65,6 @@ sub main {
     if($sess) {
       $self->inspect_session($sessions->{$sess});
     }
-
-=for comment
-
-    my $sess;
-    my $inspector = Continuity::Inspector->new( callback => sub {
-      use PadWalker 'peek_my';
-      for my $i (1..100) { 
-        my $vars = peek_my($i) or last;
-        use Data::Dumper;
-        $request->print("<pre>\n\n" . Dumper($vars) . "</pre>");
-        next unless exists $vars->{'$number'};
-        $request->print("$sess: secret number: ", ${ $vars->{'$number'} }, "<br>\n");
-        last;
-      }
-    });
-    foreach $sess (keys %$sessions) {
-      print STDERR "Looking at $sess...\n";
-      # next unless $sess =~ /^\.\./;
-      next if $sess eq $request->session_id;  # don't try to peek on ourself.  that would be bad.
-      # next if $sess =~ /peek/;  # don't try to peek on ourself.  that would be bad.
-      $inspector->inspect( $sessions->{$sess} );
-    }
-
-=cut
-
   }
 }
 
@@ -91,9 +88,6 @@ sub inspect_session {
                     . "\n$package, $filename:$line\n$subroutine2\n"
                     . Dumper($vars)
                     . "</pre>");
-      #next unless exists $vars->{'$number'};
-      #$request->print("secret number: ", ${ $vars->{'$number'} }, "<br>\n");
-      #last;
     }
   });
   $inspector->inspect( $session );
