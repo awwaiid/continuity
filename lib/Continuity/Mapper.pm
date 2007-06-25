@@ -36,10 +36,10 @@ L<Contuinity> does the following by default:
 
 L<Continuity::Mapper> fills in the following defaults:
 
-    ip_session => 1,
-    path_session => 0,
     cookie_session => 'sid',
-    query_session => 'sid',
+    ip_session => 0,
+    path_session => 0,
+    query_session => 0,
     assign_session_id => sub { join '', map int rand 10, 1..20 },
 
 Only C<cookie_session> or C<query_session> should be set, but not both.
