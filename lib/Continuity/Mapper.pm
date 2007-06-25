@@ -224,7 +224,7 @@ sub reap {
     my $sessions = $self->{sessions};
     my $sessions_last_access = $self->{sessions_last_access};
     for my $session_id (keys %$sessions ) {
-        next if time()-$age > $sessions_last_access->{$session_id};
+        next if $sessions_last_access->{$session_id} + $age > time;
         warn "$session_id dies";
         my $request = do {
             package Continuity::Request::Death;
