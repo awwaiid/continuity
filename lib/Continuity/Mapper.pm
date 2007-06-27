@@ -174,7 +174,7 @@ sub get_session_id_from_hit {
       STDERR->print("    New SID: $sid\n");
   }
 
-  $session_id .= '.' . $sid if $sid;
+  $session_id .= $sid if $sid;
 
   STDERR->print(" Session ID: ", $session_id, "\n");
 
