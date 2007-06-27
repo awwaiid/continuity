@@ -1,6 +1,6 @@
 package Continuity;
 
-our $VERSION = '0.93';
+our $VERSION = '0.94';
 
 =head1 NAME
 
@@ -26,7 +26,7 @@ Continuity - Abstract away statelessness of HTTP using continuations, for statef
 
 =head1 DESCRIPTION
 
-This is ALPHA software, and feedback/code is welcomed.
+This is BETA software, and feedback/code is welcomed.
 
 Continuity is a library to simplify web applications. Each session is written
 and runs as a persistant application, and is able to request additional input
