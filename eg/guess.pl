@@ -5,10 +5,10 @@ use strict;
 use warnings;
 use Continuity;
 
-my $server = new Continuity(
-      ip_session => 0,
-      cookie_session => 'sid',
+my $server = Continuity->new(
+  port => 8080,
 );
+
 $server->loop;
 
 sub getNum {
