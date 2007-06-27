@@ -1,4 +1,3 @@
-
 package Continuity::Monitor;
 
 use strict;
@@ -11,10 +10,22 @@ use Data::Dumper;
 
 Continuity::Monitor - monitor and inspect a Continuity server
 
+=head1 SYNOPSIS
+
+  #!/usr/bin/perl
+
+  use strict;
+  use Continuity;
+  use Continuity::Monitor;
+
+  my $server = new Continuity( port => 8080 );
+  my $monitor = Continuity::Monitor->new( server => $server, port => 8081 );
+  $server->loop;
+
 =head1 DESCRIPTION
 
 This is an application to monitor and inspect your running application. It has
-its own web interface on a separate port.
+its own web interface on a separate port. It is very rough.
 
 The monitor does several things. First, this is a monitoring tool for working
 with the sessions your server is running. You can view and kill each session.

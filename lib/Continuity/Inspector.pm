@@ -1,4 +1,6 @@
 package Continuity::Inspector;
+
+use strict;
 use Data::Dumper;
 use Coro::Event;
 
