@@ -16,10 +16,10 @@ Continuity::Mapper - Map a request onto a session
 =head1 DESCRIPTION
 
 This is the session dictionary and mapper. Given an HTTP request, mapper gives
-said request to the correct session. Mapper makes sessions as needed and stores
-them. Mapper may be subclassed to implement other strategies for associating
-requests with continuations. The default strategy is (in limbo but quite
-possibily) based on client IP address plus URL.
+said request to the correct continuation. Mapper makes continuations as needed
+and stores them. Mapper may be subclassed to implement other strategies for
+associating requests with continuations. The default strategy is (in limbo but
+quite possibily) based on a cookie.
 
 =head1 METHODS
 
@@ -49,11 +49,10 @@ in this example) is passed.
 C<assign_session_id> likewise gets called when C<query_session> is set but
 no GET/POST parameter of the specified name (C<sid> in this example) is
 passed.
-Use of C<query_session> is not recommended as to keep the user associated 
+
+If you use C<query_session> to keep the user associated 
 with their session, every link and form in the application must be written to
-include the session id.
-XXX todo: how the user can find out what assign_session_id came up for
-the current user to pass this value back to itself.
+include the session id. The currently assigned ID can be gotten at with C<$request->session_id>.
 
 For each incoming HTTP hit, L<Continuity> must use some criteria for 
 deciding which execution context to send that hit to.

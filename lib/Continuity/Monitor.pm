@@ -82,6 +82,7 @@ sub inspect_session {
       my ($package, $filename, $line, $subroutine) = caller($i-1);
       my ($package2, $filename2, $line2, $subroutine2) = caller($i);
       $Data::Dumper::Maxdepth = 2;
+      # Skip over Continuity and Coro specific frames
       next if $package =~ /^(Continuity|Coro)/;
       next if $subroutine2 =~ /^(Continuity|Coro)::/;
       $request->print("<pre>\n\nLevel "

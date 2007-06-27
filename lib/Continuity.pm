@@ -37,10 +37,10 @@ each new request.
 The program is passed a $request variable which holds the request (including
 any form data) sent from the browser. In concept, this is a lot like a C<$cgi>
 object from CGI.pm with one very very significant difference. At any point in
-the code you can call $request->next. Your program will then block, waiting for
-the next request in the session. Since the program doesn't actually halt, all
-state is preserved, including lexicals -- similar to doing C<$line=E<lt>E<gt>>
-in a command-line application.
+the code you can call $request->next. Your program will then suspend, waiting
+for the next request in the session. Since the program doesn't actually halt,
+all state is preserved, including lexicals -- getting input from the browser is
+then similar to doing C<$line=E<lt>E<gt>> in a command-line application.
 
 =head1 GETTING STARTED
 
@@ -139,7 +139,7 @@ important components which you can extend or replace.
 
 The Adaptor, such as the default L<Continuity::Adapt::HttpDaemon>, actually
 makes the HTTP connections with the client web broswer. If you want to use
-FastCGI or even a non-HTTP protocol, then you will create an adaptor.
+FastCGI or even a non-HTTP protocol, then you will use or create an adaptor.
 
 The Mapper, such as the default L<Continuity::Mapper>, identifies incoming
 requests from The Adaptor and maps them to instances of your program. In other
@@ -199,7 +199,9 @@ Arguments passed to the default mapper:
 
 =over
 
-=item C<cookie_session> -- set to name of cookie or undef for no cookies (defaults to undef)
+=item C<cookie_session> -- set to name of cookie or undef for no cookies (defaults to 'cid')
+
+=item C<query_session> -- set to the name of a query variable for session tracking (defaults to undef)
 
 =item C<assign_session_id> -- coderef of routine to custom generate session id numbers (defaults to a simple random string generator)
 
@@ -330,7 +332,7 @@ sub new {
 
 =head2 C<< $server->loop() >>
 
-Calls Coro::Event::loop (through exportation). This never returns!
+Calls Coro::Event::loop and sets up session reaping. This never returns!
 
 =cut
 
@@ -354,7 +356,6 @@ STDERR->print("debug: loop calling reap\n");
   # as the parameter, but by passing self it creates a semi-valid timeout.
   # Without this, with the current Coro and Event, it doesn't work.
   cede;
-  #Coro::Event::loop($self);
   Coro::Event::loop();
 }
 
