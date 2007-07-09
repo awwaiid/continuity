@@ -5,6 +5,7 @@ use Continuity;
 use Continuity::Inspector;
 use PadWalker 'peek_my';
 use Data::Dumper;
+use HTML::Entities;
 
 =head1 NAME
 
@@ -82,28 +83,76 @@ sub main {
   }
 }
 
-sub inspect_session {
+sub get_session_vars {
   my ($self, $session) = @_;
   my $request = $self->{request};
+  my @vars;
   my $inspector = Continuity::Inspector->new( callback => sub {
     $Data::Dumper::Sortkeys = 1;
     $Data::Dumper::Terse = 1;
+    $Data::Dumper::Maxdepth = 2;
     for my $i (1..100) { 
       my $vars = eval { peek_my($i) } or last;
       my ($package, $filename, $line, $subroutine) = caller($i-1);
       my ($package2, $filename2, $line2, $subroutine2) = caller($i);
-      $Data::Dumper::Maxdepth = 2;
       # Skip over Continuity and Coro specific frames
       next if $package =~ /^(Continuity|Coro)/;
       next if $subroutine2 =~ /^(Continuity|Coro)::/;
-      $request->print("<pre>\n\nLevel "
-                    . $i
-                    . "\n$package, $filename:$line\n$subroutine2\n"
-                    . Dumper($vars)
-                    . "</pre>");
+      push @vars, {
+        level => $i,
+        package => $package,
+        filename => $filename,
+        line => $line,
+        subroutine => $subroutine2,
+        vars => $vars,
+        expand => 0,
+      };
     }
   });
   $inspector->inspect( $session );
+  return @vars;
+}
+
+
+sub inspect_session {
+  my ($self, $session) = @_;
+  my $request = $self->{request};
+
+  my @explore = $self->get_session_vars($session);
+
+  #$Data::Dumper::Maxdepth = 4;
+  #$request->print("<pre>DUMP:\n\n" . Dumper(\@explore) . "\n\n");
+
+  while(1) {
+    $request->print(qq{
+      <a href="?action=exit">Exit</a><br>
+      <ul>
+    });
+    my $offset = 0;
+    my $tree = [];
+    foreach my $scope (@explore) {
+      $request->print(qq{
+        <li>
+          <a href="?toggle=$offset">+</a>
+          $scope->{subroutine} ($scope->{filename}:$scope->{line})
+      });
+      if($scope->{expand}) {
+        $request->print("<ul><li><pre>");
+        my $var_dump = join '</pre></li><li><pre>',
+        map { encode_entities("$_ = " . Dumper($scope->{vars}{$_})) } keys %{$scope->{vars}};
+        $request->print($var_dump);
+        $request->print("</li></ul>");
+      }
+      $request->print("</li>");
+      $offset++;
+    }
+    $request->print('</ul>');
+    $request->next;
+    last if $request->param('action') eq 'exit';
+    my $scope = $request->param('toggle');
+    $explore[$scope]->{expand} += 1;
+    $explore[$scope]->{expand} %= 2;
+  }
 }
 
 
