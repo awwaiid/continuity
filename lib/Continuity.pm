@@ -45,7 +45,7 @@ then similar to doing C<$line=E<lt>E<gt>> in a command-line application.
 =head1 GETTING STARTED
 
 First, check out the small demo applications in the eg/ directory of the
-distribution. Sample code there rages from simple counters to more complex
+distribution. Sample code there ranges from simple counters to more complex
 multi-user ajax applications.
 
 Declare all your globals, then declare and create your server. Parameters to
@@ -75,7 +75,7 @@ in CGI.pm applications.
   $request->print("'ow ya been?");
 
 HTTP query parameters (both GET and POST) are also gotten through the
-C<$request> handle, by calling C<$p = $request-E<gt>param('p')>.
+C<$request> handle, by calling C<$p = $request-E<gt>param('p')>, like in C<CGI>.
 
   # If they go to http://webapp/?x=7
   my $input = $request->param('x');
@@ -150,6 +150,11 @@ alternative session identification and management.
 
 =head1 METHODS
 
+The main instance of a continuity server really only has two methods, C<new>
+and C<loop>. These are used at the top of your program to do setup and start
+the server. Please look at L<Continuity::Request> for documentation on the
+C<$request> object that is passed to each session in your application.
+
 =cut
 
 use strict;
@@ -169,47 +174,47 @@ or if user-supplied instances are provided, it wires those together.
 
 Arguments:
 
-=over
+=over 4
 
-=item C<callback> -- coderef of the main application to run persistantly for each unique visitor -- defaults to C<\&::main>
+=item * C<callback> -- coderef of the main application to run persistantly for each unique visitor -- defaults to C<\&::main>
 
-=item C<adapter> -- defaults to an instance of C<Continuity::Adapt::HttpDaemon>
+=item * C<adapter> -- defaults to an instance of C<Continuity::Adapt::HttpDaemon>
 
-=item C<mapper> -- defaults to an instance of C<Continuity::Mapper>
+=item * C<mapper> -- defaults to an instance of C<Continuity::Mapper>
 
-=item C<docroot> -- defaults to C<.>
+=item * C<docroot> -- defaults to C<.>
 
-=item C<staticp> -- defaults to C<< sub { $_[0]->url =~ m/\.(jpg|jpeg|gif|png|css|ico|js)$/ } >>, used to indicate whether any request is for static content
+=item * C<staticp> -- defaults to C<< sub { $_[0]->url =~ m/\.(jpg|jpeg|gif|png|css|ico|js)$/ } >>, used to indicate whether any request is for static content
 
-=item C<debug> -- defaults to C<4> at the moment ;)
+=item * C<debug_level> -- defaults to C<4> at the moment ;)
 
 =back
 
 Arguments passed to the default adaptor:
 
-=over
+=over 4
 
-=item C<port> -- the port on which to listen
+=item * C<port> -- the port on which to listen
 
-=item C<no_content_type> -- defaults to 0, set to 1 to disable the C<Content-Type: text/html> header and similar headers
+=item * C<no_content_type> -- defaults to 0, set to 1 to disable the C<Content-Type: text/html> header and similar headers
 
 =back
 
 Arguments passed to the default mapper:
 
-=over
+=over 4
 
-=item C<cookie_session> -- set to name of cookie or undef for no cookies (defaults to 'cid')
+=item * C<cookie_session> -- set to name of cookie or undef for no cookies (defaults to 'cid')
 
-=item C<query_session> -- set to the name of a query variable for session tracking (defaults to undef)
+=item * C<query_session> -- set to the name of a query variable for session tracking (defaults to undef)
 
-=item C<assign_session_id> -- coderef of routine to custom generate session id numbers (defaults to a simple random string generator)
+=item * C<assign_session_id> -- coderef of routine to custom generate session id numbers (defaults to a simple random string generator)
 
-=item C<ip_session> -- set to true to enable ip-addresses for session tracking (defaults to false)
+=item * C<ip_session> -- set to true to enable ip-addresses for session tracking (defaults to false)
 
-=item C<path_session> -- set to true to use URL path for session tracking (defaults to false)
+=item * C<path_session> -- set to true to use URL path for session tracking (defaults to false)
 
-=item C<implicit_first_next> -- set to false to get an empty first request to the main callback (defaults to true)
+=item * C<implicit_first_next> -- set to false to get an empty first request to the main callback (defaults to true)
 
 =back
 
