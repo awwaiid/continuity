@@ -166,7 +166,10 @@ use Coro::Event;
 use HTTP::Status; # to grab static response codes. Probably shouldn't be here
 use Continuity::RequestHolder;
 
-=head2 C<< $server = Continuity->new(...) >>
+our $_debug_level;
+sub debug_level :lvalue { $_debug_level }         # Debug level (integer)
+
+=head2 $server = Continuity->new(...)
 
 The C<Continuity> object wires together an adapter and a mapper.
 Creating the C<Continuity> object gives you the defaults wired together,
@@ -229,7 +232,7 @@ sub new {
     docroot => '.',   # default docroot
     mapper => undef,
     adapter => undef,
-    debug => 4, # XXX
+    debug_level => 4, # XXX
     reload => 1, # XXX
     callback => (exists &::main ? \&::main : undef),
     staticp => sub { $_[0]->url =~ m/\.(jpg|jpeg|gif|png|css|ico|js)$/ },
@@ -240,7 +243,7 @@ sub new {
 
   if($self->{reload}) {
     eval "use Module::Reload";
-    $Module::Reload::Debug = 1 if $self->{debug};
+    $Module::Reload::Debug = 1 if $self->debug_level;
   }
 
   # Set up the default adaptor.
@@ -251,7 +254,7 @@ sub new {
     $self->{adaptor} = Continuity::Adapt::HttpDaemon->new(
       docroot => $self->{docroot},
       server => $self,
-      debug => $self->{debug},
+      debug_level => $self->debug_level,
       no_content_type => $self->{no_content_type},
       $self->{port} ? (LocalPort => $self->{port}) : (),
     );
@@ -277,7 +280,7 @@ sub new {
     }
 
     $self->{mapper} = Continuity::Mapper->new(
-      debug => $self->{debug},
+      debug_level => $self->debug_level,
       callback => $self->{callback},
       server => $self,
       %optional,
@@ -335,7 +338,7 @@ sub new {
   return $self;
 }
 
-=head2 C<< $server->loop() >>
+=head2 $server->loop()
 
 Calls Coro::Event::loop and sets up session reaping. This never returns!
 
@@ -352,7 +355,7 @@ sub loop {
      $timeout = $self->{reap_after} if $self->{reap_after} and $self->{reap_after} < $timeout;
      my $timer = Coro::Event->timer(interval => $timeout, );
      while ($timer->next) {
-STDERR->print("debug: loop calling reap\n");
+        $self->debug(3, "debug: loop calling reap");
         $self->mapper->reap($self->{reap_after}) if $self->{reap_after};
      }
   };
@@ -366,7 +369,7 @@ STDERR->print("debug: loop calling reap\n");
 
 sub debug {
   my ($self, $level, $msg) = @_;
-  if(defined $self->{debug} and $level >= $self->{debug}) {
+  if($self->debug_level and $level >= $self->debug_level) {
     print STDERR "$msg\n";
   }
 }
