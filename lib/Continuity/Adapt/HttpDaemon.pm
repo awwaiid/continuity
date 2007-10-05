@@ -68,14 +68,14 @@ sub new {
   }, $class;
 
   # Set up our http daemon
-  $self->{daemon} = HTTP::Daemon->new(
+  $self->daemon = HTTP::Daemon->new(
     ReuseAddr => 1,
     %args,
   ) or die $@;
 
-  $self->{docroot} = Cwd::getcwd() if $self->{docroot} eq '.' or $self->{docroot} eq './';
+  $self->docroot = Cwd::getcwd() if $self->docroot eq '.' or $self->docroot eq './';
 
-  STDERR->print("Please contact me at: ", $self->{daemon}->url, "\n");
+  STDERR->print("Please contact me at: ", $self->daemon->url, "\n");
 
   return $self;
 }
@@ -98,12 +98,12 @@ sub get_request {
 
   # STDERR->print(__FILE__, ' ', __LINE__, "\n");
   while(1) {
-    my $c = $self->{daemon}->accept or next;
+    my $c = $self->daemon->accept or next;
     my $r = $c->get_request or next;
     return Continuity::Adapt::HttpDaemon::Request->new(
       conn => $c,
       http_request => $r,
-      no_content_type => $self->{no_content_type},
+      no_content_type => $self->no_content_type,
     );
   }
 }
@@ -118,7 +118,7 @@ Returns the processed filesystem path.
 sub map_path {
   my $self = shift;
   my $path = shift() || '';
-  my $docroot = $self->{docroot} || '';
+  my $docroot = $self->docroot || '';
   $docroot .= '/' if $docroot and $docroot ne '.' and $docroot !~ m{/$};
   # some massaging, also makes it more secure
   $path =~ s/%([0-9a-fA-F][0-9a-fA-F])/chr hex $1/ge;
@@ -169,7 +169,7 @@ sub send_static {
 
 sub debug {
   my ($self, $level, $msg) = @_;
-  if(defined $self->{debug} and $level >= $self->{debug}) {
+  if(defined $self->debug and $level >= $self->debug) {
     STDERR->print("$msg\n"); 
   } 
 } 
@@ -205,10 +205,10 @@ sub new {
     my $class = shift;
     my %args = @_;
     my $self = bless { @_ }, $class;
-    eval { $self->{conn}->isa('HTTP::Daemon::ClientConn') } or warn "\$self->{conn} isn't an HTTP::Daemon::ClientConn";
-    eval { $self->{http_request}->isa('HTTP::Request') } or warn "\$self->{http_request} isn't an HTTP::Request";
+    eval { $self->conn->isa('HTTP::Daemon::ClientConn') } or warn "\$self->conn isn't an HTTP::Daemon::ClientConn";
+    eval { $self->http_request->isa('HTTP::Request') } or warn "\$self->http_request isn't an HTTP::Request";
     STDERR->print( "\n====== Got new request ======\n"
-               . "       Conn: $self->{conn}\n"
+               . "       Conn: ".$self->conn."\n"
                . "    Request: $self\n"
     );
     return $self;
@@ -216,8 +216,8 @@ sub new {
 
 sub param {
     my $self = shift; 
-    my $req = $self->{http_request};
-    my @params = @{ $self->{params} ||= do {
+    my $req = $self->http_request;
+    my @params = @{ $self->params ||= do {
         my $in = $req->uri; $in .= '&' . $req->content if $req->content;
         $in =~ s{^.*\?}{};
         my @params;
@@ -254,23 +254,23 @@ sub params {
 
 sub end_request {
     my $self = shift;
-    $self->{write_event}->cancel if $self->{write_event};
-    $self->{conn}->close if $self->{conn};
+    $self->write_event->cancel if $self->write_event;
+    $self->conn->close if $self->conn;
 }
 
 sub set_cookie {
     my $self = shift;
     my $cookie = shift;
     # record cookies and then send them the next time send_basic_header() is called and a header is sent.
-    $self->{cookies} .= "Set-Cookie: $cookie\r\n";
+    $self->cookies .= "Set-Cookie: $cookie\r\n";
 }
 
 sub send_basic_header {
     my $self = shift;
-    my $cookies = $self->{cookies};
-    $self->{cookies} = '';
-    $self->{conn}->send_basic_header;  # perhaps another flag should cover sending this, but it shouldn't be called "no_content_type"
-    unless($self->{no_content_type}) {
+    my $cookies = $self->cookies;
+    $self->cookies = '';
+    $self->conn->send_basic_header;  # perhaps another flag should cover sending this, but it shouldn't be called "no_content_type"
+    unless($self->no_content_type) {
       $self->print(
            "Cache-Control: private, no-store, no-cache\r\n",
            "Pragma: no-cache\r\n",
@@ -285,23 +285,23 @@ sub send_basic_header {
 
 sub print { 
     my $self = shift; 
-    $self->{write_event} ||= Coro::Event->io(fd => fileno $self->{conn}, poll => 'w', );
-    my $e = $self->{write_event};
+    $self->write_event ||= Coro::Event->io(fd => fileno $self->conn, poll => 'w', );
+    my $e = $self->write_event;
     if(length $_[0] > 4096) {
         while(@_) { 
             my $x = shift;
-            while(length $x > 4096) { $e->next; $self->{conn}->print(substr $x, 0, 4096, ''); }
-            $e->next; $self->{conn}->print($x) 
+            while(length $x > 4096) { $e->next; $self->conn->print(substr $x, 0, 4096, ''); }
+            $e->next; $self->conn->print($x) 
         }
     } else {
-        $e->next; $self->{conn}->print(@_); 
+        $e->next; $self->conn->print(@_); 
     }
     return 1;
 }
 
-sub uri { $_[0]->{http_request}->uri(); }
+sub uri { $_[0]->http_request->uri(); }
 
-sub method { $_[0]->{http_request}->method(); }
+sub method { $_[0]->http_request->method(); }
 
 #
 # end public Continuity::Request API methods
