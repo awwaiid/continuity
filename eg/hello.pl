@@ -7,8 +7,11 @@ use Coro::Event;
 
 use Continuity;
 my $server = new Continuity(
-  path_session => 1
+  path_session => 1,
+  port => 8080
 );
+
+$server->loop;
 
 sub main {
   my $request = shift;
@@ -24,4 +27,3 @@ STDERR->print(__FILE__, ' ', __LINE__, "\n");
 STDERR->print(__FILE__, ' ', __LINE__, "\n");
 }
 
-Event::loop();
