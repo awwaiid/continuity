@@ -17,60 +17,6 @@ use HTTP::Status;
 use LWP::MediaTypes qw(add_type);
 
 
-# HTTP::Daemon::send_file_response uses LWP::MediaTypes to guess the
-# Content-Type of a file.  Unfortunately, its list of known extensions is
-# rather anemic so we're adding a few more.
-add_type('image/png'       => qw(png));
-add_type('text/css'        => qw(css));
-add_type('text/javascript' => qw(js));
-
-do {
-
-    # HTTP::Daemon isn't Coro-friendly and attempting to diddle HTTP::Daemon's
-    # inheritence to use Coro::Socket instead was a dissaster.  So, instead, we
-    # provide reimplementations of just a couple of functions to make it all
-    # Coro-friendly.  This kind of meddling- under-the-hood is still just
-    # asking for breaking from future versions of HTTP::Daemon.
-
-    package HTTP::Daemon;
-    use Errno;
-    use Fcntl uc ':default';
-
-    no warnings; # Don't warn for this override (this should be narrowed)
-    sub accept {
-        my $self = shift;
-        my $pkg = shift || "HTTP::Daemon::ClientConn";  
-        fcntl $self, &Fcntl::F_SETFL, &Fcntl::O_NONBLOCK or die "fcntl(O_NONBLOCK): $!";
-        try_again:
-        my ($sock, $peer) = $self->SUPER::accept($pkg);
-        if($sock) {
-            ${*$sock}{'httpd_daemon'} = $self;
-            return wantarray ? ($sock, $peer) : $sock;
-        } elsif($!{EAGAIN}) {
-            my $socket_read_event = Coro::Event->io(fd => fileno $self, poll => 'r', ); # XXX should create this once per call rather than ocne per EGAIN
-            $socket_read_event->next;
-            $socket_read_event->cancel;
-            goto try_again; 
-        } else {
-            return;
-        }
-    }
-
-    package HTTP::Daemon::ClientConn;
-
-    no warnings; # Don't warn for this override (this should be narrowed)
-
-    sub _need_more {   
-        my $self = shift;
-        my $e = Coro::Event->io(fd => fileno $self, poll => 'r', $_[1] ? ( timeout => $_[1] ) : ( ), );
-        $e->next;
-        $e->cancel;
-        my $n = sysread($self, $_[0], 2048, length($_[0]));
-        $self->reason(defined($n) ? "Client closed" : "sysread: $!") unless $n;
-        $n;
-    }   
-
-};
 
 =head1 NAME
 
@@ -80,12 +26,15 @@ Continuity::Adapt::HttpDaemon::Request - an HTTP::Daemon based request
 
 =head1 DESCRIPTION
 
-This is the default and reference HTTP adaptor for L<Continuity>. It comes in
-two parts, the server connector and the request interface.
+This is the default and reference HTTP adaptor for L<Continuity>. The only
+thing a normal user of Continuity would want to do with this is in the C<< new
+>> method, all the rest is for internal use. See L<Continuity::Request> for the
+general request API used by an application.
 
 An adaptor interfaces between the continuation server (L<Continuity>) and the
 web server (HTTP::Daemon, FastCGI, etc). It provides incoming HTTP requests to
-the continuation server.
+the continuation server. It comes in two parts, the server connector and the
+request interface.
 
 This adapter interfaces with L<HTTP::Daemon>.
 
@@ -131,7 +80,9 @@ sub new {
   return $self;
 }
 
-=head2 get_request() - map a URL path to a filesystem path
+=head2 C<< $adaptor->get_request() >>
+
+Map a URL path to a filesystem path
 
 Called in a loop from L<Contuinity>.
 
@@ -160,7 +111,7 @@ sub get_request {
 =head2 C<< $adapter->map_path($path) >>
 
 Decodes URL-encoding in the path and attempts to guard against malice.
-Returns the processed path.
+Returns the processed filesystem path.
 
 =cut
 
@@ -182,16 +133,23 @@ STDERR->print("path: $docroot$path\n");
   return "$docroot$path";
 }
 
-=head2 C<< send_static($request) >>
+=head2 C<< $adaptor->send_static($request) >>
 
-Sends a static file off of the filesystem.
+Sends a static file off of the filesystem. The content-type is guessed by
+HTTP::Daemon, plus we specifically tell it how to do png, css, and js.
 
-We cheat here... use 'magic' to get mimetype and send that followed by the contents of the file. 
-
-This may be obvious, but you can't send binary data as part of the same request that you've already
-sent text or HTML on, MIME aside.
+This may be obvious, but you can't send binary data as part of the same request
+that you've already sent text or HTML on, MIME aside. Thus either this is
+called OR we invoke a continuation, but not both.
 
 =cut
+
+# HTTP::Daemon::send_file_response uses LWP::MediaTypes to guess the
+# Content-Type of a file.  Unfortunately, its list of known extensions is
+# rather anemic so we're adding a few more.
+add_type('image/png'       => qw(png));
+add_type('text/css'        => qw(css));
+add_type('text/javascript' => qw(js));
 
 sub send_static {
   my ($self, $r) = @_;
@@ -215,11 +173,6 @@ sub debug {
     STDERR->print("$msg\n"); 
   } 
 } 
-
-#
-#
-#
-#
 
 package Continuity::Adapt::HttpDaemon::Request;
 
@@ -291,7 +244,13 @@ sub param {
         }
         return @values;
     }
-} 
+}
+
+sub params {
+    my $self = shift;
+    $self->param;
+    return @{$self->{params}};
+}
 
 sub end_request {
     my $self = shift;
@@ -381,6 +340,64 @@ sub AUTOLOAD {
   return $retval;
 }
 
+=head1 HTTP::Daemon Overrides
+
+Although HTTP::Daemon is lovely, we have to patch it a bit to work correctly
+with Coro. Fortunately there are only two things that much be touched, the
+'accept' method and the _needs_more_data in HTTP::Daemon::ClientConn.
+
+What we are doing is making these non-blocking using Coro::Event.
+
+=cut
+
+do {
+
+    # HTTP::Daemon isn't Coro-friendly and attempting to diddle HTTP::Daemon's
+    # inheritence to use Coro::Socket instead was a dissaster.  So, instead, we
+    # provide reimplementations of just a couple of functions to make it all
+    # Coro-friendly.  This kind of meddling- under-the-hood is still just
+    # asking for breaking from future versions of HTTP::Daemon.
+
+    package HTTP::Daemon;
+    use Errno;
+    use Fcntl uc ':default';
+
+    no warnings; # Don't warn for this override (this should be narrowed)
+    sub accept {
+        my $self = shift;
+        my $pkg = shift || "HTTP::Daemon::ClientConn";  
+        fcntl $self, &Fcntl::F_SETFL, &Fcntl::O_NONBLOCK or die "fcntl(O_NONBLOCK): $!";
+        try_again:
+        my ($sock, $peer) = $self->SUPER::accept($pkg);
+        if($sock) {
+            ${*$sock}{'httpd_daemon'} = $self;
+            return wantarray ? ($sock, $peer) : $sock;
+        } elsif($!{EAGAIN}) {
+            my $socket_read_event = Coro::Event->io(fd => fileno $self, poll => 'r', ); # XXX should create this once per call rather than ocne per EGAIN
+            $socket_read_event->next;
+            $socket_read_event->cancel;
+            goto try_again; 
+        } else {
+            return;
+        }
+    }
+
+    package HTTP::Daemon::ClientConn;
+
+    no warnings; # Don't warn for this override (this should be narrowed)
+
+    sub _need_more {   
+        my $self = shift;
+        my $e = Coro::Event->io(fd => fileno $self, poll => 'r', $_[1] ? ( timeout => $_[1] ) : ( ), );
+        $e->next;
+        $e->cancel;
+        my $n = sysread($self, $_[0], 2048, length($_[0]));
+        $self->reason(defined($n) ? "Client closed" : "sysread: $!") unless $n;
+        $n;
+    }   
+
+};
+
 =head1 SEE ALSO
 
 L<Continuity>
@@ -397,9 +414,6 @@ L<Continuity>
   modify it under the same terms as Perl itself.
 
 =cut
-
-1;
-
 
 1;
 
