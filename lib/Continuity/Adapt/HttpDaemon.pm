@@ -175,7 +175,7 @@ sub send_static {
 
 sub debug {
   my ($self, $level, $msg) = @_;
-  if(defined $self->debug and $level >= $self->debug) {
+  if(defined $self->debug_level and $level >= $self->debug_level) {
     STDERR->print("$msg\n"); 
   } 
 } 
