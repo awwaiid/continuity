@@ -8,63 +8,78 @@ Continuity::Request - Simple HTTP::Request-like API for requests inside Continui
 
 =head1 SYNOPSIS
 
-  $request->next;
+  sub main {
+    my $request = shift;
+    $request->print("Hello!");
+    $request->next;
 
-Suspends execution until a new Web request is available.
+    # ...
 
-  $request->param("name");  
+    $name = $request->param('name');
+  }
 
-Fetches a CGI POST/GET parameter.
+=head1 METHODS
 
-  @param_names = $request->param();
+=head2 $request->next
 
-Fetches a list of posted parameters.
+Suspend execution until a new Web request is available.
 
-  $request->print("Foo!\n");
+=head2 $name = $request->param("name");  
 
-Writes output (eg, HTML).
-Since Continuity juggles many concurrent requests, 
-it's necessary to explicitly refer to requesting clients, like C<< $request->print() >>, 
-rather than simply doing C<< print() >>.
+Fetch a CGI POST/GET parameter.
 
-  $request->set_cookie(CGI->cookie(...));
+=head2 @param_names = $request->param();
+
+Fetch a list of posted parameters.
+
+=head2 $request->print("Foo!\n");
+
+Write output (eg, HTML).
+
+Since Continuity juggles many concurrent requests, it's necessary to explicitly
+refer to requesting clients, like C<< $request->print(...) >>, rather than
+simply doing C<< print ... >>.
+
+=head2 $request->set_cookie(CGI->cookie(...));
+
+=head2 $request->set_cookie(name => 'value');
 
 Set a cookie to be sent out with the headers, next time the headers go out
-(next request if data has been written to the client already, otherwise this request).
-(May not yet be supported by the FastCGI adapter yet.)
+(next request if data has been written to the client already, otherwise this
+request).  (May not yet be supported by the FastCGI adapter yet.)
 
-  $request->uri();
+=head2 $request->uri();
 
-Straight from L<HTTP::Request>.
-Values seem strange to me.
-(Probably not yet supported by the FastCGI adapter.)
+Straight from L<HTTP::Request>, returns a URI object.  (Probably not yet
+supported by the FastCGI adapter.)
 
-  $request->method();
+=head2 $request->method();
 
-Returns 'GET', 'POST', or whatever other HTTP command was issued.
-Continuity currently punts on anything but GET and POST out of paranoia.
-(May not be supported in the FastCGI adapter and the HTTP::Daemon adapter only proxies it to 
-the underlaying HTTP::Request object through AUTOLOAD -- it's documented here in the request
-object API because it should eventually, some day, be a well supported, tested part of the API.)
+Returns 'GET', 'POST', or whatever other HTTP command was issued.  Continuity
+currently punts on anything but GET and POST out of paranoia.
 
-  $request->send_basic_header();
+=head2 $request->send_headers("X-HTTP-Header: blah\n", $h2)
 
-Internal use.  Continuity does this for you, but it's still part of the API of Continuity::Request objects.
+Send this in the headers
 
-  $request->end_request();
+=head2 $request->send_basic_header(); # *** Internal use.
 
-Internal use.  Ditto above.
+Continuity does this for you, but it's still part of the API of
+Continuity::Request objects.
 
-  $request->send_static();
+=head2 $request->end_request(); # *** Internal use.
 
-Internal use.  Controlled by the C<< staticp => sub { ... } >> argument pair to the
-main constructor call to C<< Continuity->new() >>.
+Ditto above.
 
+=head2 $request->send_static(); # *** Internal use.
+
+Controlled by the C<< staticp => sub { ... } >> argument pair to the main
+constructor call to C<< Continuity->new() >>.
 
 =head1 DESCRIPTION
 
 This module contains no actual code.
-It only establishes the interface actually implemented in
+It only establishes and documents the interface actually implemented in
 L<Continuity::Adapt::FCGI>, L<Continuity::Adapt::HttpDaemon>, and,
 perhaps eventually, other places.
 
