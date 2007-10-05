@@ -16,6 +16,12 @@ use HTTP::Daemon;
 use HTTP::Status;
 use LWP::MediaTypes qw(add_type);
 
+# Accessors
+sub daemon :lvalue { $_[0]->{daemon} }                   # Hold the HTTP::Daemon object
+sub docroot :lvalue { $_[0]->{docroot} }                 # Path for static documents
+sub conn :lvalue { $_[0]->{conn} }                       # Low-level connection
+sub http_request :lvalue { $_[0]->{http_request} }       # Actual request object
+sub no_content_type :lvalue { $_[0]->{no_content_type} } # Flag, never send type
 
 
 =head1 NAME
@@ -176,6 +182,14 @@ sub debug {
 
 package Continuity::Adapt::HttpDaemon::Request;
 
+# Accessors
+sub cookies :lvalue { $_[0]->{cookies} }           # List of cookies to send
+sub conn :lvalue { $_[0]->{conn} }                 # The actual connection
+sub http_request :lvalue { $_[0]->{http_request} } # The HTTP::Request object
+sub write_event :lvalue { $_[0]->{write_event} }   # Watch for writes to the conn
+sub no_content_type :lvalue { $_[0]->{no_content_type} } # Flag, never send type
+sub cached_params :lvalue { $_[0]->{cached_params} }     # CGI query params
+
 =for comment
 
 See L<Continuity::Request> for API documentation.
@@ -217,7 +231,7 @@ sub new {
 sub param {
     my $self = shift; 
     my $req = $self->http_request;
-    my @params = @{ $self->params ||= do {
+    my @params = @{ $self->cached_params ||= do {
         my $in = $req->uri; $in .= '&' . $req->content if $req->content;
         $in =~ s{^.*\?}{};
         my @params;
@@ -311,9 +325,6 @@ sub method { $_[0]->http_request->method(); }
 
 sub immediate { }
 
-sub conn :lvalue { $_[0]->{conn} } # private
-
-sub http_request :lvalue { $_[0]->{http_request} } # private
 
 # If we don't know how to do something, pass it on to the current http_request
 
