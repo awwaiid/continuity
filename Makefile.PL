@@ -10,7 +10,7 @@ requires 'HTTP::Daemon'     => '1.36';
 requires 'IO::AIO'          => '2.3';
 requires 'Event'            => '0';
 requires 'AnyEvent'         => '0';
-requires 'Coro'             => '4.02';
+requires 'Coro'             => '4.03';
 
 # Suggestions
 recommends 'Module::Reload' => '1.07';
