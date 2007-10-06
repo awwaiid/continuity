@@ -26,7 +26,6 @@ Probably missing some, but at least:
 
   Coro
   HTTP::Daemon
-  Data::Alias
 
 COPYRIGHT AND LICENCE
 
