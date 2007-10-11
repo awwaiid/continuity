@@ -1,7 +1,6 @@
 
 package Continuity::Request;
 
-
 =head1 NAME
 
 Continuity::Request - Simple HTTP::Request-like API for requests inside Continuity
