@@ -18,7 +18,6 @@ recommends 'FCGI'           => '0.67';
 
 # Other stuff
 no_index directory => 'ex';
-no_index directory => 'doc';
 no_index package   => 'HTTP::Daemon';
 
 auto_install;
