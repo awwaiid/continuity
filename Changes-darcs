@@ -20,7 +20,15 @@ print $out $f;
 # *** This is the actual Changelog :) ***
 # ***************************************
 __DATA__
+Wed Oct 10 2007  awwaiid@thelackthereof.org
+  * Update MANIFEST
+  * Minor whitespace change of C::R
+  * Minor whitespace change of eg/hello.pl
+  * Allow the doc directory to be indexed
+  * Remove the META.yml file... it is part of the build system and shouldn't be in darcs
+
 Sat Oct  6 2007  awwaiid@thelackthereof.org
+  * Rename changelog, add a summary changelog, and refresh changelog-darcs
   * Simplify guess.pl a bit, and unify indenting
   * Keep pushing for highest Coro version (4.03 now)
   * Remove Continuity::Monitor -- will distribute separately
