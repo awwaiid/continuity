@@ -111,6 +111,7 @@ sub new {
       ip_session => 0,
       path_session => 0,
       cookie_session => 'sid',
+      cookie_life => '+2d',
       query_session => 0,
       assign_session_id => sub { join '', 1+int rand 9, map int rand 10, 2..20 },
       implicit_first_next => 1,
@@ -169,9 +170,9 @@ sub get_session_id_from_hit {
 
   if(($self->{query_session} or $self->{cookie_session}) and ! $sid) {
       $sid = $self->{assign_session_id}->($request);
-      $request->set_cookie( CGI->cookie( -name => $self->{cookie_session}, -value => $sid, -expires => '+2d', ) ) if $self->{cookie_session};
-      # XXX somehow record the sid in the request object in case of query_session
       STDERR->print("    New SID: $sid\n");
+      $request->set_cookie( CGI->cookie( -name => $self->{cookie_session}, -value => $sid, -expires => $self->{cookie_life}, ) ) if $self->{cookie_session};
+      # XXX somehow record the sid in the request object in case of query_session
   }
 
   $session_id .= $sid if $sid;

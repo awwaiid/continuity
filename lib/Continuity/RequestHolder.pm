@@ -90,6 +90,7 @@ sub session_id :lvalue { $_[0]->{session_id} }
 # If we don't know how to do something, pass it on to the current continuity_request
 
 sub AUTOLOAD {
+  # XXX always does scalar context... should do list/sclar as appropriate
   my $method = $AUTOLOAD; $method =~ s/.*:://;
   return if $method eq 'DESTROY';
   STDERR->print("RequestHolder AUTOLOAD: method: ``$method'' ( @_ )\n");

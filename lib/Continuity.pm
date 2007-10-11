@@ -213,6 +213,8 @@ Arguments passed to the default mapper:
 
 =item * C<assign_session_id> -- coderef of routine to custom generate session id numbers (defaults to a simple random string generator)
 
+=item * C<cookie_life> -- lifespan of the cookie, as in CGI::set_cookie (defaults to "+2d")
+
 =item * C<ip_session> -- set to true to enable ip-addresses for session tracking (defaults to false)
 
 =item * C<path_session> -- set to true to use URL path for session tracking (defaults to false)
@@ -258,6 +260,7 @@ sub new {
       debug_level => $self->debug_level,
       no_content_type => $self->{no_content_type},
       $self->{port} ? (LocalPort => $self->{port}) : (),
+      $self->{cookie_life} ? (cookie_life => $self->{cookie_life}) : (), 
     );
   } elsif(! ref $self->{adaptor}) {
     die "Not a ref, $self->{adaptor}\n";
