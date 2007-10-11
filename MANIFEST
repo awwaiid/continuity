@@ -1,7 +1,8 @@
-META.yml
+Changes-darcs
 MANIFEST
 util/highport.c
 Changes
+doc/internal_structure.pod
 eg/hello.pl
 eg/guess.pl
 eg/broken/guess_backbutton.pl
@@ -31,7 +32,6 @@ eg/README
 t/Continuity.t
 t/fcgi.t.disabled
 Makefile.PL
-lib/Continuity/Monitor.pm
 lib/Continuity/Mapper.pm
 lib/Continuity/Adapt/FCGI.pm
 lib/Continuity/Adapt/HttpDaemon.pm
