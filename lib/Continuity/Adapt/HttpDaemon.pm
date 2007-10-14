@@ -22,6 +22,7 @@ sub docroot :lvalue { $_[0]->{docroot} }                 # Path for static docum
 sub conn :lvalue { $_[0]->{conn} }                       # Low-level connection
 sub http_request :lvalue { $_[0]->{http_request} }       # Actual request object
 sub no_content_type :lvalue { $_[0]->{no_content_type} } # Flag, never send type
+sub debug_level :lvalue { $_[0]->{debug_level} }
 
 
 =head1 NAME
