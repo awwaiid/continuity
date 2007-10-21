@@ -291,6 +291,17 @@ sub set_cookie {
     $self->{cookies} .= "Set-Cookie: $cookie\r\n";
 }
 
+sub get_cookie {
+    my $self = shift;
+    my $cookie_name = shift;
+    my ($cookie) =  map $_->[1],
+      grep $_->[0] eq $cookie_name,
+      map [ m/(.*?)=(.*)/ ],
+      split /; */,
+      $self->headers->header('Cookie') || '';
+    return $cookie;
+}
+
 
 sub _parse {
    my $string = shift;

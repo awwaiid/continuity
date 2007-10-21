@@ -162,8 +162,8 @@ sub get_session_id_from_hit {
 
   # Cookie sessions
   if($self->{cookie_session}) {
-    # use Data::Dumper 'Dumper'; STDERR->print("request->headers->header(Cookie): ", Dumper($request->headers->header('Cookie')));
-    (my $cookie) =  map $_->[1], grep $_->[0] eq $self->{cookie_session}, map [ m/(.*?)=(.*)/ ], split /; */, $request->headers->header('Cookie') || '';
+     # use Data::Dumper 'Dumper'; STDERR->print("request->headers->header(Cookie): ", Dumper($request->headers->header('Cookie')));
+    my $cookie = $request->get_cookie($self->{cookie_session});
     $sid = $cookie if $cookie;
     STDERR->print("    Session: got cookie '$sid'\n") if $sid;
   }
