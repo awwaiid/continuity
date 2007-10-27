@@ -22,8 +22,21 @@ Continuity's guts, we have:
   the second sort of object (eg, C::A::H::Request) from a queue and
   delegates calls most tasks to that object.
 
+We should move as much into here as possible, since it is used by all the
+different Adaptors.
 
 =cut
+
+# Accessors
+
+# This holds our current request
+sub request :lvalue { $_[0]->{request} }
+
+# Our queue of incoming requests
+sub request_queue :lvalue { $_[0]->{request_queue} }
+
+# Used by the mapper to identify the whole queue
+sub session_id :lvalue { $_[0]->{session_id} }
 
 sub new {
     my $class = shift;
@@ -58,34 +71,20 @@ sub next {
     return $self;
 }
 
-sub param {
-    my $self = shift;
-    $self->request->param(@_);    
-}
-
 sub print {
     my $self = shift; 
     if(!$self->{headers_sent}) {
       $self->request->send_basic_header();
       $self->{headers_sent} = 1;
     }
-    return $self->{request}->print(@_);
+    return $self->request->print(@_);
 }
 
 sub send_headers {
     my $self = shift; 
     $self->{headers_sent} = 1;
-    return $self->{request}->print(@_);
+    return $self->request->print(@_);
 }
-
-# This holds our current request
-sub request :lvalue { $_[0]->{request} }
-
-# Our queue of incoming requests
-sub request_queue :lvalue { $_[0]->{request_queue} }
-
-# Our session_id -- this is used by the mapper to identify the whole queue
-sub session_id :lvalue { $_[0]->{session_id} }
 
 # If we don't know how to do something, pass it on to the current continuity_request
 
@@ -96,11 +95,12 @@ sub AUTOLOAD {
   STDERR->print("RequestHolder AUTOLOAD: method: ``$method'' ( @_ )\n");
   my $self = shift;
   my $retval = eval { 
-      $self->{request}->can($method) or die "request object doesn't implemented requested method\n"; 
-      $self->{request}->can($method)->($self->{request}, @_); 
+    $self->request->can($method)
+      or die "request object doesn't implemented requested method\n"; 
+    $self->request->can($method)->($self->request, @_); 
   };
   if($@) {
-    warn "Continuity::::RequestHolder::AUTOLOAD: Error delegating method ``$method'': $@";
+    warn "Continuity::RequestHolder::AUTOLOAD: Error delegating method ``$method'': $@";
   }
   return $retval;
 }
