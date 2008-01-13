@@ -38,14 +38,18 @@ sub request_queue :lvalue { $_[0]->{request_queue} }
 # Used by the mapper to identify the whole queue
 sub session_id :lvalue { $_[0]->{session_id} }
 
+sub debug_level :lvalue { $_[0]->{debug_level} }         # Debug level (integer)
+
 sub new {
     my $class = shift;
     my %args = @_;
     exists $args{$_} or warn "new_requestHolder wants $_ as a parameter"
         for qw/request_queue session_id/;
     $args{request} = undef;
-    STDERR->print("  ReqHolder: created, session_id: $args{session_id}\n");
-    bless \%args, $class;
+    my $self = { %args };
+    bless $self, $class;
+    $self->Continuity::debug(2,"  ReqHolder: created, session_id: $args{session_id}");
+    bless $self;
 }
 
 sub next {
@@ -66,7 +70,7 @@ sub next {
         goto go_again;
     }
 
-    print STDERR "-----------------------------\n";
+    $self->Continuity::debug(2,"-----------------------------");
 
     return $self;
 }
@@ -92,7 +96,7 @@ sub AUTOLOAD {
   # XXX always does scalar context... should do list/sclar as appropriate
   my $method = $AUTOLOAD; $method =~ s/.*:://;
   return if $method eq 'DESTROY';
-  STDERR->print("RequestHolder AUTOLOAD: method: ``$method'' ( @_ )\n");
+  # STDERR->print("RequestHolder AUTOLOAD: method: ``$method'' ( @_ )\n");
   my $self = shift;
   my $retval = eval { 
     $self->request->can($method)

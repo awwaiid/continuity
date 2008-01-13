@@ -103,11 +103,12 @@ This method is required for all adaptors.
 sub get_request {
   my ($self) = @_;
 
-  # STDERR->print(__FILE__, ' ', __LINE__, "\n");
+  # $self->debug(2,__FILE__, ' ', __LINE__, "\n");
   while(1) {
     my $c = $self->daemon->accept or next;
     my $r = $c->get_request or next;
     return Continuity::Adapt::HttpDaemon::Request->new(
+      debug_level => $self->debug_level,
       conn => $c,
       http_request => $r,
       no_content_type => $self->no_content_type,
@@ -135,7 +136,7 @@ sub map_path {
 
   # if($path =~ m%^/?\.\.(?=/|$)%) then bad
 
-STDERR->print("path: $docroot$path\n");
+$self->debug(2,"path: $docroot$path\n");
 
   return "$docroot$path";
 }
@@ -177,7 +178,7 @@ sub send_static {
 sub debug {
   my ($self, $level, $msg) = @_;
   if(defined $self->debug_level and $level >= $self->debug_level) {
-    STDERR->print("$msg\n"); 
+    $self->debug(2,"$msg\n"); 
   } 
 } 
 
@@ -190,6 +191,14 @@ sub http_request :lvalue { $_[0]->{http_request} } # The HTTP::Request object
 sub write_event :lvalue { $_[0]->{write_event} }   # Watch for writes to the conn
 sub no_content_type :lvalue { $_[0]->{no_content_type} } # Flag, never send type
 sub cached_params :lvalue { $_[0]->{cached_params} }     # CGI query params
+sub debug_level :lvalue { $_[0]->{debug_level} }
+
+sub debug {
+  my ($self, $level, $msg) = @_;
+  if(defined $self->debug_level and $level >= $self->debug_level) {
+    $self->debug(2,"$msg\n"); 
+  } 
+} 
 
 =for comment
 
@@ -222,9 +231,9 @@ sub new {
     my $self = bless { @_ }, $class;
     eval { $self->conn->isa('HTTP::Daemon::ClientConn') } or warn "\$self->conn isn't an HTTP::Daemon::ClientConn";
     eval { $self->http_request->isa('HTTP::Request') } or warn "\$self->http_request isn't an HTTP::Request";
-    STDERR->print( "\n====== Got new request ======\n"
+    $self->debug(2, "\n====== Got new request ======\n"
                . "       Conn: ".$self->conn."\n"
-               . "    Request: $self\n"
+               . "    Request: $self"
     );
     return $self;
 }

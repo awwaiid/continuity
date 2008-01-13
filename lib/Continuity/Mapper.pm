@@ -113,6 +113,7 @@ sub new {
       cookie_session => 'sid',
       cookie_life => '+2d',
       query_session => 0,
+      debug_level => 0,
       assign_session_id => sub { join '', 1+int rand 9, map int rand 10, 2..20 },
       implicit_first_next => 1,
       @_,
@@ -137,7 +138,7 @@ sub get_session_id_from_hit {
   my ($self, $request) = @_;
   my $session_id = '';
   my $sid;
-  STDERR->print("        URI: ", $request->uri, "\n");
+  $self->Continuity::debug(2,"        URI: ", $request->uri, "\n");
 
   # IP based sessions
   if($self->{ip_session}) {
@@ -156,8 +157,8 @@ sub get_session_id_from_hit {
 
   # Query sessions
   if($self->{query_session}) {
-    $sid = $request->param($self->{query_session});
-    STDERR->print("    Session: got query '$sid'\n");
+    $sid = $request->param($self->{query_session}) || '';
+    $self->Continuity::debug(2,"    Session: got query '$sid'\n");
   }
 
   # Cookie sessions
@@ -165,19 +166,19 @@ sub get_session_id_from_hit {
      # use Data::Dumper 'Dumper'; STDERR->print("request->headers->header(Cookie): ", Dumper($request->headers->header('Cookie')));
     my $cookie = $request->get_cookie($self->{cookie_session});
     $sid = $cookie if $cookie;
-    STDERR->print("    Session: got cookie '$sid'\n") if $sid;
+    $self->Continuity::debug(2,"    Session: got cookie '$sid'\n") if $sid;
   }
 
   if(($self->{query_session} or $self->{cookie_session}) and ! $sid) {
       $sid = $self->{assign_session_id}->($request);
-      STDERR->print("    New SID: $sid\n");
+      $self->Continuity::debug(2,"    New SID: $sid\n");
       $request->set_cookie( CGI->cookie( -name => $self->{cookie_session}, -value => $sid, -expires => $self->{cookie_life}, ) ) if $self->{cookie_session};
       # XXX somehow record the sid in the request object in case of query_session
   }
 
   $session_id .= $sid if $sid;
 
-  STDERR->print(" Session ID: ", $session_id, "\n");
+  $self->Continuity::debug(2," Session ID: ", $session_id, "\n");
 
   return $session_id;
 
@@ -203,10 +204,10 @@ sub map {
 
   $self->{sessions_last_access}->{$session_id} = time;
 
-  STDERR->print("    Session: count " . (scalar keys %{$self->{sessions}}) . "\n");
+  $self->Continuity::debug(2,"    Session: count " . (scalar keys %{$self->{sessions}}) . "\n");
 
   if( ! $self->{sessions}->{$session_id} ) {
-      STDERR->print("    Session: No request queue for this session ($session_id), making a new one.\n");
+      $self->Continuity::debug(2,"    Session: No request queue for this session ($session_id), making a new one.\n");
       $self->{sessions}->{$session_id} = $self->new_request_queue($session_id);
   }
 
@@ -239,6 +240,7 @@ sub reap {
 }
 
 sub server :lvalue { $_[0]->{server} }
+sub debug_level :lvalue { $_[0]->{debug_level} }         # Debug level (integer)
 
 =head2 $request_queue = $mapper->new_request_queue($session_id)
 
@@ -266,7 +268,7 @@ sub new_request_queue {
 
     # If the callback exits, the session is over
     delete $self->{sessions}->{$session_id};
-    STDERR->print("XXX debug: session $session_id closed\n");
+    $self->Continuity::debug(1,"XXX debug: session $session_id closed\n");
   };
 
   return $request_queue;

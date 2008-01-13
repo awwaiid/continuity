@@ -335,7 +335,7 @@ sub new {
 
     }
   
-    STDERR->print("Done processing request, waiting for next\n");
+    $self->debug(2, "Done processing request, waiting for next\n");
     
   };
 
