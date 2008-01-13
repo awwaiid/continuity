@@ -273,7 +273,7 @@ sub param {
 sub params {
     my $self = shift;
     $self->param;
-    return @{$self->{params}};
+    return @{$self->cached_params};
 }
 
 sub end_request {
