@@ -98,7 +98,7 @@ sub AUTOLOAD {
   return if $method eq 'DESTROY';
   # STDERR->print("RequestHolder AUTOLOAD: method: ``$method'' ( @_ )\n");
   my $self = shift;
-  my $retval = eval { 
+  my (@retval) = eval { 
     $self->request->can($method)
       or die "request object doesn't implemented requested method\n"; 
     $self->request->can($method)->($self->request, @_); 
@@ -106,7 +106,7 @@ sub AUTOLOAD {
   if($@) {
     warn "Continuity::RequestHolder::AUTOLOAD: Error delegating method ``$method'': $@";
   }
-  return $retval;
+  return @retval;
 }
 
 1;
