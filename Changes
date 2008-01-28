@@ -1,7 +1,15 @@
 Revision history for Continuity. See Changes-darcs or the main repository for a
 detailed list of internal changes.
 
-Version 0.95 (released 2007.10.07ish)
+Version 0.96 (released 2008.01.28)
+  * Turn off debugging by default
+  * Fix debug_level to actually work and be respected
+  * Add get_cookie to adapters and use it in the mapper
+  * cookie_life arg/support
+  * Fix some param and params behavior
+  * Revert to ExtUtils::MakeMaker since Module::Install had no apparent advantage
+
+Version 0.95 (released 2007.10.11)
   * Many internal improvements
   * Documentation improvements, especially Continuity::Request
   * Eliminate warnings about Module::Reload not being installed
