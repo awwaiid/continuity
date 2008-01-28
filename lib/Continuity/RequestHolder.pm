@@ -106,7 +106,7 @@ sub AUTOLOAD {
   if($@) {
     warn "Continuity::RequestHolder::AUTOLOAD: Error delegating method ``$method'': $@";
   }
-  return @retval;
+  return wantarray ? @retval : $retval[0];
 }
 
 1;
