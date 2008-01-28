@@ -4,7 +4,7 @@ our $VERSION = '0.95';
 
 =head1 NAME
 
-Continuity - Abstract away statelessness of HTTP using continuations, for stateful Web applications
+Continuity - Abstract away statelessness of HTTP, for stateful Web applications
 
 =head1 SYNOPSIS
 
