@@ -141,6 +141,8 @@ use base 'HTTP::Request';
 use Continuity::Request;
 use base 'Continuity::Request';
 
+sub cached_params :lvalue { $_[0]->{cached_params} }     # CGI query params
+
 =item $request = Continuity::Adapt::FCGI::Request->new($client, $id, $cgi, $query)
 
 Creates a new C<Continuity::Adapt::FCGI::Request> object. This deletes values
@@ -253,13 +255,15 @@ the query data.
 
 sub param {
     my $self = shift; 
-    my @params = @{ $self->{params} ||= do {
+    my $req = $self->http_request;
+    my @params = @{ $self->cached_params ||= do {
+        #my $in = $req->uri; $in .= '&' . $req->content if $req->content;
         my $in = $self->{env}->{QUERY_STRING};
         $in .= '&' . $self->{content} if $self->{content};
         $in .= '&' . $self->content_ref if $self->content_ref;
         $in =~ s{^.*\?}{};
         my @params;
-        for(split/[&]/, $in) {
+        for(split/[&]/, $in) { 
             tr/+/ /; 
             s{%(..)}{pack('c',hex($1))}ge; 
             my($k, $v); ($k, $v) = m/(.*?)=(.*)/s or ($k, $v) = ($_, 1);
@@ -282,7 +286,13 @@ sub param {
         }
         return @values;
     }
-} 
+}
+
+sub params {
+    my $self = shift;
+    $self->param;
+    return @{$self->cached_params};
+}
 
 sub set_cookie {
     my $self = shift;
