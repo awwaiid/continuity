@@ -234,7 +234,7 @@ sub new {
     docroot => '.',   # default docroot
     mapper => undef,
     adapter => undef,
-    debug_level => 4, # XXX
+    debug_level => 0, # XXX
     reload => 1, # XXX
     callback => (exists &::main ? \&::main : undef),
     staticp => sub { $_[0]->url =~ m/\.(jpg|jpeg|gif|png|css|ico|js)$/ },
