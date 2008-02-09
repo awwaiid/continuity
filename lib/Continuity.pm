@@ -189,7 +189,7 @@ Arguments:
 
 =item * C<staticp> -- defaults to C<< sub { $_[0]->url =~ m/\.(jpg|jpeg|gif|png|css|ico|js)$/ } >>, used to indicate whether any request is for static content
 
-=item * C<debug_level> -- defaults to C<4> at the moment ;)
+=item * C<debug_level> -- Set level of debugging. 0 for nothing, 1 for warnings and system messages, 2 for request status info. Default is 1
 
 =back
 
@@ -234,7 +234,7 @@ sub new {
     docroot => '.',   # default docroot
     mapper => undef,
     adapter => undef,
-    debug_level => 0, # XXX
+    debug_level => 1, # XXX
     reload => 1, # XXX
     callback => (exists &::main ? \&::main : undef),
     staticp => sub { $_[0]->url =~ m/\.(jpg|jpeg|gif|png|css|ico|js)$/ },
@@ -373,7 +373,11 @@ sub loop {
 
 sub debug {
   my ($self, $level, $msg) = @_;
-  if($self->debug_level and $level >= $self->debug_level) {
+  if($self->debug_level && $level <= $self->debug_level) {
+    if($level > 2) {
+      my ($package, $filename, $line) = caller;
+      print STDERR "$package:$line: ";
+    }
     print STDERR "$msg\n";
   }
 }

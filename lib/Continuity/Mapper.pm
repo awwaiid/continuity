@@ -138,7 +138,7 @@ sub get_session_id_from_hit {
   my ($self, $request) = @_;
   my $session_id = '';
   my $sid;
-  $self->Continuity::debug(2,"        URI: ", $request->uri, "\n");
+  $self->Continuity::debug(2,"        URI: ", $request->uri);
 
   # IP based sessions
   if($self->{ip_session}) {
@@ -158,7 +158,7 @@ sub get_session_id_from_hit {
   # Query sessions
   if($self->{query_session}) {
     $sid = $request->param($self->{query_session}) || '';
-    $self->Continuity::debug(2,"    Session: got query '$sid'\n");
+    $self->Continuity::debug(2,"    Session: got query '$sid'");
   }
 
   # Cookie sessions
@@ -166,19 +166,19 @@ sub get_session_id_from_hit {
      # use Data::Dumper 'Dumper'; STDERR->print("request->headers->header(Cookie): ", Dumper($request->headers->header('Cookie')));
     my $cookie = $request->get_cookie($self->{cookie_session});
     $sid = $cookie if $cookie;
-    $self->Continuity::debug(2,"    Session: got cookie '$sid'\n") if $sid;
+    $self->Continuity::debug(2,"    Session: got cookie '$sid'") if $sid;
   }
 
   if(($self->{query_session} or $self->{cookie_session}) and ! $sid) {
       $sid = $self->{assign_session_id}->($request);
-      $self->Continuity::debug(2,"    New SID: $sid\n");
+      $self->Continuity::debug(2,"    New SID: $sid");
       $request->set_cookie( CGI->cookie( -name => $self->{cookie_session}, -value => $sid, -expires => $self->{cookie_life}, ) ) if $self->{cookie_session};
       # XXX somehow record the sid in the request object in case of query_session
   }
 
   $session_id .= $sid if $sid;
 
-  $self->Continuity::debug(2," Session ID: ", $session_id, "\n");
+  $self->Continuity::debug(2," Session ID: ", $session_id);
 
   return $session_id;
 
@@ -204,10 +204,10 @@ sub map {
 
   $self->{sessions_last_access}->{$session_id} = time;
 
-  $self->Continuity::debug(2,"    Session: count " . (scalar keys %{$self->{sessions}}) . "\n");
+  $self->Continuity::debug(2,"    Session: count " . (scalar keys %{$self->{sessions}}));
 
   if( ! $self->{sessions}->{$session_id} ) {
-      $self->Continuity::debug(2,"    Session: No request queue for this session ($session_id), making a new one.\n");
+      $self->Continuity::debug(2,"    Session: No request queue for this session ($session_id), making a new one.");
       $self->{sessions}->{$session_id} = $self->new_request_queue($session_id);
   }
 
@@ -258,6 +258,7 @@ sub new_request_queue {
   my $request_holder = Continuity::RequestHolder->new(
     request_queue => $request_queue,
     session_id    => $session_id,
+    debug_level   => $self->debug_level,
   );
 
   # async just puts the contents into the global event queue to be executed
@@ -268,7 +269,7 @@ sub new_request_queue {
 
     # If the callback exits, the session is over
     delete $self->{sessions}->{$session_id};
-    $self->Continuity::debug(1,"XXX debug: session $session_id closed\n");
+    $self->Continuity::debug(2,"Session $session_id closed");
   };
 
   return $request_queue;

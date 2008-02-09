@@ -10,6 +10,8 @@ use HTTP::Status;
 use Continuity::RequestHolder;
 use IO::Handle;
 
+sub debug_level :lvalue { $_[0]->{debug_level} }
+
 =head1 NAME
 
 Continuity::Adapt::FCGI - Use HTTP::Daemon as a continuation server
@@ -88,7 +90,7 @@ sub send_static {
   my ($self, $r) = @_;
   my $c = $r->conn or die;
   my $path = $self->map_path($r->url->path) or do { 
-       $self->debug(1, "can't map path: " . $r->url->path); $c->send_error(404); return; 
+       $self->Continuity::debug(1, "can't map path: " . $r->url->path); $c->send_error(404); return; 
   };
   $path =~ s{^/}{}g;
   unless (-f $path) {
@@ -106,7 +108,7 @@ sub send_static {
   while(read $file, my $buf, 8192) {
       $c->print($buf);
   } 
-  print STDERR "Static send '$path', Content-type: $mimetype\n";
+  $self->Continuity::debug(2,"Static send '$path', Content-type: $mimetype");
 }
 
 sub get_request {
@@ -187,9 +189,10 @@ sub new {
   $self->{out} = $out;
   $self->{env} = $fcgi_request->GetEnvironment;
   $self->{content} = $content;
-  STDERR->print( "\n====== Got new request ======\n"
-             . "       Conn: $self->{out}\n"
-             . "    Request: $self\n"
+  $self->{debug_level} = $args{debug_level};
+  $self->Continuity::debug(2, "\n====== Got new request ======\n"
+             . "       Conn: ".$self->{out}."\n"
+             . "    Request: $self"
   );
   return $self;
 }
