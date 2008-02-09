@@ -116,11 +116,13 @@ sub get_request {
   my $r = $self->{fcgi_request};
   #$SIG{__WARN__} = sub { print STDERR @_ };
   #$SIG{__DIE__} = sub { print STDERR @_ };
-  if($r->Accept() >= 0) {
+  if($r->Accept >= 0) {
+    $self->Continuity::debug(2,"FCGI request accepted, request: $r");
     return Continuity::Adapt::FCGI::Request->new(
       fcgi_request => $r,
     );
   }
+  die "Continuity::Adapt::FCGI: ERROR: Not in FCGI environment?\n";
   return undef;
 }
 
