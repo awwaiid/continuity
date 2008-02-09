@@ -59,7 +59,10 @@ sub next {
     go_again:
 
     # If we still have an open request, close it
-    $self->request->end_request() if $self->request;
+    if($self->request) {
+      $self->Continuity::debug(2,"Closing old req: " . $self->request);
+      $self->request->end_request;
+    }
 
     $self->{headers_sent} = 0;
 
