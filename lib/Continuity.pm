@@ -166,8 +166,10 @@ use Coro::Event;
 use HTTP::Status; # to grab static response codes. Probably shouldn't be here
 use Continuity::RequestHolder;
 
-our $_debug_level;
-sub debug_level :lvalue { $_debug_level }         # Debug level (integer)
+sub debug_level :lvalue { $_[0]->{debug_level} }         # Debug level (integer)
+sub adapter :lvalue { $_[0]->{adapter} }
+sub mapper :lvalue { $_[0]->{mapper} }
+
 
 =head2 $server = Continuity->new(...)
 
@@ -381,10 +383,6 @@ sub debug {
     print STDERR "$msg\n";
   }
 }
-
-sub adaptor :lvalue { $_[0]->{adaptor} }
-
-sub mapper :lvalue { $_[0]->{mapper} }
 
 
 =head1 SEE ALSO
