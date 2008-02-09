@@ -236,13 +236,13 @@ sub new {
     docroot => '.',   # default docroot
     mapper => undef,
     adapter => undef,
-    debug_level => 1, # XXX
+    debug_level => 1,
     reload => 1, # XXX
     callback => (exists &::main ? \&::main : undef),
     staticp => sub { $_[0]->url =~ m/\.(jpg|jpeg|gif|png|css|ico|js)$/ },
     no_content_type => 0,
     reap_after => undef,
-    @_,  
+    @_,
   }, $class;
 
   if($self->{reload}) {
@@ -266,8 +266,6 @@ sub new {
       $self->{port} ? (LocalPort => $self->{port}) : (),
       $self->{cookie_life} ? (cookie_life => $self->{cookie_life}) : (), 
     );
-  } elsif(! ref $self->{adaptor}) {
-    die "Not a ref, $self->{adaptor}\n";
   }
 
   # Set up the default mapper.
@@ -357,7 +355,8 @@ no warnings 'redefine';
 sub loop {
   my ($self) = @_;
 
-  # Coro::Event is insane and wants us to have at least one event... or something
+  # This is our reaper event. It looks for expired sessions and kills them off.
+  # TODO: This needs some documentation at the very least
   async {
      my $timeout = 300;  
      $timeout = $self->{reap_after} if $self->{reap_after} and $self->{reap_after} < $timeout;
@@ -368,13 +367,13 @@ sub loop {
      }
   };
 
-  # XXX passing $self is completely invalid. loop is supposed to take a timeout
-  # as the parameter, but by passing self it creates a semi-valid timeout.
-  # Without this, with the current Coro and Event, it doesn't work.
+  # cede once to get our reaper running
   cede;
   Coro::Event::loop();
 }
 
+# This is our internal debugging tool.
+# Call it with $self->Continuity::debug(2, '...');
 sub debug {
   my ($self, $level, $msg) = @_;
   if($self->debug_level && $level <= $self->debug_level) {
@@ -385,7 +384,6 @@ sub debug {
     print STDERR "$msg\n";
   }
 }
-
 
 =head1 SEE ALSO
 
