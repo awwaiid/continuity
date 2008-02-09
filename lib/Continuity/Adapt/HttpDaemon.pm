@@ -33,12 +33,12 @@ Continuity::Adapt::HttpDaemon::Request - an HTTP::Daemon based request
 
 =head1 DESCRIPTION
 
-This is the default and reference HTTP adaptor for L<Continuity>. The only
+This is the default and reference HTTP adapter for L<Continuity>. The only
 thing a normal user of Continuity would want to do with this is in the C<< new
 >> method, all the rest is for internal use. See L<Continuity::Request> for the
 general request API used by an application.
 
-An adaptor interfaces between the continuation server (L<Continuity>) and the
+An adapter interfaces between the continuation server (L<Continuity>) and the
 web server (HTTP::Daemon, FastCGI, etc). It provides incoming HTTP requests to
 the continuation server. It comes in two parts, the server connector and the
 request interface.
@@ -51,7 +51,7 @@ This module was designed to be subclassed to fine-tune behavior.
 
 =head2 C<< $adapter = Continuity::Adapt::HttpDaemon->new(...) >>
 
-Create a new continuation adaptor and HTTP::Daemon. This actually starts the
+Create a new continuation adapter and HTTP::Daemon. This actually starts the
 HTTP server, which is embeded. It takes the same arguments as the
 L<HTTP::Daemon> module, and those arguments are passed along.  It also takes
 the optional argument C<< docroot => '/path' >>. This adapter may then be
@@ -59,7 +59,7 @@ specified for use with the following code:
 
   my $server = Contuinity->new(adapter => $adapter);
 
-This method is required for all adaptors.
+This method is required for all adapters.
 
 =cut
 
@@ -87,7 +87,7 @@ sub new {
   return $self;
 }
 
-=head2 C<< $adaptor->get_request() >>
+=head2 C<< $adapter->get_request() >>
 
 Map a URL path to a filesystem path
 
@@ -96,7 +96,7 @@ Called in a loop from L<Contuinity>.
 Returns the empty list on failure, which aborts the server process.
 Aside from the constructor, this is the heart of this module.
 
-This method is required for all adaptors.
+This method is required for all adapters.
 
 =cut
 
@@ -141,7 +141,7 @@ $self->debug(2,"path: $docroot$path\n");
   return "$docroot$path";
 }
 
-=head2 C<< $adaptor->send_static($request) >>
+=head2 C<< $adapter->send_static($request) >>
 
 Sends a static file off of the filesystem. The content-type is guessed by
 HTTP::Daemon, plus we specifically tell it how to do png, css, and js.

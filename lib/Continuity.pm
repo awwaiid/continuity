@@ -137,12 +137,12 @@ shouldn't even be talking about this.
 This library is designed to be extensible but have good defaults. There are two
 important components which you can extend or replace.
 
-The Adaptor, such as the default L<Continuity::Adapt::HttpDaemon>, actually
+The Adapter, such as the default L<Continuity::Adapt::HttpDaemon>, actually
 makes the HTTP connections with the client web broswer. If you want to use
-FastCGI or even a non-HTTP protocol, then you will use or create an adaptor.
+FastCGI or even a non-HTTP protocol, then you will use or create an Adapter.
 
 The Mapper, such as the default L<Continuity::Mapper>, identifies incoming
-requests from The Adaptor and maps them to instances of your program. In other
+requests from The Adapter and maps them to instances of your program. In other
 words, Mappers keep track of sessions, figuring out which requests belong to
 which session. The default mapper can identify sessions based on any
 combination of cookie, ip address, and URL path. Override The Mapper to create
@@ -171,7 +171,7 @@ sub debug_level :lvalue { $_debug_level }         # Debug level (integer)
 
 =head2 $server = Continuity->new(...)
 
-The C<Continuity> object wires together an adapter and a mapper.
+The C<Continuity> object wires together an Adapter and a mapper.
 Creating the C<Continuity> object gives you the defaults wired together,
 or if user-supplied instances are provided, it wires those together.
 
@@ -193,7 +193,7 @@ Arguments:
 
 =back
 
-Arguments passed to the default adaptor:
+Arguments passed to the default adapter:
 
 =over 4
 
@@ -249,7 +249,7 @@ sub new {
     $Module::Reload::Debug = 1 if $self->debug_level;
   }
 
-  # Set up the default adaptor.
+  # Set up the default Adapter.
   # The adapater plugs the system into a server (probably a Web server)
   # The default has its very own HTTP::Daemon running.
   if(!$self->{adaptor}) {
@@ -299,7 +299,7 @@ sub new {
 
   async {
     while(1) {
-      my $r = $self->adaptor->get_request;
+      my $r = $self->adapter->get_request;
       if($self->{reload}) {
         Module::Reload->check;
       }
@@ -320,7 +320,7 @@ sub new {
   
       if($self->{staticp}->($r)) {
           $self->debug(3, "Sending static content... ");
-          $self->{adaptor}->send_static($r);
+          $self->{adapter}->send_static($r);
           $self->debug(3, "done sending static content.");
           next;
       }
