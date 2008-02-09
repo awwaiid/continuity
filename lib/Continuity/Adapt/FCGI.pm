@@ -184,7 +184,7 @@ sub new {
   );
   $self->fcgi_request = $fcgi_request;
   $self->{out} = $out;
-  $self->{env} = $fcgi_request->GetEnvironment;
+  $self->{env} = $cgi;
   $self->{content} = $content;
   $self->{debug_level} = $args{debug_level};
   $self->Continuity::debug(2, "\n====== Got new request ======\n"
