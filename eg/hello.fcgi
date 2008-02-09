@@ -6,10 +6,7 @@ use warnings;
 use Continuity;
 use Continuity::Adapt::FCGI;
 my $server = new Continuity(
-  #cookie_session => 0,
-  #path_session => 0,
-  #query_session => 'pid',
-  adaptor => Continuity::Adapt::FCGI->new,
+  adapter => 'FCGI',
 );
 
 $server->loop;

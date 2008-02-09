@@ -7,7 +7,7 @@ use Continuity;
 use Continuity::Adapt::FCGI;
 
 my $server = new Continuity(
-  adaptor => Continuity::Adapt::FCGI->new,
+  adapter => 'FCGI',
 );
 $server->loop;
 
