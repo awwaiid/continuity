@@ -43,7 +43,6 @@ sub main {
       </html>
     });
     $msg = '';
-    $request->{no_content_type} = 1;
     $request->next;
     $pageID = $request->param('pageID');
     if($cache{$pageID}) {
@@ -62,7 +61,6 @@ sub main {
     print STDERR "Num: $num\tPageID: $pageID\n";
     print STDERR "Doing redirect after POST\n";
     $request->request->conn->send_redirect("/?pageID=$pageID",303);
-    $request->{no_content_type} = 0;
     $request->next;
   }
 }
