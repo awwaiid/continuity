@@ -248,7 +248,7 @@ sub new {
   if($self->{reload}) {
     eval "use Module::Reload";
     $self->{reload} = 0 if $@;
-    $Module::Reload::Debug = 1 if $self->debug_level;
+    $Module::Reload::Debug = 1 if $self->debug_level > 1;
   }
 
   # Set up the default Adapter.
