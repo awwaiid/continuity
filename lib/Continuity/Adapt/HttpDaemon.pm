@@ -340,7 +340,6 @@ sub AUTOLOAD {
   our $AUTOLOAD;
   my $method = $AUTOLOAD; $method =~ s/.*:://;
   return if $method eq 'DESTROY';
-  #print STDERR "Request AUTOLOAD: $method ( @_ )\n";
   my $self = shift;
   my $retval;
   if({peerhost=>1,send_basic_header=>1,'print'=>1,'send_redirect'=>1}->{$method}) {

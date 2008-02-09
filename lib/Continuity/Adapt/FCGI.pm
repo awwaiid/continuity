@@ -53,12 +53,6 @@ sub new {
   return $self;
 }
 
-#sub new_requestHolder {
-#  my ($self, @ops) = @_;
-#  my $holder = Continuity::RequestHolder->new( @ops );
-#  return $holder;
-#}
-
 =item mapPath($path) - map a URL path to a filesystem path
 
 =cut
@@ -165,7 +159,6 @@ sub new {
   my $fcgi_request = $args{fcgi_request};
   my $cgi = $fcgi_request->GetEnvironment;
   my ($in, $out, $err) = $fcgi_request->GetHandles;
-  #$self->{out} = $out;
   my $content;
   {
     local $/;
@@ -262,12 +255,9 @@ the query data.
 
 sub param {
     my $self = shift; 
-    my $req = $self->http_request;
     my @params = @{ $self->cached_params ||= do {
-        #my $in = $req->uri; $in .= '&' . $req->content if $req->content;
         my $in = $self->{env}->{QUERY_STRING};
         $in .= '&' . $self->{content} if $self->{content};
-        $in .= '&' . $self->content_ref if $self->content_ref;
         $in =~ s{^.*\?}{};
         my @params;
         for(split/[&]/, $in) { 
@@ -336,17 +326,6 @@ sub conn :lvalue { $_[0]->{out} }
 sub end_request {
   $_[0]->fcgi_request->Finish if $_[0]->fcgi_request;
 }
-
-=for comment
-
-sub send_basic_header {
-    # Called unconditionally from C::RequestHolder
-    # FCGI apparently has done this already (perhaps elsewhere in the module?), so we don't need to do anything here
-    # (unlike in C::A::H::Request, which does do something in this event)
-    1;
-}
-
-=cut
 
 sub send_basic_header {
     my $self = shift;

@@ -166,7 +166,6 @@ sub get_session_id_from_hit {
 
   # Cookie sessions
   if($self->{cookie_session}) {
-     # use Data::Dumper 'Dumper'; STDERR->print("request->headers->header(Cookie): ", Dumper($request->headers->header('Cookie')));
     my $cookie = $request->get_cookie($self->{cookie_session});
     $sid = $cookie if $cookie;
     $self->Continuity::debug(2,"    Session: got cookie '$sid'") if $sid;
