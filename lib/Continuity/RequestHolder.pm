@@ -96,7 +96,6 @@ sub AUTOLOAD {
   # XXX always does scalar context... should do list/sclar as appropriate
   my $method = $AUTOLOAD; $method =~ s/.*:://;
   return if $method eq 'DESTROY';
-  # STDERR->print("RequestHolder AUTOLOAD: method: ``$method'' ( @_ )\n");
   my $self = shift;
   my (@retval) = eval { 
     $self->request->can($method)

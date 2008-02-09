@@ -174,8 +174,11 @@ sub get_session_id_from_hit {
   if(($self->{query_session} or $self->{cookie_session}) and ! $sid) {
       $sid = $self->{assign_session_id}->($request);
       $self->Continuity::debug(2,"    New SID: $sid");
-      $request->set_cookie( CGI->cookie( -name => $self->{cookie_session}, -value => $sid, -expires => $self->{cookie_life}, ) ) if $self->{cookie_session};
-      # XXX somehow record the sid in the request object in case of query_session
+      $request->set_cookie( CGI->cookie(
+        -name    => $self->{cookie_session},
+        -value   => $sid,
+        -expires => $self->{cookie_life},
+      )) if $self->{cookie_session};
   }
 
   $session_id .= $sid if $sid;
@@ -221,6 +224,16 @@ sub map {
 
 }
 
+=head2 $mapper->reap($age)
+
+Reap all sessions older than $age.
+
+Reaping is done through the 'immediate' execution request mechanism. A special
+request is sent to the session that the session executes instead of user code.
+The special request then called Coro::terminate to kill itself.
+
+=cut
+
 sub reap {
     my $self = shift;
     my $age = shift or die "pass reap a number of seconds";
@@ -252,7 +265,7 @@ sub new_request_queue {
   my $self = shift;
   my $session_id = shift or die;
 
-  # Create a request_queue, and hook the adaptor up to feed it
+  # Create a request_queue, and hook the adapter up to feed it
   my $request_queue = Coro::Channel->new();
   my $request_holder = Continuity::RequestHolder->new(
     request_queue => $request_queue,
@@ -293,7 +306,6 @@ sub enqueue {
   $request_queue->put($request);
 
   # XXX needed for FastCGI (because it is blocking...)
-  # print STDERR "yielding to other things (for FCGI's sake)\n";
   cede;
 
   # select $prev_select;
