@@ -254,9 +254,11 @@ sub new {
   # Set up the default Adapter.
   # The adapater plugs the system into a server (probably a Web server)
   # The default has its very own HTTP::Daemon running.
-  if(!$self->{adaptor}) {
-    require Continuity::Adapt::HttpDaemon;
-    $self->{adaptor} = Continuity::Adapt::HttpDaemon->new(
+  if(!$self->{adapter} || !(ref $self->{adapter})) {
+    my $adapter = "Continuity::Adapt::" . ($self->{adapter} || 'HttpDaemon');
+    eval "require $adapter";
+    die "Continuity: Unknown adapter '$adapter'\n" if $@;
+    $self->{adapter} = $adapter->new(
       docroot => $self->{docroot},
       server => $self,
       debug_level => $self->debug_level,
