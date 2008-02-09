@@ -146,6 +146,8 @@ use Continuity::Request;
 use base 'Continuity::Request';
 
 sub cached_params :lvalue { $_[0]->{cached_params} }     # CGI query params
+sub debug_level :lvalue { $_[0]->{debug_level} }
+sub fcgi_request :lvalue { $_[0]->{http_request} } # The HTTP::Request object
 
 =item $request = Continuity::Adapt::FCGI::Request->new($client, $id, $cgi, $query)
 
@@ -187,7 +189,7 @@ sub new {
      ),
      $content
   );
-  $self->{fcgi_request} = $fcgi_request;
+  $self->fcgi_request = $fcgi_request;
   $self->{out} = $out;
   $self->{env} = $fcgi_request->GetEnvironment;
   $self->{content} = $content;
@@ -332,7 +334,7 @@ sub _parse {
 sub conn :lvalue { $_[0]->{out} }
 
 sub end_request {
-  $_[0]->{fcgi_request}->Finish;
+  $_[0]->fcgi_request->Finish if $_[0]->fcgi_request;
 }
 
 =for comment
