@@ -20,7 +20,30 @@ print $out $f;
 # *** This is the actual Changelog :) ***
 # ***************************************
 __DATA__
+Sat Feb  9 2008  awwaiid@thelackthereof.org
+  * Comments and whitespace
+  * Bump version to 0.97
+  * Switch a warn to a debug
+  * Show debug message (level 2) when forcing an old request to close
+  * Update comments, some formatting, and kill some more dead code
+  * Use pre-attained var instead of re-getting through method
+  * Remove some dead code
+  * Add accessors for FCGI
+  * Update FCGI examples
+  * Die if trying to use the FCGI adaptor in non-FCGI world
+  * Use debugging method instead of 'warn' for reaper msg
+  * Move accessors to top
+  * Rename exec_cont to enqueue (to match documentation!)
+  * No longer need no_content_type flags, it is implicit in the redirect
+  * Allow the name of the adapter to be passed and add the Continuity::Adapt:: prefix
+  * Turn on Module::Reload::Debug only when we are debuggin above level 1 (warnings)
+  * Move Continuity attribute subs to top
+  * Unify debugging and fix some debug_level passing issues
+  * Unify on the 'adapter' spelling
+
 Mon Jan 28 2008  awwaiid@thelackthereof.org
+  tagged 0.96
+  * Update changes files
   * Version bump to 0.96
   * Update copyrights to 2008
   * Turn off debugging by default
@@ -48,6 +71,8 @@ Thu Oct 11 2007  scott@slowass.net
 
 Thu Oct 11 2007  awwaiid@thelackthereof.org
   * Add HTTP::Daemon::ClientConn to the no-index list during build
+
+Wed Oct 10 2007  awwaiid@thelackthereof.org
   tagged 0.95
   * Update darcs change list
   * Update MANIFEST
@@ -68,6 +93,8 @@ Sat Oct  6 2007  awwaiid@thelackthereof.org
 
 Fri Oct  5 2007  awwaiid@thelackthereof.org
   * Depend on Coro 4.0 for bugfixes
+
+Thu Oct  4 2007  awwaiid@thelackthereof.org
   * Update hello.pl for latest API
   * Allow for invalid input in eg/guess.pl
   * Add dedicated internals documentation file
@@ -89,7 +116,7 @@ Mon Jul  9 2007  awwaiid@thelackthereof.org
 Sun Jul  1 2007  awwaiid@thelackthereof.org
   tagged 0.94
 
-Wed Jun 27 2007  awwaiid@thelackthereof.org
+Tue Jun 26 2007  awwaiid@thelackthereof.org
   * MANIFEST updates
   * Don't add a '.' to session_id for query and cookie tracking, it was making it hard to do query-based sessions
   * Minor comments update to the Monitor app
@@ -114,6 +141,8 @@ Mon May 28 2007  scott@slowass.net
   * Add Continuity::Monitor
   * Give Continuity::Inspector a proper package name
   * get rid of the Data::Alias dependency
+
+Sun May 27 2007  scott@slowass.net
   * stylic fixes with warnings and debugging statements and such
   * reap abandoned-ish sessions
 
@@ -129,7 +158,7 @@ Fri May 25 2007  awwaiid@thelackthereof.org
   * Slight adjustments to use- ordering in HttpDaemon
   * Bump version to 0.93
 
-Sun May 20 2007  awwaiid@thelackthereof.org
+Sat May 19 2007  awwaiid@thelackthereof.org
   * Documentation update for Adapt::HttpDaemon
   * Update dependency versions for Coro and Coro::Event
   * Updates to FCGI -- works for me now
@@ -137,7 +166,7 @@ Sun May 20 2007  awwaiid@thelackthereof.org
 Thu May 10 2007  awwaiid@thelackthereof.org
   * FCGI updates, doesn't do cookies yet
 
-Thu May 10 2007  scott@slowass.net
+Wed May  9 2007  scott@slowass.net
   * init stuff for reap() logic, and a todo comment
   * first pass at reap() routine
   * add Coro::Event or something like that to the deps
@@ -149,10 +178,12 @@ Wed Apr 25 2007  awwaiid@thelackthereof.org
   * Fix the startup warnings, though I create a needless Coro::Event that should be eliminated
   * Comment and whitespace changes
   * Fix Continuity.pm documentation to assume implicit_first_request
+
+Tue Apr 24 2007  awwaiid@thelackthereof.org
   * Remove some annoying debugging
   * Add send_headers method and delay sending headers until first print
 
-Mon Apr 16 2007  scott@slowass.net
+Sun Apr 15 2007  scott@slowass.net
   * less insane cookie parsing code (I think... maybe I just didn't understand what was there before)
   * context switch on print to full write buffer like how I thought I had it before
   * fixes to static file serving to work around bugs in HTTP::Daemon where path names come up blank
@@ -198,7 +229,7 @@ Sat Apr  7 2007  scott@slowass.net
 Fri Apr  6 2007  scott@slowass.net
   * multi-line parameter values were getting cut off -- oops!
 
-Sun Apr  1 2007  scott@slowass.net
+Sat Mar 31 2007  scott@slowass.net
   * fix up peek example to work hopefully reliably and with the goal of making a module out of it and splitting it off from the example
 
 Sat Mar 31 2007  awwaiid@thelackthereof.org
@@ -215,9 +246,9 @@ Fri Mar 30 2007  awwaiid@thelackthereof.org
 
 Thu Mar 29 2007  scott@slowass.net
   * cookie session support!
-  * support for immediately execute objects sent over the request queue
 
 Wed Mar 28 2007  scott@slowass.net
+  * support for immediately execute objects sent over the request queue
   * fix endless loop in last refactor, send_basic_header called from RequestHolder on the C::Request ob directly rather than on self and AUTOLOADed, cleaned up AUTOLOAD, Mapper directly creates RequestHolder rather than going through adapter
 
 Wed Mar 28 2007  awwaiid@thelackthereof.org
@@ -237,10 +268,8 @@ Sun Mar 18 2007  scott@slowass.net
 Thu Mar  8 2007  awwaiid@thelackthereof.org
   * Use LWP::MediaTypes to calculate static content mime types for HttpDaemon adaptor
 
-Wed Mar  7 2007  awwaiid@thelackthereof.org
-  * Update MANIFEST
-
 Tue Mar  6 2007  awwaiid@thelackthereof.org
+  * Update MANIFEST
   * Random attempt and comments on getting the $server->loop going without a warning
   * Change leakfinder example to use new initial loop call
   * Remove some dead code from Mapper.pm
@@ -266,7 +295,7 @@ Thu Jan 18 2007  awwaiid@thelackthereof.org
   * Make eg/guess.pl use $server->loop (instead of calling Event::loop directly)
   * Make C::A::HttpDaemon compatable with Coro 3.3
 
-Sun Nov 26 2006  awwaiid@thelackthereof.org
+Sat Nov 25 2006  awwaiid@thelackthereof.org
   * Make .jpg|gif|png|css|ico|js static by default
   * disable the FCGI-required extra yeild warning
   * Kill some old comments
@@ -311,14 +340,14 @@ Mon Aug 21 2006  awwaiid@thelackthereof.org
   * Add flag to turn on Module::Reload, enabled by default
   * TONS of fixes, FCGI now works! TONS of debugging messages!
 
-Mon Aug 14 2006  awwaiid@thelackthereof.org
+Sun Aug 13 2006  awwaiid@thelackthereof.org
   * Add fcgi examples (actually tests right now)
   * updates to counter, simplify and help debug FCGI
   * Don't set STDOUT to the conn, it didn't work anyway
   * Cleanups -- make Mapper include Coro::Channel instead of Adaptor
   * Updates to make FCGI more like HttpDaemon
 
-Sun Aug 13 2006  awwaiid@thelackthereof.org
+Sat Aug 12 2006  awwaiid@thelackthereof.org
   * All sorts of things -- mostly giving better names for queues and such
 
 Wed Jul  5 2006  awwaiid@thelackthereof.org
@@ -336,7 +365,7 @@ Mon Jun 19 2006  awwaiid@thelackthereof.org
   * Forward port- param to Adaptor
   * Updates to examples
 
-Mon Jun 19 2006  scott@slowass.net
+Sun Jun 18 2006  scott@slowass.net
   * request ob supplied to user delegates to and remembers actual request object, todo items added as comments
 
 Mon Jun  5 2006  scott@slowass.net
@@ -363,12 +392,10 @@ Fri May 12 2006  awwaiid@thelackthereof.org
   * Update guess.pl to use new API
   * Remove some junk from eg/
 
-Fri May 12 2006  scott@slowass.net
+Thu May 11 2006  scott@slowass.net
   * $request->next support rather than having to do $request=$request->next
   * fix example to match API change of sending in null request as first arg
   * handle coroutines that exit and need to be recreated; also fixes bug where the initial request a coroutine was created for was sent twice, so now the first request going in is a null request again
-
-Thu May 11 2006  scott@slowass.net
   * don't abort if one request can't be read, and remove all leading slashes when doing send static, not just first
   * don't abort if we fail to read a request for some reason
 
@@ -378,21 +405,21 @@ Wed May 10 2006  scott@slowass.net
 
 Tue May  9 2006  scott@slowass.net
   * fixed bug where adapter had be passed ref to sever, fixes to serving static content
+
+Mon May  8 2006  scott@slowass.net
   * queue requests to user coroutines
 
-Sun May  7 2006  scott@slowass.net
+Sat May  6 2006  scott@slowass.net
   * still just fleshing stuff out and making it work (doesn't get any more vague than that0
 
 Fri May  5 2006  scott@slowass.net
   * fixes
 
-Thu Apr 27 2006  scott@slowass.net
+Wed Apr 26 2006  scott@slowass.net
   * crap, i don't know
 
-Sat Apr 22 2006  awwaiid@thelackthereof.org
-  * Add addtwo example
-
 Fri Apr 21 2006  awwaiid@thelackthereof.org
+  * Add addtwo example
   * Add highport.c utility
   * re-enable closing stdout when done. was disabled for fastcgi stuff?
   * random changes to examples that don't matter
@@ -459,7 +486,7 @@ Sat Dec  3 2005  awwaiid@thelackthereof.org
   * do not send content-type if no_content_type flag is set
   * If no app-path is specified, send all content -> app
 
-Thu Dec  1 2005  awwaiid@thelackthereof.org
+Wed Nov 30 2005  awwaiid@thelackthereof.org
   * Update inventory app
   * Fix other random apps to use revised API
   * Fix animals game for new C:S:Simple API
@@ -470,14 +497,16 @@ Mon Nov 28 2005  awwaiid@thelackthereof.org
   * Add guessing game demo
   * Changes, including adding C::Server::Simple
 
-Mon Nov 21 2005  awwaiid@thelackthereof.org
+Sun Nov 20 2005  awwaiid@thelackthereof.org
   * TONS of changes (again) to make things back into working order
 
 Sat Nov 12 2005  awwaiid@thelackthereof.org
   * shufling things around
 
-Sat Nov 12 2005  scott@slowass.net
+Fri Nov 11 2005  scott@slowass.net
   * suggested user facing API
+
+Fri Nov 11 2005  awwaiid@thelackthereof.org
   * Pass the app URL to the mainLoop
   * move counter demo, and make it use new interface
   * remove a bit more borked code
@@ -485,7 +514,7 @@ Sat Nov 12 2005  scott@slowass.net
   * Remove server.pl shortcut
   * TONS OF CHANGES -- probably doesn't work
 
-Mon Nov  7 2005  awwaiid@thelackthereof.org
+Sun Nov  6 2005  awwaiid@thelackthereof.org
   * Update countup program for misc stuff
   * Make a server.pl script to start server
   * Change naming of modules
@@ -502,16 +531,14 @@ Sat Nov  5 2005  awwaiid@thelackthereof.org
   * Track continuations by path (in addition to the cookie)
   * match feline's settings
 
-Fri Nov  4 2005  awwaiid@thelackthereof.org
-  * Move stuff around
-
 Thu Nov  3 2005  awwaiid@thelackthereof.org
+  * Move stuff around
   * Inventory demo, and misc changes
 
 Tue Oct 25 2005  awwaiid@thelackthereof.org
   * Proof-of-concept PHP integration
 
-Mon Oct 24 2005  awwaiid@thelackthereof.org
+Sun Oct 23 2005  awwaiid@thelackthereof.org
   * Figured out the ReuseAddr setting so I don't ahve to keep switching ports
 
 Sun Oct 16 2005  awwaiid@thelackthereof.org
@@ -541,12 +568,12 @@ Tue Sep 27 2005  sillymonkeyf@epfarms.org
 
 Fri Sep 16 2005  awwaiid@thelackthereof.org
   * Random comment
+
+Thu Sep 15 2005  awwaiid@thelackthereof.org
   * Add the more advanced counter thingie
   * Move content-type printer into CServe. Probably temporarily
   * Significant changes, now does parameters!
   * Catch up patch
-
-Thu Sep 15 2005  awwaiid@thelackthereof.org
   * Fix package name
   * Don't forget to be a valid module!
   * Add perl #!

@@ -1,6 +1,14 @@
 Revision history for Continuity. See Changes-darcs or the main repository for a
 detailed list of internal changes.
 
+Version 0.97 (released 2008.02.09)
+  * Fix Continuity::Adapt::FCGI (was broken in last release)
+  * Update FCGI examples
+  * Unify code on calling them "Adapters" instead of "Adaptors"
+  * Fixes debug_level respecting
+  * Set default debugging level to 1 (important warnings)
+  * Make debugging level 0 really quiet
+
 Version 0.96 (released 2008.01.28)
   * Turn off debugging by default
   * Fix debug_level to actually work and be respected
