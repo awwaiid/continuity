@@ -229,7 +229,7 @@ sub reap {
     my $sessions_last_access = $self->{sessions_last_access};
     for my $session_id (keys %$sessions ) {
         next if $sessions_last_access->{$session_id} + $age > time;
-        warn "$session_id dies";
+        $self->Continuity::debug(2, "Session $session_id is being reaped!");
         my $request = do {
             package Continuity::Request::Death;
             use base 'Continuity::Request';
