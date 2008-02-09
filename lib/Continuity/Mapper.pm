@@ -8,6 +8,10 @@ use Coro;
 use Coro::Channel;
 use Continuity::RequestHolder;
 
+# Accessors
+sub server :lvalue { $_[0]->{server} }
+sub debug_level :lvalue { $_[0]->{debug_level} }         # Debug level (integer)
+
 =head1 NAME
 
 Continuity::Mapper - Map a request onto a session
@@ -237,9 +241,6 @@ sub reap {
         delete $sessions_last_access->{$session_id};
     }
 }
-
-sub server :lvalue { $_[0]->{server} }
-sub debug_level :lvalue { $_[0]->{debug_level} }         # Debug level (integer)
 
 =head2 $request_queue = $mapper->new_request_queue($session_id)
 
