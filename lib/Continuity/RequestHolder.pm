@@ -106,7 +106,7 @@ sub AUTOLOAD {
     $self->request->can($method)->($self->request, @_); 
   };
   if($@) {
-    warn "Continuity::RequestHolder::AUTOLOAD: Error delegating method ``$method'': $@";
+    $self->Continuity::debug(1, "Continuity::RequestHolder::AUTOLOAD: Error delegating method ``$method'': $@");
   }
   return wantarray ? @retval : $retval[0];
 }
