@@ -6,7 +6,6 @@ use warnings; # XXX -- development only
 use CGI;
 use Coro;
 use Coro::Channel;
-
 use Continuity::RequestHolder;
 
 =head1 NAME
@@ -213,7 +212,7 @@ sub map {
 
   my $request_queue = $self->{sessions}->{$session_id};
 
-  $self->exec_cont($request, $request_queue);
+  $self->enqueue($request, $request_queue);
 
   return $request;
 
@@ -233,7 +232,7 @@ sub reap {
             sub immediate { Coro::terminate(0); }
             bless { }, __PACKAGE__;
         };
-        $self->exec_cont($request, $sessions->{$session_id});
+        $self->enqueue($request, $sessions->{$session_id});
         delete $sessions->{$session_id};
         delete $sessions_last_access->{$session_id};
     }
@@ -285,7 +284,7 @@ implementation will optionally print the HTTP headers for you.
 
 =cut
 
-sub exec_cont {
+sub enqueue {
   my ($self, $request, $request_queue) = @_;
 
   # TODO: This might be one spot to hook STDOUT onto this request
