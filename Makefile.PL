@@ -9,7 +9,7 @@ WriteMakefile(
       HTTP::Daemon    => 1.36,
       Coro::Event     => 3.6,
       Coro            => 3.6,
-      Module::Reload  => 1.07,
+      #Module::Reload  => 1.07,
       Coro::Event     => 2.1,
       #FCGI            => 0.67,
     },
