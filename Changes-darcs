@@ -20,7 +20,26 @@ print $out $f;
 # *** This is the actual Changelog :) ***
 # ***************************************
 __DATA__
+Wed Mar 12 2008  awwaiid@thelackthereof.org
+  * Version bump
+  * Add 'perl' in to execute examples during testing
+  * Make the print and send_headers methods chainable
+  * Documentation improvement
+  * Add query_session example and test
+  * By popular request, make the gen_link example in the main Continuity.pm doc complete
+  * Add serverside remote control example
+
+Tue Mar 11 2008  awwaiid@thelackthereof.org
+  * Add cookie setting example
+  * Add and remove tests
+  * Clean up addtwo example
+  * Update animal guessing game to work again
+  * Remove broken examples
+  * Upgrade jquery
+
 Sat Feb  9 2008  awwaiid@thelackthereof.org
+  tagged 0.97
+  * Update Changes file
   * Comments and whitespace
   * Bump version to 0.97
   * Switch a warn to a debug

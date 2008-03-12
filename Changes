@@ -1,6 +1,13 @@
 Revision history for Continuity. See Changes-darcs or the main repository for a
 detailed list of internal changes.
 
+Version 0.98 (released 2008.03.12)
+  * Add test suite, building on code samples (BDD!)
+  * Documentation improvement
+  * Make the print and send_headers methods chainable
+  * Add and improve examples (query_session and cookies, for example)
+  * Remove broken examples
+
 Version 0.97 (released 2008.02.09)
   * Fix Continuity::Adapt::FCGI (was broken in last release)
   * Update FCGI examples
