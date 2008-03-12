@@ -118,13 +118,34 @@ Don't forget about those pretty little lexicals you have at your disposal.
 Taking a hint from the Seaside folks, instead of regular links you could have
 callbacks that trigger a anonymous subs. Your code could easily look like:
 
-  my $x;
-  $link1 = gen_link('This is a link to stuff', sub { $x = 7  });
-  $link2 = gen_link('This is another link',    sub { $x = 42 });
-  $request->print($link1, $link2);
-  $request->next;
-  process_links($request);
-  # Now use $x
+  use Continuity;
+  use strict;
+  my @callbacks;
+  my $callback_count;
+  Continuity->new->loop;
+  sub gen_link {
+    my ($text, $code) = @_;
+    $callbacks[$callback_count++] = $code;
+    return qq{<a href="?cb=$callback_count">$text</a>};
+  }
+  sub process_links {
+    my $request = shift;
+    my $cb = $request->param('cb');
+    if(exists $callbacks[$cb]) {
+      $callbacks[$cb]->($request);
+      delete $callbacks[$cb];
+    }
+  }
+  sub main {
+    my $request = shift;
+    my $x;
+    my $link1 = gen_link('This is a link to stuff' => sub { $x = 7  });
+    my $link2 = gen_link('This is another link'    => sub { $x = 42 });
+    $request->print($link1, $link2);
+    $request->next;
+    process_links($request);
+    $request->print("\$x is now: $x");
+  }
 
 To scale a Continuity-based application beyond a single process you need to
 investigate the keywords "session affinity". The Seaside folks have a few
