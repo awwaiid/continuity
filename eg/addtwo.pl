@@ -4,13 +4,11 @@ use strict;
 use lib '../lib';
 use Continuity;
 
-my $server = new Continuity(port => 16001);
-$server->loop;
+Continuity->new->loop;
 
 sub main {
   my $request = shift;
-  my ($num1, $num2);
-  do {
+
   $request->print(qq{
     <form>
       Enter first number:
@@ -18,9 +16,8 @@ sub main {
     </form>
   });
   $request->next;
-  $num1 = $request->param('num');
+  my $num1 = $request->param('num');
 
-  } while($num1 !~ /\d+/);
   $request->print(qq{
     <form>
       Enter second number:
@@ -28,6 +25,7 @@ sub main {
     </form>
   });
   my $num2 = $request->next->param('num');
+
   my $sum = $num1 + $num2;
   $request->print(qq{
     <h2>The sum of $num1 and $num2 is $sum!</h2>
