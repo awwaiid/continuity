@@ -84,13 +84,15 @@ sub print {
       $self->request->send_basic_header();
       $self->{headers_sent} = 1;
     }
-    return $self->request->print(@_);
+    $self->request->print(@_);
+    return $self;
 }
 
 sub send_headers {
     my $self = shift; 
     $self->{headers_sent} = 1;
-    return $self->request->print(@_);
+    $self->request->print(@_);
+    return $self;
 }
 
 # If we don't know how to do something, pass it on to the current continuity_request
