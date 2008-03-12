@@ -46,21 +46,27 @@ then similar to doing C<$line=E<lt>E<gt>> in a command-line application.
 
 First, check out the small demo applications in the eg/ directory of the
 distribution. Sample code there ranges from simple counters to more complex
-multi-user ajax applications.
+multi-user ajax applications. All of the basic uses and some of the advanced
+uses of Continuity are covered there.
+
+Here is an brief explanation of what you will find in a typical application.
 
 Declare all your globals, then declare and create your server. Parameters to
 the server will determine how sessions are tracked, what ports it listens on,
-what will be served as static content, and things of that nature. Then call the
-C<loop> method of the server, which will get things going (and never exits).
+what will be served as static content, and things of that nature. You are
+literally initializing a web server that will serve your application to client
+browsers. Then call the C<loop> method of the server, which will get the server
+listening for incoming requests and starting new sessions (this never exits).
 
   use Continuity;
   my $server = Continuity->new( port => 8080 );
   $server->loop;
 
-Continuity must have a starting point for creating a new instance of your
-application. The default is to C<\&::main>, which is passed the C<$request>
-handle. See the L<Continuity::Request> documentation for details on the methods
-available from the C<$request> object beyond this introduction.
+Continuity must have a starting point when starting new sessions for your
+application. The default is C<\&::main> (a sub named "main" in the default
+global scope), which is passed the C<$request> handle. See the
+L<Continuity::Request> documentation for details on the methods available from
+the C<$request> object beyond this introduction.
 
   sub main {
     my $request = shift;
@@ -75,7 +81,8 @@ in CGI.pm applications.
   $request->print("'ow ya been?");
 
 HTTP query parameters (both GET and POST) are also gotten through the
-C<$request> handle, by calling C<$p = $request-E<gt>param('p')>, like in C<CGI>.
+C<$request> handle, by calling C<$p = $request-E<gt>param('x')>, just like in
+CGI.pm.
 
   # If they go to http://webapp/?x=7
   my $input = $request->param('x');
@@ -103,9 +110,13 @@ Merely using the above code can completely change the way you think about web
 application infrastructure. But why stop there? Here are a few more things to
 ponder.
 
+=head2 Coro::Event
+
 Since Continuity is based on L<Coro>, we also get to use L<Coro::Event>. This
 means that you can set timers to wake a continuation up after a while, or you
 can have inner-continuation signaling by watch-events on shared variables.
+
+=head2 Multiple sessions per-user
 
 For AJAX applications, we've found it handy to give each user multiple
 sessions. In the chat-ajax-push demo each user gets a session for sending
@@ -114,9 +125,11 @@ long-running request (aka COMET) and watches the globally shared chat message
 log. When a new message is put into the log, it pushes to all of the ajax
 listeners.
 
+=head2 Lexical storage and callback links
+
 Don't forget about those pretty little lexicals you have at your disposal.
 Taking a hint from the Seaside folks, instead of regular links you could have
-callbacks that trigger a anonymous subs. Your code could easily look like:
+callbacks that trigger a anonymous subs. Your code could look like:
 
   use Continuity;
   use strict;
@@ -146,6 +159,8 @@ callbacks that trigger a anonymous subs. Your code could easily look like:
     process_links($request);
     $request->print("\$x is now: $x");
   }
+
+=head2 Scaling
 
 To scale a Continuity-based application beyond a single process you need to
 investigate the keywords "session affinity". The Seaside folks have a few
