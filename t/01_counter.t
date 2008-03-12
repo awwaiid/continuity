@@ -11,7 +11,7 @@ if($@) {
   plan tests => 14;
 }
 
-my $server_pid = open my $app, '-|', 'eg/counter.pl 2>&1'
+my $server_pid = open my $app, '-|', 'perl eg/counter.pl 2>&1'
   or die "Error starting server: $!\n";
 $app->autoflush;
 

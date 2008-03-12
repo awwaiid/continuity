@@ -10,7 +10,7 @@ if($@) {
   plan tests => 3;
 }
 
-my $server_pid = open my $app, '-|', 'eg/query_session.pl 2>&1'
+my $server_pid = open my $app, '-|', 'perl eg/query_session.pl 2>&1'
   or die "Error starting server: $!\n";
 $app->autoflush;
 

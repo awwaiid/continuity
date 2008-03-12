@@ -10,7 +10,7 @@ if($@) {
   plan tests => 10;
 }
 
-my $server_pid = open my $app, '-|', 'eg/cookies.pl 2>&1'
+my $server_pid = open my $app, '-|', 'perl eg/cookies.pl 2>&1'
   or die "Error starting server: $!\n";
 $app->autoflush;
 
