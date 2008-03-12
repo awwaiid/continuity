@@ -7,7 +7,7 @@ eval "use Test::WWW::Mechanize";
 if($@) {
   plan skip_all => 'Test::WWW::Mechanize not installed';
 } else {
-  plan tests => 10;
+  plan tests => 11;
 }
 
 my $server_pid = open my $app, '-|', 'perl eg/cookies.pl 2>&1'
@@ -16,7 +16,13 @@ $app->autoflush;
 
 my $server = <$app>;
 chomp $server;
-$server =~ s/^Please contact me at: //;
+if($server =~ /^Please contact me at: http:\/\/[^:]+:(\d+)/) {
+  $server = "http://localhost:$1/";
+  pass("Server started");
+} else {
+  fail("Server started");
+  die;
+}
 
 my $mech = Test::WWW::Mechanize->new;
 
