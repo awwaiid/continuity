@@ -415,9 +415,9 @@ sub debug {
   if($self->debug_level && $level <= $self->debug_level) {
     if($level > 2) {
       my ($package, $filename, $line) = caller;
-      print STDERR "$package:$line: ";
+      print "$package:$line: ";
     }
-    print STDERR "$msg\n";
+    print "$msg\n";
   }
 }
 
