@@ -2,27 +2,12 @@
 
 use strict;
 use Test::More;
+require "t/test_helper.pl";
 
-eval "use Test::WWW::Mechanize";
-if($@) {
-  plan skip_all => 'Test::WWW::Mechanize not installed';
-} else {
-  plan tests => 11;
-}
+plan tests => 11;
 
-my $server_pid = open my $app, '-|', 'perl eg/cookies.pl 2>&1'
-  or die "Error starting server: $!\n";
-$app->autoflush;
-
-my $server = <$app>;
-chomp $server;
-if($server =~ /^Please contact me at: http:\/\/[^:]+:(\d+)/) {
-  $server = "http://localhost:$1/";
-  pass("Server started");
-} else {
-  fail("Server started");
-  die;
-}
+my ($kid_out, $kid_pid) = start_proggie('eg/cookies.pl');
+my $server = get_proggie_server_ok($kid_out);
 
 my $mech = Test::WWW::Mechanize->new;
 
@@ -40,5 +25,5 @@ $mech->get_ok( $server );
 $mech->content_contains("Got 'continuity-cookie-demo' == 20");
 $mech->content_contains("All done with cookie demo!");
 
-kill 1, $server_pid;
+kill 9, $kid_pid;
 
