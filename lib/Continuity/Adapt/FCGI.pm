@@ -10,7 +10,7 @@ use HTTP::Status;
 use Continuity::RequestHolder;
 use IO::Handle;
 
-sub debug_level :lvalue { $_[0]->{debug_level} }
+sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }
 
 =head1 NAME
 
@@ -139,9 +139,13 @@ use base 'HTTP::Request';
 use Continuity::Request;
 use base 'Continuity::Request';
 
-sub cached_params :lvalue { $_[0]->{cached_params} }     # CGI query params
+# CGI query params
+sub cached_params { exists $_[1] ? $_[0]->{cached_params} = $_[1] : $_[0]->{cached_params} }
+
+# The FCGI object
+sub fcgi_request { exists $_[1] ? $_[0]->{fcgi_request} = $_[1] : $_[0]->{fcgi_request} }
+
 sub debug_level :lvalue { $_[0]->{debug_level} }
-sub fcgi_request :lvalue { $_[0]->{http_request} } # The HTTP::Request object
 
 =item $request = Continuity::Adapt::FCGI::Request->new($client, $id, $cgi, $query)
 
@@ -182,7 +186,7 @@ sub new {
      ),
      $content
   );
-  $self->fcgi_request = $fcgi_request;
+  $self->fcgi_request($fcgi_request);
   $self->{out} = $out;
   $self->{env} = $cgi;
   $self->{content} = $content;

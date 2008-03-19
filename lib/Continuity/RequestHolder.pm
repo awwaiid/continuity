@@ -30,15 +30,15 @@ different Adaptors.
 # Accessors
 
 # This holds our current request
-sub request :lvalue { $_[0]->{request} }
+sub request { exists $_[1] ? $_[0]->{request} = $_[1] : $_[0]->{request} }
 
 # Our queue of incoming requests
-sub request_queue :lvalue { $_[0]->{request_queue} }
+sub request_queue { exists $_[1] ? $_[0]->{request_queue} = $_[1] : $_[0]->{request_queue} }
 
 # Used by the mapper to identify the whole queue
-sub session_id :lvalue { $_[0]->{session_id} }
+sub session_id { exists $_[1] ? $_[0]->{session_id} = $_[1] : $_[0]->{session_id} }
 
-sub debug_level :lvalue { $_[0]->{debug_level} }         # Debug level (integer)
+sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }         # Debug level (integer)
 
 sub new {
     my $class = shift;
@@ -67,7 +67,7 @@ sub next {
     $self->{headers_sent} = 0;
 
     # Here is where we actually wait for the next request
-    $self->request = $self->request_queue->get;
+    $self->request($self->request_queue->get);
 
     if($self->request->immediate) {
         goto go_again;

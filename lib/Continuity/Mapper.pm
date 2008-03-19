@@ -9,8 +9,7 @@ use Coro::Channel;
 use Continuity::RequestHolder;
 
 # Accessors
-sub server :lvalue { $_[0]->{server} }
-sub debug_level :lvalue { $_[0]->{debug_level} }         # Debug level (integer)
+sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }
 
 =head1 NAME
 

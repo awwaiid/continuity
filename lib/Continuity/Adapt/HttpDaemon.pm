@@ -17,13 +17,23 @@ use HTTP::Status;
 use LWP::MediaTypes qw(add_type);
 
 # Accessors
-sub daemon :lvalue { $_[0]->{daemon} }                   # Hold the HTTP::Daemon object
-sub docroot :lvalue { $_[0]->{docroot} }                 # Path for static documents
-sub conn :lvalue { $_[0]->{conn} }                       # Low-level connection
-sub http_request :lvalue { $_[0]->{http_request} }       # Actual request object
-sub no_content_type :lvalue { $_[0]->{no_content_type} } # Flag, never send type
-sub debug_level :lvalue { $_[0]->{debug_level} }
 
+# Hold the HTTP::Daemon object
+sub daemon { exists $_[1] ? $_[0]->{daemon} = $_[1] : $_[0]->{daemon} }
+
+# Path for static documents
+sub docroot { exists $_[1] ? $_[0]->{docroot} = $_[1] : $_[0]->{docroot} }
+
+# Low-level connection
+sub conn { exists $_[1] ? $_[0]->{conn} = $_[1] : $_[0]->{conn} }
+
+# Actual request object
+sub http_request { exists $_[1] ? $_[0]->{http_request} = $_[1] : $_[0]->{http_request} }
+
+# Flag, never send type
+sub no_content_type { exists $_[1] ? $_[0]->{no_content_type} = $_[1] : $_[0]->{no_content_type} }
+
+sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }
 
 =head1 NAME
 
@@ -76,12 +86,12 @@ sub new {
   }, $class;
 
   # Set up our http daemon
-  $self->daemon = HTTP::Daemon->new(
+  $self->daemon(HTTP::Daemon->new(
     ReuseAddr => 1,
     %args,
-  ) or die $@;
+  )) or die $@;
 
-  $self->docroot = Cwd::getcwd() if $self->docroot eq '.' or $self->docroot eq './';
+  $self->docroot(Cwd::getcwd()) if $self->docroot eq '.' or $self->docroot eq './';
 
   $self->Continuity::debug(1, "Please contact me at: " . $self->daemon->url);
 
@@ -179,13 +189,26 @@ sub send_static {
 package Continuity::Adapt::HttpDaemon::Request;
 
 # Accessors
-sub cookies :lvalue { $_[0]->{cookies} }           # List of cookies to send
-sub conn :lvalue { $_[0]->{conn} }                 # The actual connection
-sub http_request :lvalue { $_[0]->{http_request} } # The HTTP::Request object
-sub write_event :lvalue { $_[0]->{write_event} }   # Watch for writes to the conn
-sub no_content_type :lvalue { $_[0]->{no_content_type} } # Flag, never send type
-sub cached_params :lvalue { $_[0]->{cached_params} }     # CGI query params
-sub debug_level :lvalue { $_[0]->{debug_level} }
+
+# List of cookies to send
+sub cookies { exists $_[1] ? $_[0]->{cookies} = $_[1] : $_[0]->{cookies} }
+
+# The actual connection
+sub conn { exists $_[1] ? $_[0]->{conn} = $_[1] : $_[0]->{conn} }
+
+# The HTTP::Request object
+sub http_request { exists $_[1] ? $_[0]->{http_request} = $_[1] : $_[0]->{http_request} }
+
+# Watch for writes to the conn
+sub write_event { exists $_[1] ? $_[0]->{write_event} = $_[1] : $_[0]->{write_event} }
+
+# Flag, never send type
+sub no_content_type { exists $_[1] ? $_[0]->{no_content_type} = $_[1] : $_[0]->{no_content_type} }
+
+# CGI query params
+sub cached_params { exists $_[1] ? $_[0]->{cached_params} = $_[1] : $_[0]->{cached_params} }
+
+sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }
 
 =for comment
 
@@ -228,7 +251,8 @@ sub new {
 sub param {
     my $self = shift; 
     my $req = $self->http_request;
-    my @params = @{ $self->cached_params ||= do {
+    unless($self->cached_params) {
+      $self->cached_params( do {
         my $in = $req->uri; $in .= '&' . $req->content if $req->content;
         $in =~ s{^.*\?}{};
         my @params;
@@ -239,7 +263,9 @@ sub param {
             push @params, $k, $v; 
         };
         \@params;
-    } };
+      });
+    };
+    my @params = @{ $self->cached_params };
     if(@_) {
         my $param = shift;
         my @values;
@@ -273,7 +299,7 @@ sub set_cookie {
     my $self = shift;
     my $cookie = shift;
     # record cookies and then send them the next time send_basic_header() is called and a header is sent.
-    $self->cookies .= "Set-Cookie: $cookie\r\n";
+    $self->cookies($self->cookies . "Set-Cookie: $cookie\r\n");
 }
 
 sub get_cookie {
@@ -290,7 +316,7 @@ sub get_cookie {
 sub send_basic_header {
     my $self = shift;
     my $cookies = $self->cookies;
-    $self->cookies = '';
+    $self->cookies('');
     $self->conn->send_basic_header;  # perhaps another flag should cover sending this, but it shouldn't be called "no_content_type"
     unless($self->no_content_type) {
       $self->print(
@@ -307,7 +333,7 @@ sub send_basic_header {
 
 sub print { 
     my $self = shift; 
-    $self->write_event ||= Coro::Event->io(fd => fileno $self->conn, poll => 'w', );
+    $self->write_event(Coro::Event->io(fd => fileno $self->conn, poll => 'w', )) unless $self->write_event;
     my $e = $self->write_event;
     if(length $_[0] > 4096) {
         while(@_) { 
