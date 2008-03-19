@@ -33,6 +33,7 @@ t/05_query_session.t
 t/04_addtwo.t
 t/01_counter.t
 t/03_cookies.t
+t/test_helper.pl
 Makefile.PL
 lib/Continuity/Mapper.pm
 lib/Continuity/Adapt/FCGI.pm
