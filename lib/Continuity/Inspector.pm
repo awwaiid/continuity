@@ -17,19 +17,19 @@ sub new {
 }
 
 sub inspect {
-    my $self = shift;
-    my $queue = shift;
-    ${ $self->{peeks_pending} } = 1;
-    $queue->put($self);
-    my $var_watcher = Coro::Event->var( var => $self->{peeks_pending}, poll => 'w', );
-    while( ${ $self->{peeks_pending} } ) {
-print STDERR "spin\n";
-        $var_watcher->next;
-print STDERR "spun\n";
-    }
-    $var_watcher->stop;
-    $var_watcher->cancel;
-    return undef;
+  my $self = shift;
+  my $queue = shift;
+  ${ $self->{peeks_pending} } = 1;
+  $queue->put($self);
+  my $var_watcher = Coro::Event->var( var => $self->{peeks_pending}, poll => 'w', );
+  while( ${ $self->{peeks_pending} } ) {
+    $self->Continuity::debug(3, "spin");
+    $var_watcher->next;
+    $self->Continuity::debug(3, "spun");
+  }
+  $var_watcher->stop;
+  $var_watcher->cancel;
+  return undef;
 }
 
 sub immediate {
