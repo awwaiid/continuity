@@ -1,6 +1,12 @@
 Revision history for Continuity. See Changes-darcs or the main repository for a
 detailed list of internal changes.
 
+Version 0.99 (released 2008.03.18)
+  * Update tests to fork and self-execute to help cpan-testers
+  * Run against localhost instead of the given server name to help cpan-testers
+  * Remove lvalue based accessors, perl debugger now works a bit
+  * Minor documentation fixes
+
 Version 0.98 (released 2008.03.12)
   * Add test suite, building on code samples (BDD!)
   * Documentation improvement
