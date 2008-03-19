@@ -42,9 +42,9 @@ sub main {
 
   # After we're done with that we enter a loop. Forever.
   while(1) {
-    print STDERR "Displaying current count and waiting for instructions.\n";
+    print "Displaying current count and waiting for instructions.\n";
     my $action = prompt($request,"Count: $counter", "++", "--");
-    print STDERR "Got '$action' back from the user.\n";
+    print "Got '$action' back from the user.\n";
     if($action eq '--' && $counter == 0) {
       my $choice = prompt($request, "Do you really want to GO NEGATIVE?", "Yes", "No");
       $action = '' if $choice eq 'No';
