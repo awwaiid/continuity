@@ -123,6 +123,7 @@ sub get_request {
       conn => $c,
       http_request => $r,
       no_content_type => $self->no_content_type,
+      cookies => '',
     );
   }
 }
