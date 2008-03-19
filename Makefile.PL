@@ -5,6 +5,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME              => 'Continuity',
     VERSION_FROM      => 'lib/Continuity.pm', # finds $VERSION
+    LICENSE           => 'perl',
     PREREQ_PM         => {
       HTTP::Daemon    => 1.36,
       Coro::Event     => 0,
