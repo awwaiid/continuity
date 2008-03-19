@@ -61,16 +61,18 @@ currently punts on anything but GET and POST out of paranoia.
 
 Send this in the headers
 
-=head2 $request->send_basic_header(); # *** Internal use.
+=head1 INTERNAL METHODS
+
+=head2 $request->send_basic_header();
 
 Continuity does this for you, but it's still part of the API of
 Continuity::Request objects.
 
-=head2 $request->end_request(); # *** Internal use.
+=head2 $request->end_request();
 
 Ditto above.
 
-=head2 $request->send_static(); # *** Internal use.
+=head2 $request->send_static();
 
 Controlled by the C<< staticp => sub { ... } >> argument pair to the main
 constructor call to C<< Continuity->new() >>.
