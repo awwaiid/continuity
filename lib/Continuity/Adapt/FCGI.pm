@@ -259,7 +259,8 @@ the query data.
 
 sub param {
     my $self = shift; 
-    my @params = @{ $self->cached_params ||= do {
+    unless($self->cached_params) {
+      $self->cached_params( do {
         my $in = $self->{env}->{QUERY_STRING};
         $in .= '&' . $self->{content} if $self->{content};
         $in =~ s{^.*\?}{};
@@ -271,7 +272,9 @@ sub param {
             push @params, $k, $v; 
         };
         \@params;
-    } };
+      });
+    };
+    my @params = @{ $self->cached_params };
     if(@_) {
         my $param = shift;
         my @values;
