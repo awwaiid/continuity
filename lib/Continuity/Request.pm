@@ -58,12 +58,12 @@ Set a cookie to be sent out with the headers, next time the headers go out
 (next request if data has been written to the client already, otherwise this
 request).  (May not yet be supported by the FastCGI adapter yet.)
 
-=head2 $request->uri();
+=head2 $request->uri;
 
 Straight from L<HTTP::Request>, returns a URI object.  (Probably not yet
 supported by the FastCGI adapter.)
 
-=head2 $request->method();
+=head2 $request->method;
 
 Returns 'GET', 'POST', or whatever other HTTP command was issued.  Continuity
 currently punts on anything but GET and POST out of paranoia.
@@ -74,16 +74,16 @@ Send this in the headers
 
 =head1 INTERNAL METHODS
 
-=head2 $request->send_basic_header();
+=head2 $request->send_basic_header;
 
 Continuity does this for you, but it's still part of the API of
 Continuity::Request objects.
 
-=head2 $request->end_request();
+=head2 $request->end_request;
 
 Ditto above.
 
-=head2 $request->send_static();
+=head2 $request->send_static;
 
 Controlled by the C<< staticp => sub { ... } >> argument pair to the main
 constructor call to C<< Continuity->new() >>.
