@@ -284,11 +284,7 @@ sub param {
         return unless @values;
         return wantarray ? @values : $values[0];
     } else {
-        my @values;
-        for(my $i = 0; $i < @params; $i += 2) {
-            push @values, $params[$i+1];
-        }
-        return @values;
+        return $self->params;
     }
 }
 
