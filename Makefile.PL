@@ -9,8 +9,7 @@ WriteMakefile(
     LICENSE           => 'perl',
     PREREQ_PM         => {
       HTTP::Daemon    => 1.36,
-      Coro::Event     => 0,
       Coro            => 4.37,
-      Coro::Event     => 2.1,
+      Coro::Event     => 0,
     },
 );
