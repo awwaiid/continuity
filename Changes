@@ -1,6 +1,14 @@
 Revision history for Continuity. See Changes-darcs or the main repository for a
 detailed list of internal changes.
 
+Version 0.992 (released 2008.05.11)
+  * Improve $request->param method and documentation
+  * Minor internal changes
+
+Version 0.991 (released 2008.03.18)
+  * Set Coro version requirement to 4.37 so it will pass tests
+  * Add test_helper to MANIFEST
+
 Version 0.99 (released 2008.03.18)
   * Update tests to fork and self-execute to help cpan-testers
   * Run against localhost instead of the given server name to help cpan-testers
