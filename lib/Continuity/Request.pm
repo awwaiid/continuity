@@ -23,13 +23,24 @@ Continuity::Request - Simple HTTP::Request-like API for requests inside Continui
 
 Suspend execution until a new Web request is available.
 
-=head2 $name = $request->param("name");  
+=head2 $val = $request->param("name");  
 
-Fetch a CGI POST/GET parameter.
+=head2 @vals = $request->param("name");  
+
+Fetch a CGI POST/GET parameter. If there is more than one parameter with the
+given name, then scalar context gets the first instance and list context gets
+all of them.
 
 =head2 @param_names = $request->param();
 
-Fetch a list of posted parameters.
+When called with no parameters, fetch a list of all parameter values.
+
+=head2 %params = $request->params();
+
+=head2 @params = $request->params();
+
+Get a list of all key/value pairs. Repeated values are included, but if you
+treat it like a hash it will act like one.
 
 =head2 $request->print("Foo!\n");
 

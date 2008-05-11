@@ -268,10 +268,12 @@ sub param {
     };
     my @params = @{ $self->cached_params };
     if(@_) {
-        my $param = shift;
         my @values;
-        for(my $i = 0; $i < @params; $i += 2) {
-            push @values, $params[$i+1] if $params[$i] eq $param;
+        while(@_) {
+          my $param = shift;
+          for(my $i = 0; $i < @params; $i += 2) {
+              push @values, $params[$i+1] if $params[$i] eq $param;
+          }
         }
         return unless @values;
         return wantarray ? @values : $values[0];
