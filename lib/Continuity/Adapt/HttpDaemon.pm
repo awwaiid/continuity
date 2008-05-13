@@ -278,7 +278,7 @@ sub param {
         return unless @values;
         return wantarray ? @values : $values[0];
     } else {
-        return $self->params;
+        return @{$self->cached_params};
     }
 }
 
