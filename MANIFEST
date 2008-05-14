@@ -26,8 +26,10 @@ eg/minimal-serverside.pl
 eg/old/bleh.php
 eg/old/client.php
 eg/old/phpcontize.pl
+eg/params.pl
 eg/post-redirect.pl
 eg/query_session.pl
+eg/telnet-terminal.pl
 lib/Continuity.pm
 lib/Continuity/Adapt/FCGI.pm
 lib/Continuity/Adapt/HttpDaemon.pm
@@ -41,5 +43,6 @@ t/02_counter_multi_session.t
 t/03_cookies.t
 t/04_addtwo.t
 t/05_query_session.t
+t/06_params.t
 t/test_helper.pl
 util/highport.c
