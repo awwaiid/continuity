@@ -20,7 +20,56 @@ print $out $f;
 # *** This is the actual Changelog :) ***
 # ***************************************
 __DATA__
+Tue May 13 2008  awwaiid@thelackthereof.org
+  * Fix endless params parsing in FCGI too
+  * Add test of params example
+  * Add parameter example
+
+Mon May 12 2008  awwaiid@thelackthereof.org
+  * Stop deep recursion
+
+Sun May 11 2008  awwaiid@thelackthereof.org
+  * Add telnet terminal example
+  tagged 0.992
+  * Update Changes
+  * Update MANIFEST
+  * Update README and bump version
+  * Further improvement of param handling and Continuity::Request documentation
+  * Slight shuffling of Makefile.PL content
+  * Minor change to Continuity::Request doc
+  * Improve param method and doc
+
+Sat May  3 2008  john.beppu@gmail.com
+  * let Continuity->debug take a list of strings
+
+Thu Mar 20 2008  awwaiid@thelackthereof.org
+  * Fix non-lvalue usage of params in FCGI
+
+Wed Mar 19 2008  awwaiid@thelackthereof.org
+  * Clean out Makefile.PL
+  * Set license to 'perl' in Makefile.PL
+  * Version bump
+  * Set Coro version requirement to 4.37 so it will pass tests
+  * Add test_helper to MANIFEST
+
+Tue Mar 18 2008  awwaiid@thelackthereof.org
+  tagged 0.99
+  * Version bump and changelog update
+  * Fix label for Internal Use documentation on Request obj
+  * Fix indent and debug call for Inspector
+  * Default to empty cookie
+  * Remove lvalue accessors
+  * Don't print to STDERR without reason... since STDOUT doesn't go to the browser anyway
+
+Sat Mar 15 2008  awwaiid@thelackthereof.org
+  * Update tests to fork and self-execute
+  * Send server info to STDOUT instead of STDERR for testability (for now)
+
 Wed Mar 12 2008  awwaiid@thelackthereof.org
+  * Run against localhost instead of the given server name
+  tagged 0.98
+  * Comment out Module::Reload dep
+  * Update changelog and manifest for release
   * Version bump
   * Add 'perl' in to execute examples during testing
   * Make the print and send_headers methods chainable

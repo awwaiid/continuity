@@ -1,6 +1,11 @@
 Revision history for Continuity. See Changes-darcs or the main repository for a
 detailed list of internal changes.
 
+Version 0.993 (released 2008.05.13)
+  * Fix endless loop when calling $request->param()
+  * Add parameter example and test
+  * Add telnet terminal example
+
 Version 0.992 (released 2008.05.11)
   * Improve $request->param method and documentation
   * Minor internal changes
