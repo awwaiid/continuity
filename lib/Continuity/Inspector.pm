@@ -11,9 +11,15 @@ sub new {
     peeks_pending => \my $peeks_pending, 
     requester => $args{requester},
     callback => $args{callback},
+    debug_level => 1,
   };
   bless $self, $class;
   return $self;
+}
+
+sub debug_level {
+  my ($self) = @_;
+  return $self->{debug_level};
 }
 
 sub inspect {
