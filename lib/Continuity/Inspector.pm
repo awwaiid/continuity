@@ -52,5 +52,9 @@ sub close { }
 
 sub send_error { }
 
+sub print {
+  warn "Printing from inspector! You probably don't want this...\n";
+}
+
 1;
 
