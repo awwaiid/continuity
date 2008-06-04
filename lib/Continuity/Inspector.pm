@@ -48,7 +48,7 @@ sub immediate {
 
 sub end_request { }
 
-sub send_basic_headers { }
+sub send_basic_header { }
 
 sub close { }
 
