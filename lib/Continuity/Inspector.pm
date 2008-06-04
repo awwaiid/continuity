@@ -4,6 +4,9 @@ use strict;
 use Data::Dumper;
 use Coro::Event;
 
+# Accessors
+sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }
+
 sub new {
   my $class = shift;
   my %args = @_;
@@ -11,15 +14,10 @@ sub new {
     peeks_pending => \my $peeks_pending, 
     requester => $args{requester},
     callback => $args{callback},
-    debug_level => 1,
+    debug_level => %args{debug_level} || 1,
   };
   bless $self, $class;
   return $self;
-}
-
-sub debug_level {
-  my ($self) = @_;
-  return $self->{debug_level};
 }
 
 sub inspect {
