@@ -14,7 +14,7 @@ sub new {
     peeks_pending => \my $peeks_pending, 
     requester => $args{requester},
     callback => $args{callback},
-    debug_level => %args{debug_level} || 1,
+    debug_level => $args{debug_level} || 1,
   };
   bless $self, $class;
   return $self;
