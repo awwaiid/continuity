@@ -22,7 +22,6 @@ my $server = Continuity->new(
   port => 16001,
   path_session => 1,
   cookie_session => 'sid',
-  ip_session => 0,
 );
 
 $server->loop;
