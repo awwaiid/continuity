@@ -8,6 +8,7 @@ WriteMakefile(
     AUTHOR            => 'Brock Wilcox <awwaiid@thelackthereof.org>',
     LICENSE           => 'perl',
     PREREQ_PM         => {
+      Event           => 0,
       HTTP::Daemon    => 1.36,
       Coro            => 4.37,
       Coro::Event     => 0,
