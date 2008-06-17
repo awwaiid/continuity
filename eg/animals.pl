@@ -4,75 +4,73 @@ use strict;
 use lib '../lib';
 use Continuity;
 use Data::Dumper;
-no warnings;
+
+use base 'Continuity::RequestHolder';
 
 # This is the A MODIFIED VERSION written by awwaiid.
 # The original version was written by Merlyn,
 # http://www.perlmonks.org/?node_id=200391
 
-# We cheat -- we don't have to pass $request around because all of the
-# subroutines are in the scope of main (and thus share the originally passed
-# $request variable).
-
 my $info = "dog";
 
-my $server = Continuity->new;
+my $server = Continuity->new(port => 1234);
 $server->loop;
 
 sub main {
-  my $request = shift;
+  my $self = shift;
+  bless $self, __PACKAGE__;
 
   {
-    try($info);
-    redo if (yes("play again?"));
+    $self->try($info);
+    redo if ($self->yes("play again?"));
   }
-  printout("<pre>Bye! Here's my DB");
-  printout(Dumper($info));
+  $self->print("<pre>Bye! Here's my DB");
+  $self->print(Dumper($info));
+}
 
-  sub printout {
-    $request->print(@_);
-  }
-
-  sub stdin {
-    printout qq{
-      <form method=POST>
-        <input id=in name=in type=text>
-        <script>document.getElementById('in').focus();</script>
-      </form>
-    };
-    $request->next;
-    my $in = $request->param('in');
-    return $in;
-  }
-
-  sub try {
-    my $this = $_[0];
+sub try {
+    my $self = $_[0];
+    my $this = $_[1];
     if (ref $this) {
-      return try($this->{yes($this->{Question}) ? 'Yes' : 'No' });
+      return $self->try($this->{$self->yes($this->{Question}) ? 'Yes' : 'No' });
     }
-    if (yes("Is it a $this")) {
-      printout("I got it!\n");
+    if ($self->yes("Is it a $this")) {
+      $self->print("I got it!\n");
       return 1;
     };
-    printout("no!?  What was it then? ");
-    chomp(my $new = stdin());
-    printout("And a question that distinguishes a $this from a $new would be? ");
-    chomp(my $question = stdin());
-    my $yes = yes("And for a $new, the answer would be...");
-    $_[0] = {
+    $self->print("no!?  What was it then? ");
+    chomp(my $new = $self->stdin());
+    $self->print("And a question that distinguishes a $this from a $new would be? ");
+    chomp(my $question = $self->stdin());
+    my $yes = $self->yes("And for a $new, the answer would be...");
+    $_[1] = {
              Question => $question,
              Yes => $yes ? $new : $this,
              No => $yes ? $this : $new,
             };
     return 0;
-  }
-
-  sub yes {
-    printout "@_ (yes/no)?";
-    stdin() =~ /^y/i;
-  }
-
 }
+
+
+sub stdin {
+    my $self = shift;
+    $self->print(qq{
+      <form method=POST>
+        <input id=in name=in type=text>
+        <script>document.getElementById('in').focus();</script>
+      </form>
+    });
+    $self->next;
+    my $in = $self->param('in');
+    return $in;
+}
+
+sub yes {
+    my $self = shift;
+    $self->print("@_ (yes/no)?");
+    $self->stdin() =~ /^y/i;
+}
+
 
 1;
 
