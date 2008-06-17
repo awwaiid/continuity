@@ -13,8 +13,7 @@ use base 'Continuity::RequestHolder';
 
 my $info = "dog";
 
-my $server = Continuity->new(port => 1234);
-$server->loop;
+Continuity->new(port => 8080)->loop;
 
 sub main {
   my $self = shift;
