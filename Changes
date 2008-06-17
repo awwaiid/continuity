@@ -1,6 +1,11 @@
 Revision history for Continuity. See Changes-darcs or the main repository for a
 detailed list of internal changes.
 
+Version 0.994 (released 2008.06.17)
+  * List event as a prereq to make Coro::Event build better
+  * Inspector bugfixes for debug_level and send_basic_header
+  * Update examples - animals.pl and params example
+
 Version 0.993 (released 2008.05.13)
   * Fix endless loop when calling $request->param()
   * Add parameter example and test

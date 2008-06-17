@@ -20,7 +20,29 @@ print $out $f;
 # *** This is the actual Changelog :) ***
 # ***************************************
 __DATA__
+Tue Jun 17 2008  awwaiid@thelackthereof.org
+  * Change port for animals example
+
+Tue Jun 17 2008  scott@slowass.net
+  * animals.pl example fixes and style change
+
+Sat Jun 14 2008  awwaiid@thelackthereof.org
+  * List event as a prereq to make Coro::Event build better
+  * No longer need to explicitly disable ip_session since it's not default
+  * Fix debug_level constructor arg for Inspector
+
+Wed Jun  4 2008  awwaiid@thelackthereof.org
+  * Warn if printing from the Inspector
+  * Clean up inspector debug level
+  * Fix send_basic_header name in Inspector
+
+Thu May 29 2008  awwaiid@thelackthereof.org
+  * Quick fix for debug_level issue in Inspector
+
 Tue May 13 2008  awwaiid@thelackthereof.org
+  * Add params example and test, end telnet example
+  tagged 0.993
+  * Bump version and update changelogs for release
   * Fix endless params parsing in FCGI too
   * Add test of params example
   * Add parameter example
