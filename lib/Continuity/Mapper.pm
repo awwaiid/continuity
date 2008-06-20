@@ -10,6 +10,7 @@ use Continuity::RequestHolder;
 
 # Accessors
 sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }
+sub debug_callback { exists $_[1] ? $_[0]->{debug_callback} = $_[1] : $_[0]->{debug_callback} }
 
 =head1 NAME
 
@@ -116,6 +117,7 @@ sub new {
       cookie_life => '+2d',
       query_session => 0,
       debug_level => 0,
+      debug_callback => sub { print "@_\n" },
       assign_session_id => sub { join '', 1+int rand 9, map int rand 10, 2..20 },
       implicit_first_next => 1,
       @_,
@@ -267,9 +269,10 @@ sub new_request_queue {
   # Create a request_queue, and hook the adapter up to feed it
   my $request_queue = Coro::Channel->new();
   my $request_holder = Continuity::RequestHolder->new(
-    request_queue => $request_queue,
-    session_id    => $session_id,
-    debug_level   => $self->debug_level,
+    request_queue  => $request_queue,
+    session_id     => $session_id,
+    debug_level    => $self->debug_level,
+    debug_callback => $self->debug_callback,
   );
 
   # async just puts the contents into the global event queue to be executed

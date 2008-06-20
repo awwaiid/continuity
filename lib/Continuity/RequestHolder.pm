@@ -40,6 +40,8 @@ sub session_id { exists $_[1] ? $_[0]->{session_id} = $_[1] : $_[0]->{session_id
 
 sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }         # Debug level (integer)
 
+sub debug_callback { exists $_[1] ? $_[0]->{debug_callback} = $_[1] : $_[0]->{debug_callback} }         # Debug callback
+
 sub new {
     my $class = shift;
     my %args = @_;

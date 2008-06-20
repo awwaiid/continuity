@@ -11,6 +11,7 @@ use Continuity::RequestHolder;
 use IO::Handle;
 
 sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }
+sub debug_callback { exists $_[1] ? $_[0]->{debug_callback} = $_[1] : $_[0]->{debug_callback} }
 
 =head1 NAME
 
@@ -146,6 +147,7 @@ sub cached_params { exists $_[1] ? $_[0]->{cached_params} = $_[1] : $_[0]->{cach
 sub fcgi_request { exists $_[1] ? $_[0]->{fcgi_request} = $_[1] : $_[0]->{fcgi_request} }
 
 sub debug_level :lvalue { $_[0]->{debug_level} }
+sub debug_callback :lvalue { $_[0]->{debug_callback} }
 
 =item $request = Continuity::Adapt::FCGI::Request->new($client, $id, $cgi, $query)
 
@@ -191,6 +193,7 @@ sub new {
   $self->{env} = $cgi;
   $self->{content} = $content;
   $self->{debug_level} = $args{debug_level};
+  $self->{debug_callback} = $args{debug_callback};
   $self->Continuity::debug(2, "\n====== Got new request ======\n"
              . "       Conn: ".$self->{out}."\n"
              . "    Request: $self"

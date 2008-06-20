@@ -6,6 +6,7 @@ use Coro::Event;
 
 # Accessors
 sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }
+sub debug_callback { exists $_[1] ? $_[0]->{debug_callback} = $_[1] : $_[0]->{debug_callback} }
 
 sub new {
   my $class = shift;
@@ -15,6 +16,7 @@ sub new {
     requester => $args{requester},
     callback => $args{callback},
     debug_level => $args{debug_level} || 1,
+    debug_callback => $args{debug_callback} || sub { print "@_\n" },
   };
   bless $self, $class;
   return $self;

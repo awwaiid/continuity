@@ -35,6 +35,8 @@ sub no_content_type { exists $_[1] ? $_[0]->{no_content_type} = $_[1] : $_[0]->{
 
 sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }
 
+sub debug_callback { exists $_[1] ? $_[0]->{debug_callback} = $_[1] : $_[0]->{debug_callback} }
+
 =head1 NAME
 
 Continuity::Adapt::HttpDaemon - Use HTTP::Daemon to get HTTP requests
@@ -83,6 +85,7 @@ sub new {
     no_content_type => delete $args{no_content_type},
     cookies => '',
     debug_level => delete $args{debug_level},
+    debug_callback => delete $args{debug_callback},
   }, $class;
 
   # Set up our http daemon
@@ -120,6 +123,7 @@ sub get_request {
     my $r = $c->get_request or next;
     return Continuity::Adapt::HttpDaemon::Request->new(
       debug_level => $self->debug_level,
+      debug_callback => $self->debug_callback,
       conn => $c,
       http_request => $r,
       no_content_type => $self->no_content_type,
