@@ -16,7 +16,7 @@ sub start_proggie {
     return ($kid_out, $kid_pid);
   } else {
     if(-e $filename) {
-      do $filename or die "Unable to eval $filename!";
+      do $filename or die "Unable to eval $filename! $@";
     } else {
       die "I can't find '$filename'!";
     }
