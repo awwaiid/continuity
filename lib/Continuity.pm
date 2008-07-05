@@ -201,6 +201,7 @@ use Coro;
 use Coro::Event;
 use HTTP::Status; # to grab static response codes. Probably shouldn't be here
 use Continuity::RequestHolder;
+use List::Util 'first';
 
 sub debug_level :lvalue { $_[0]->{debug_level} }         # Debug level (integer)
 sub adapter :lvalue { $_[0]->{adapter} }
@@ -281,6 +282,7 @@ sub new {
     staticp => sub { $_[0]->url =~ m/\.(jpg|jpeg|gif|png|css|ico|js)$/ },
     no_content_type => 0,
     reap_after => undef,
+    allowed_methods => ['GET', 'POST'],
     @_,
   }, $class;
 
@@ -347,11 +349,14 @@ sub new {
         Module::Reload->check;
       }
 
-      unless($r->method eq 'GET' or $r->method eq 'POST') {
-         $r->send_error(RC_BAD_REQUEST);
-         $r->print("ERROR -- GET and POST only for now\r\n\r\n");
-         $r->close;
-         next;
+      my $method = $r->method;
+      unless(first { $_ eq $method } @{$self->{allowed_methods}}) {
+        $r->conn->send_error(
+          RC_BAD_REQUEST,
+          "$method not supported -- only (@{$self->{allowed_methods}}) for now"
+        );
+        $r->conn->close;
+        next;
       }
   
       # We need some way to decide if we should send static or dynamic
