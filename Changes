@@ -1,6 +1,14 @@
 Revision history for Continuity. See Changes-darcs or the main repository for a
 detailed list of internal changes.
 
+Version 0.995 (released 2008.08.03)
+  * Add work-around in Makefile.PL to possibly fix dependency order issue
+  * Make the list of allowed HTTP methods configurable
+  * Fixed bugs in error response
+  * Added a debug_callback for redirecting debug output
+  * Include an error message when "do" fails
+  * Thanks to John Beppu and Shawn M Moore for patches :)
+
 Version 0.994 (released 2008.06.17)
   * List event as a prereq to make Coro::Event build better
   * Inspector bugfixes for debug_level and send_basic_header

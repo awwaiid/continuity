@@ -20,7 +20,23 @@ print $out $f;
 # *** This is the actual Changelog :) ***
 # ***************************************
 __DATA__
+Sun Aug  3 2008  awwaiid@thelackthereof.org
+  * Add work-around in Makefile.PL to possibly fix dependency order issue
+
+Sat Jul  5 2008  john.beppu@gmail.com
+  * Make the list of allowed HTTP methods configurable; Fixed bugs in error response.
+
+Thu Jun 19 2008  Shawn M Moore <sartak@gmail.com>
+  * Add a debug_callback method to the rest of the classes
+
+Thu Jun 19 2008  Shawn M Moore <sartak@gmail.com>
+  * Begin adding a debug_callback for redirecting debug output
+
+Thu Jun 19 2008  Shawn M Moore <sartak@gmail.com>
+  * Include the error message when "do" fails
+
 Tue Jun 17 2008  awwaiid@thelackthereof.org
+  * Bump version and update Changelog for release
   * Change port for animals example
 
 Tue Jun 17 2008  scott@slowass.net
