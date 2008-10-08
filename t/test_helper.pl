@@ -9,6 +9,7 @@ if($@) {
 
 sub start_proggie {
   my ($filename) = @_;
+  *STDERR = *STDOUT;
   my $kid_pid = open(my $kid_out, '-|');
   die "Unable to fork!" unless defined($kid_pid);
   if($kid_pid) {
