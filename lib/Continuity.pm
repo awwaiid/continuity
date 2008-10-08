@@ -300,7 +300,7 @@ sub new {
     mapper => undef,
     adapter => undef,
     debug_level => 1,
-    debug_callback => sub { print "@_\n" },
+    debug_callback => sub { print STDERR "@_\n" },
     reload => 1, # XXX
     callback => (exists &::main ? \&::main : undef),
     staticp => sub { $_[0]->url =~ m/\.(jpg|jpeg|gif|png|css|ico|js)$/ },
