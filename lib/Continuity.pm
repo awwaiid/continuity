@@ -26,8 +26,6 @@ Continuity - Abstract away statelessness of HTTP, for stateful Web applications
 
 =head1 DESCRIPTION
 
-This is BETA software, and feedback/code is welcomed.
-
 Continuity is a library to simplify web applications. Each session is written
 and runs as a persistant application, and is able to request additional input
 at any time without exiting. This is significantly different from the
