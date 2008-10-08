@@ -32,15 +32,41 @@ at any time without exiting. This is significantly different from the
 traditional CGI model of web applications in which a program is restarted for
 each new request.
 
-The program is passed a $request variable which holds the request (including
+The program is passed a C<< $request >> variable which holds the request (including
 any form data) sent from the browser. In concept, this is a lot like a C<$cgi>
 object from CGI.pm with one very very significant difference. At any point in
 the code you can call $request->next. Your program will then suspend, waiting
 for the next request in the session. Since the program doesn't actually halt,
 all state is preserved, including lexicals -- getting input from the browser is
-then similar to doing C<$line=E<lt>E<gt>> in a command-line application.
+then similar to doing C<< $line = <> >> in a command-line application.
 
 =head1 GETTING STARTED
+
+The first thing to make a note of is that your application is a continuously
+running program, basically a self contained webserver. This is quite unlike a
+CGI.pm based application, which is re-started for each new request from a
+client browser. Once you step away from your CGI.pm experience this is actually
+more natural (IMO), more like writing an interactive desktop or command-line
+program.
+
+Here's a simple example:
+
+  #!/usr/bin/perl
+
+  use strict;
+  use Continuity;
+
+  my $server = new Continuity;
+  $server->loop;
+
+  sub main {
+    my $request = shift;
+    while(1) {
+      $request->print("Hello, world!");
+      $request->next;
+      $request->print("Hello again!");
+    }
+  }
 
 First, check out the small demo applications in the eg/ directory of the
 distribution. Sample code there ranges from simple counters to more complex
@@ -61,8 +87,8 @@ listening for incoming requests and starting new sessions (this never exits).
   $server->loop;
 
 Continuity must have a starting point when starting new sessions for your
-application. The default is C<\&::main> (a sub named "main" in the default
-global scope), which is passed the C<$request> handle. See the
+application. The default is C<< \&::main >> (a sub named "main" in the default
+global scope), which is passed the C<< $request >> handle. See the
 L<Continuity::Request> documentation for details on the methods available from
 the C<$request> object beyond this introduction.
 
