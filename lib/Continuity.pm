@@ -327,7 +327,7 @@ sub new {
       docroot => $self->{docroot},
       server => $self,
       debug_level => $self->debug_level,
-      debug_callback => sub { print "@_\n" },
+      debug_callback => $self->debug_callback,
       no_content_type => $self->{no_content_type},
       $self->{port} ? (LocalPort => $self->{port}) : (),
       $self->{cookie_life} ? (cookie_life => $self->{cookie_life}) : (), 
