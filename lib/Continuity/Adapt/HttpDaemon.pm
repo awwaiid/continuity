@@ -215,6 +215,8 @@ sub cached_params { exists $_[1] ? $_[0]->{cached_params} = $_[1] : $_[0]->{cach
 
 sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }
 
+sub debug_callback { exists $_[1] ? $_[0]->{debug_callback} = $_[1] : $_[0]->{debug_callback} }
+
 =for comment
 
 See L<Continuity::Request> for API documentation.
