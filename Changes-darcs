@@ -20,6 +20,21 @@ print $out $f;
 # *** This is the actual Changelog :) ***
 # ***************************************
 __DATA__
+Wed Dec 10 2008  john.beppu@gmail.com
+  * add debug_callback() to Continuity::Adapt::HttpDaemon::Request
+
+Wed Oct  8 2008  awwaiid@thelackthereof.org
+  * Combine STDERR and STDOUT in test suite
+  * Version bump
+  * Properly pass on toplevel debug_callback to adapters
+  * Default to STDERR for debugging output
+  * POD updates
+  * Remove BETA warning!
+
+Thu Aug  7 2008  awwaiid@thelackthereof.org
+  * update changelogs
+  * Version bump
+
 Sun Aug  3 2008  awwaiid@thelackthereof.org
   * Add work-around in Makefile.PL to possibly fix dependency order issue
 

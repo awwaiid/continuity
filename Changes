@@ -1,6 +1,13 @@
 Revision history for Continuity. See Changes-darcs or the main repository for a
 detailed list of internal changes.
 
+Version 0.997 (released 2008.12.11)
+  * Forgot to update Changes file for 0.996
+  * Fix debug_callback for adapters
+  * Slight test-suite improvement
+  * POD updates
+  * Remove BETA warning!
+
 Version 0.995 (released 2008.08.03)
   * Add work-around in Makefile.PL to possibly fix dependency order issue
   * Make the list of allowed HTTP methods configurable
