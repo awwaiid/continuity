@@ -7,6 +7,7 @@ use CGI;
 use Coro;
 use Coro::Channel;
 use Continuity::RequestHolder;
+use Continuity::Inspector;
 
 # Accessors
 sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }
@@ -289,7 +290,7 @@ sub new_request_queue {
   return $request_queue;
 }
 
-=head2 C<< $mapper->enqueue($request, $request_queue) >>
+=head2 C<< $mapper->enqueue($request, $request_queue|$session_id) >>
 
 Add the given request to the given request queue.
 
@@ -297,22 +298,67 @@ This is a good spot to override for some tricky behaviour... mostly for
 pre-processing requests before they get to the session handler. This particular
 implementation will optionally print the HTTP headers for you.
 
+Currently C<die>s if the session_id doesn't map to a correct request queue, but
+pass an invalid reference and it'll probably die anyway.
+
 =cut
 
 sub enqueue {
   my ($self, $request, $request_queue) = @_;
 
   # TODO: This might be one spot to hook STDOUT onto this request
+  # nope, Coro changes context all the time.  any select() would soon become wrong.
  
+  # if they didn't pass us an actual queue object, see if it's the session_id for one
+  ref($request_queue) or $request_queue = $self->{sessions}->{$request_queue}; 
+  $request_queue or die "didn't pass a valid session_id or request queue";
+
   # Drop the request into this end of the request_queue
   $request_queue->put($request);
 
   # XXX needed for FastCGI (because it is blocking...)
   cede;
 
-  # select $prev_select;
 }
 
+=head2 C<< $mapper->sessions >>
+
+Returns a list of session IDs of active sessions, useful as arguments to L<Continuity::Mapper>.
+
+=cut
+
+sub sessions {
+    return @{ $_[0]->{sesssions} };
+}
+
+=head2 C<< $mapper->inspect($session_id, sub { ... } ) >>
+
+Run code in another coroutine's execution context.
+The execution context includes the call stack, including all of the data returned by
+L<Carp::confess>, L<Padwalker>, L<caller>, and so on.
+
+This creates an L<Continuity::Inspector> instance and sends it over the request queue.
+It's just a bit of a shorthand for the same thing.
+
+Returns false if the session_id doesn't exist.
+
+  my $server = Continuity->new();
+  my @sessions;
+  while(! @sessions) {
+      @sessions = Continuity->mapper->sessions or sleep 1;
+  }
+  $server->mapper->inspect( $sessions[0], sub { use Carp; Carp::confess; }, );
+
+=cut
+
+sub inspect {
+    my $self = shift;
+    my $session_id = shift;
+    my $callback = shift;
+    exists $self->{sessions}->{$session_id} or return;
+    my $inspector = Continuity::Inspector->new(callback => $callback) or die;
+    $inspector->inspect($self->{sessions}->{$session_id});
+}
 
 =head1 SEE ALSO
 
