@@ -92,6 +92,19 @@ sub execute_callbacks {
       $self->callbacks->{$callback_name}->($self, @_);
     }
   }
+  $self->clear_callbacks;
+}
+
+=head2 $request->clear_callbacks
+
+Explicitly clear the current list of callbacks. This is already called at the
+end of execute_callbacks. It additionally exists here in case you want to clear
+the callbacks without processing.
+
+=cut
+
+sub clear_callbacks {
+  my $self = shift;
   $self->callbacks({}); # Clear all callbacks
 }
 
