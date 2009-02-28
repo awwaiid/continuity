@@ -464,7 +464,7 @@ similar technologies such as L<http://seaside.st/>.
 
 Website/Wiki: L<http://continuity.tlt42.org/>
 
-L<Continuity::Request>, L<Continuity::Mapper>,
+L<Continuity::Request>, L<Continuity::RequestCallbacks>, L<Continuity::Mapper>,
 L<Continuity::Adapt::HttpDaemon>, L<Coro>
 
 =head1 AUTHOR

@@ -109,6 +109,8 @@ perhaps eventually, other places.
 
 =item L<Continuity::Adapt::HttpDaemon>
 
+=item L<Continuity::RequestCallbacks>
+
 =back
 
 =cut
