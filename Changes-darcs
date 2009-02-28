@@ -20,6 +20,19 @@ print $out $f;
 # *** This is the actual Changelog :) ***
 # ***************************************
 __DATA__
+Sat Feb 28 2009  awwaiid@thelackthereof.org
+  * Add documentation for RequestCallbacks
+  * Add RequestCallback mixin
+
+Sat Jan  3 2009  scott@slowass.net
+  * new inspect API
+
+Mon Dec 29 2008  scott@slowass.net
+  * kill a race condition on watching for the inspector callback to finish and make server a required parameter to C::Monitor
+
+Wed Dec 10 2008  awwaiid@thelackthereof.org
+  * Update changelog and bump version
+
 Wed Dec 10 2008  john.beppu@gmail.com
   * add debug_callback() to Continuity::Adapt::HttpDaemon::Request
 

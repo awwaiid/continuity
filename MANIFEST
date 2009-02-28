@@ -36,6 +36,7 @@ lib/Continuity/Adapt/HttpDaemon.pm
 lib/Continuity/Inspector.pm
 lib/Continuity/Mapper.pm
 lib/Continuity/Request.pm
+lib/Continuity/RequestCallbacks.pm
 lib/Continuity/RequestHolder.pm
 t/00_basic.t
 t/01_counter.t
