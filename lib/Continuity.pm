@@ -1,6 +1,6 @@
 package Continuity;
 
-our $VERSION = '0.998';
+our $VERSION = '1.0';
 
 =head1 NAME
 
