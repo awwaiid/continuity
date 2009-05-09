@@ -20,7 +20,13 @@ print $out $f;
 # *** This is the actual Changelog :) ***
 # ***************************************
 __DATA__
+Sat May  9 2009  awwaiid@thelackthereof.org
+  * Add some flags to execute_callbacks to stop clearing them
+  * Version bump
+
 Sat Feb 28 2009  awwaiid@thelackthereof.org
+  * Add method for explicitly clearing all callbacks
+  * Version bump and changelog updates
   * Add documentation for RequestCallbacks
   * Add RequestCallback mixin
 

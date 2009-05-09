@@ -1,5 +1,10 @@
 Revision history for Continuity. See Changes-darcs or the main repository for a
 detailed list of internal changes.
+  
+Version 1.0 (released 2009.05.09)
+  * Improve Continuity::RequestCallbacks documentation
+  * Add callback clearing options
+  * Add test for callbacks
 
 Version 0.998 (released 2009.02.28)
   * Add RequestCallback mixin along with some documentation
