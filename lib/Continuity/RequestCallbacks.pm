@@ -83,16 +83,31 @@ We don't call this from within C<< $request->next >> in case you need to do
 some processing before executing callbacks. Checking authentication is a good
 example of something you might be doing inbetween :)
 
+By default the callbacks are cleared with ->clear_callbacks after all callbacks
+are processed. If you'd like, you can pass a hashref with a flag to indicate
+that the remaining callbacks shouldn't be cleared, like this:
+
+  $request->execute_callbacks( { no_clear_all => 1 } );
+
+You might want to do this if, for example, you are doing some AJAX and don't
+want one js component clearing the callbacks of another. It is most likely a
+bad idea though due to the ensuing memory leak. If it makes you feel any
+better, you can pass "clear_executed" in the same way to clear at least some,
+preventing double-execution. You'd probably use both flags:
+  
+  $request->execute_callbacks( { no_clear_all => 1, clear_executed => 1 } );
+
 =cut
 
 sub execute_callbacks {
-  my $self = shift;
+  my ($self, $options) = @_;
   foreach my $callback_name (keys %{ $self->callbacks }) {
     if($self->param($callback_name)) {
       $self->callbacks->{$callback_name}->($self, @_);
+      delete $self->callbacks->{$callback_name} if $options->{clear_executed};
     }
   }
-  $self->clear_callbacks;
+  $self->clear_callbacks unless $options->{no_clear_all};
 }
 
 =head2 $request->clear_callbacks
