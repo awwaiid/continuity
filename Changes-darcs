@@ -20,7 +20,14 @@ print $out $f;
 # *** This is the actual Changelog :) ***
 # ***************************************
 __DATA__
+Sat Jun  6 2009  awwaiid@thelackthereof.org
+  * Version bump
+  * Build README from Continuity.pm
+  * It's 2009 now I guess
+  * Allow callbacks to add callbacks without them getting deleted
+
 Sat May  9 2009  awwaiid@thelackthereof.org
+  * Update changelogs
   * Add some flags to execute_callbacks to stop clearing them
   * Version bump
 

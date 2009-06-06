@@ -1,6 +1,10 @@
 Revision history for Continuity. See Changes-darcs or the main repository for a
 detailed list of internal changes.
-  
+
+Version 1.01 (released 2009.06.06)
+  * Allow callbacks to add callbacks without them getting deleted
+  * Build README from pod and update copyleft dates
+
 Version 1.0 (released 2009.05.09)
   * Improve Continuity::RequestCallbacks documentation
   * Add callback clearing options
