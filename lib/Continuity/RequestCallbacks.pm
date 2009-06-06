@@ -106,8 +106,8 @@ sub execute_callbacks {
       $self->callbacks->{$callback_name}->($self, @_);
       delete $self->callbacks->{$callback_name} if $options->{clear_executed};
     }
+    delete $self->callbacks->{$callback_name} unless $options->{no_clear_all};
   }
-  $self->clear_callbacks unless $options->{no_clear_all};
 }
 
 =head2 $request->clear_callbacks
