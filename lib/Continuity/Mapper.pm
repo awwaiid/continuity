@@ -377,7 +377,7 @@ sub inspect {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2004-2008 Brock Wilcox <awwaiid@thelackthereof.org>. 
+Copyright (c) 2004-2009 Brock Wilcox <awwaiid@thelackthereof.org>. 
 All rights reserved.  
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
