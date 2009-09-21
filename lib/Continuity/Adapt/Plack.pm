@@ -81,6 +81,8 @@ sub cookies { exists $_[1] ? $_[0]->{cookies} = $_[1] : $_[0]->{cookies} }
 # Flag, never send type
 sub no_content_type { exists $_[1] ? $_[0]->{no_content_type} = $_[1] : $_[0]->{no_content_type} }
 
+# CGI query params
+sub cached_params { exists $_[1] ? $_[0]->{cached_params} = $_[1] : $_[0]->{cached_params} }
 
 sub new {
   my ($class, $env) = @_;
@@ -94,6 +96,47 @@ sub new {
   use Data::Dumper;
   print STDERR "Req: " . Dumper($self);
   return $self;
+}
+
+sub param {
+    my $self = shift; 
+    unless($self->cached_params) {
+      $self->cached_params( do {
+        my $in = $self->uri;
+        my $content;
+        $self->{'psgi.input'}->read($content, 2048);
+        $in .= '&' . $content if $content;
+        $in =~ s{^.*\?}{};
+        my @params;
+        for(split/[&]/, $in) { 
+            tr/+/ /; 
+            s{%(..)}{pack('c',hex($1))}ge; 
+            my($k, $v); ($k, $v) = m/(.*?)=(.*)/s or ($k, $v) = ($_, 1);
+            push @params, $k, $v; 
+        };
+        \@params;
+      });
+    };
+    my @params = @{ $self->cached_params };
+    if(@_) {
+        my @values;
+        while(@_) {
+          my $param = shift;
+          for(my $i = 0; $i < @params; $i += 2) {
+              push @values, $params[$i+1] if $params[$i] eq $param;
+          }
+        }
+        return unless @values;
+        return wantarray ? @values : $values[0];
+    } else {
+        return @{$self->cached_params};
+    }
+}
+
+sub params {
+    my $self = shift;
+    $self->param;
+    return @{$self->cached_params};
 }
 
 sub get_response {
