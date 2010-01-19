@@ -47,58 +47,50 @@ L<Continuity::Mapper> fills in the following defaults:
     assign_session_id => sub { join '', map int rand 10, 1..20 },
 
 Only C<cookie_session> or C<query_session> should be set, but not both.
-C<assign_session_id> specifies a call-back that generates a new session id value
-for when C<cookie_session> is enabled and no cookie of the given name (C<sid> 
-in this example) is passed.
-C<assign_session_id> likewise gets called when C<query_session> is set but
-no GET/POST parameter of the specified name (C<sid> in this example) is
-passed.
+C<assign_session_id> specifies a call-back that generates a new session id
+value for when C<cookie_session> is enabled and no cookie of the given name
+(C<sid> in this example) is passed.  C<assign_session_id> likewise gets called
+when C<query_session> is set but no GET/POST parameter of the specified name
+(C<sid> in this example) is passed.
 
-If you use C<query_session> to keep the user associated 
-with their session, every link and form in the application must be written to
-include the session id. The currently assigned ID can be gotten at with C<$request->session_id>.
+If you use C<query_session> to keep the user associated with their session,
+every link and form in the application must be written to include the session
+id. The currently assigned ID can be gotten at with C<$request->session_id>.
 
-For each incoming HTTP hit, L<Continuity> must use some criteria for 
-deciding which execution context to send that hit to.
-For each of these that are set true, that element of the request
-will be used as part of the key that maps requests to execution
-context (remembering that Continuity hopes to give each user one
-unique execution context).
-An "execution context" is just a unique call to the
-whichever function is specified or passed as the callback, where
-several such instances of the same function will be running at the
-same time, each being paused to wait for more data or
-unpaused when data comes in.
+For each incoming HTTP hit, L<Continuity> must use some criteria for deciding
+which execution context to send that hit to.  For each of these that are set
+true, that element of the request will be used as part of the key that maps
+requests to execution context (remembering that Continuity hopes to give each
+user one unique execution context).  An "execution context" is just a unique
+call to the whichever function is specified or passed as the callback, where
+several such instances of the same function will be running at the same time,
+each being paused to wait for more data or unpaused when data comes in.
 
-In the simple case, each "user" gets their own execution context.
-By default, users are distinguished by their IP address, which is a very bad
-way to try to make this distinction.
-Corporate users behind NATs and AOL users (also behind a NAT) will all
-appear to be the same few users.
+In the simple case, each "user" gets their own execution context.  By default,
+users are distinguished by their IP address, which is a very bad way to try to
+make this distinction.  Corporate users behind NATs and AOL users (also behind
+a NAT) will all appear to be the same few users.
 
-C<path_session> may be set true to use the pathname of the request, such as C<foo>
-in C<http://bar.com/foo?baz=quux>, as part of the criteria for deciding which
-execution context to associate with that hit.
-This makes it possible to write applications that give one user more than
-one execution contexts.
-This is necessary to run server-push concurrently with push from the user
-back to the server (see the examples directory) or to have sub-applications
-running on the same port, each having its own state seperate from the others.
+C<path_session> may be set true to use the pathname of the request, such as
+C<foo> in C<http://bar.com/foo?baz=quux>, as part of the criteria for deciding
+which execution context to associate with that hit.  This makes it possible to
+write applications that give one user more than one execution contexts.  This
+is necessary to run server-push concurrently with push from the user back to
+the server (see the examples directory) or to have sub-applications running on
+the same port, each having its own state seperate from the others.
 
-Cookies aren't issued or read by L<Continuity>, but we plan to add
-support for reading them.
-I expect the name of the cookie to look for would be passed in,
-or perhaps a subroutine that validates the cookies and returns it
-(possibily stripped of a secure hash) back out.
-Other code (the main application, or another session handling module
-from CPAN, or whatnot) will have the work of picking session IDs.
+Cookies aren't issued or read by L<Continuity>, but we plan to add support for
+reading them.  I expect the name of the cookie to look for would be passed in,
+or perhaps a subroutine that validates the cookies and returns it (possibily
+stripped of a secure hash) back out.  Other code (the main application, or
+another session handling module from CPAN, or whatnot) will have the work of
+picking session IDs.
 
-To get more sophisticated or specialized session ID computing logic,
-subclass this object, re-implement C<get_session_id_from_hit()> to
-suit your needs, and then pass in an instance of your subclass to 
-as the value for C<mapper> in the call to
-C<< Continuity->new) >>.
-Here's an example of that sort of constructor call:
+To get more sophisticated or specialized session ID computing logic, subclass
+this object, re-implement C<get_session_id_from_hit()> to suit your needs, and
+then pass in an instance of your subclass to as the value for C<mapper> in the
+call to C<< Continuity->new) >>.  Here's an example of that sort of constructor
+call:
 
   $server = Continuity->new( 
     mapper   => Continuity::Mapper::StrongRandomSessionCookies->new( callback => \::main )
@@ -290,7 +282,7 @@ sub new_request_queue {
   return $request_queue;
 }
 
-=head2 C<< $mapper->enqueue($request, $request_queue|$session_id) >>
+=head2 $mapper->enqueue($request, $request_queue|$session_id)
 
 Add the given request to the given request queue.
 
@@ -321,7 +313,7 @@ sub enqueue {
 
 }
 
-=head2 C<< $mapper->sessions >>
+=head2 $mapper->sessions
 
 Returns a list of session IDs of active sessions, useful as arguments to L<Continuity::Mapper>.
 
@@ -331,7 +323,7 @@ sub sessions {
     return @{ $_[0]->{sesssions} };
 }
 
-=head2 C<< $mapper->inspect($session_id, sub { ... } ) >>
+=head2 $mapper->inspect($session_id, sub { ... } )
 
 Run code in another coroutine's execution context.
 The execution context includes the call stack, including all of the data returned by
@@ -362,25 +354,17 @@ sub inspect {
 
 =head1 SEE ALSO
 
-=over
-
-=item L<Continuity>
-
-=item L<Coro>
-
-=back
+L<Continuity>, L<Coro>
 
 =head1 AUTHOR
 
-  Brock Wilcox <awwaiid@thelackthereof.org>
-  http://thelackthereof.org/
+  Brock Wilcox <awwaiid@thelackthereof.org> - http://thelackthereof.org/
 
 =head1 COPYRIGHT
 
-Copyright (c) 2004-2009 Brock Wilcox <awwaiid@thelackthereof.org>. 
-All rights reserved.  
-This program is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
+  Copyright (c) 2004-2010 Brock Wilcox <awwaiid@thelackthereof.org>. All
+  rights reserved.  This program is free software; you can redistribute it
+  and/or modify it under the same terms as Perl itself.
 
 =cut
 

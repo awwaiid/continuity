@@ -2,7 +2,6 @@ package Continuity::Inspector;
 
 use strict;
 use Data::Dumper;
-# use Coro::Event;
 use Coro;
 use Coro::Semaphore;
 

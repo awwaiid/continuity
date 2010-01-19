@@ -32,13 +32,14 @@ at any time without exiting. This is significantly different from the
 traditional CGI model of web applications in which a program is restarted for
 each new request.
 
-The program is passed a C<< $request >> variable which holds the request (including
-any form data) sent from the browser. In concept, this is a lot like a C<$cgi>
-object from CGI.pm with one very very significant difference. At any point in
-the code you can call $request->next. Your program will then suspend, waiting
-for the next request in the session. Since the program doesn't actually halt,
-all state is preserved, including lexicals -- getting input from the browser is
-then similar to doing C<< $line = <> >> in a command-line application.
+The program is passed a C<< $request >> variable which holds the request
+(including any form data) sent from the browser. In concept, this is a lot like
+a C<$cgi> object from CGI.pm with one very very significant difference. At any
+point in the code you can call $request->next. Your program will then suspend,
+waiting for the next request in the session. Since the program doesn't actually
+halt, all state is preserved, including lexicals -- getting input from the
+browser is then similar to doing C<< $line = <> >> in a command-line
+application.
 
 =head1 GETTING STARTED
 
@@ -218,9 +219,8 @@ C<$request> object that is passed to each session in your application.
 =cut
 
 use strict;
-use warnings; # XXX -- while in devolopment
+use warnings;
 
-use IO::Handle;
 use Coro;
 use Coro::Event;
 use HTTP::Status; # to grab static response codes. Probably shouldn't be here
