@@ -45,5 +45,4 @@ sub main {
   $request->print("It took you $tries tries.<br>\n");
 }
 
-1;
 
