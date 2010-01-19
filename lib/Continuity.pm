@@ -324,7 +324,12 @@ sub new {
   # The adapater plugs the system into a server (probably a Web server)
   # The default has its very own HTTP::Daemon running.
   if(!$self->{adapter} || !(ref $self->{adapter})) {
-    my $adapter = "Continuity::Adapt::" . ($self->{adapter} || 'HttpDaemon');
+    my $adapter_name = 'HttpDaemon';
+    if(defined &Plack::Runner::new) {
+      require Continuity::Adapt::PSGI;
+      $adapter_name = 'PSGI';
+    }
+    my $adapter = "Continuity::Adapt::" . ($self->{adapter} || $adapter_name);
     eval "require $adapter";
     die "Continuity: Unknown adapter '$adapter'\n" if $@;
     $self->{adapter} = $adapter->new(
