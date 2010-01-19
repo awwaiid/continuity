@@ -375,52 +375,62 @@ sub new {
 
   }
 
-  async {
-    while(1) {
-      my $r = $self->adapter->get_request;
-      if($self->{reload}) {
-        Module::Reload->check;
-      }
-
-      my $method = $r->method;
-      unless(first { $_ eq $method } @{$self->{allowed_methods}}) {
-        $r->conn->send_error(
-          RC_BAD_REQUEST,
-          "$method not supported -- only (@{$self->{allowed_methods}}) for now"
-        );
-        $r->conn->close;
-        next;
-      }
-  
-      # We need some way to decide if we should send static or dynamic
-      # content.
-      # To save users from having to re-implement (likely incorrecty)
-      # basic security checks like .. abuse in GET paths, we should provide
-      # a default implementation -- preferably one already on CPAN.
-      # Here's a way: ask the mapper.
-  
-      if($self->{staticp}->($r)) {
-          $self->debug(3, "Sending static content... ");
-          $self->{adapter}->send_static($r);
-          $self->debug(3, "done sending static content.");
-          next;
-      }
-
-      # Right now, map takes one of our Continuity::RequestHolder objects (with conn and request set) and sets queue
-
-      # This actually finds the thing that wants it, and gives it to it
-      # (executes the continuation)
-      $self->debug(3, "Calling map... ");
-      $self->mapper->map($r);
-      $self->debug(3, "done mapping.");
-
-    }
-  
-    $self->debug(2, "Done processing request, waiting for next\n");
-    
-  };
+  $self->start_request_loop;
 
   return $self;
+}
+
+sub start_request_loop {
+  my ($self) = @_;
+  async {
+    while(1) {
+      $self->debug(3, "Getting request from adapter");
+      my $r = $self->adapter->get_request;
+      $self->debug(3, "Handling request");
+      $self->handle_request($r);
+    }
+  };
+}
+
+sub handle_request {
+  my ($self, $r) = @_;
+
+  if($self->{reload}) {
+    Module::Reload->check;
+  }
+
+  my $method = $r->method;
+  unless(first { $_ eq $method } @{$self->{allowed_methods}}) {
+    $r->conn->send_error(
+      RC_BAD_REQUEST,
+      "$method not supported -- only (@{$self->{allowed_methods}}) for now"
+    );
+    $r->conn->close;
+    next;
+  }
+
+  # We need some way to decide if we should send static or dynamic
+  # content.
+  # To save users from having to re-implement (likely incorrecty)
+  # basic security checks like .. abuse in GET paths, we should provide
+  # a default implementation -- preferably one already on CPAN.
+  # Here's a way: ask the mapper.
+
+  if($self->{staticp}->($r)) {
+      $self->debug(3, "Sending static content... ");
+      $self->{adapter}->send_static($r);
+      $self->debug(3, "done sending static content.");
+      next;
+  }
+
+  # Right now, map takes one of our Continuity::RequestHolder objects (with conn and request set) and sets queue
+
+  # This actually finds the thing that wants it, and gives it to it
+  # (executes the continuation)
+  $self->debug(3, "Calling map... ");
+  $self->mapper->map($r);
+  $self->debug(3, "done mapping.");
+  $self->debug(2, "Done processing request, waiting for next\n");
 }
 
 =head2 $server->loop()
