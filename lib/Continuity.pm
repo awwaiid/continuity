@@ -295,6 +295,7 @@ sub new {
   my $this = shift;
   my $class = ref($this) || $this;
 
+  no strict 'refs';
   my $self = bless { 
     docroot => '.',   # default docroot
     mapper => undef,
@@ -302,13 +303,16 @@ sub new {
     debug_level => 1,
     debug_callback => sub { print STDERR "@_\n" },
     reload => 1, # XXX
-    callback => (exists &::main ? \&::main : undef),
+    callback => (exists &{caller()."::main"} ? \&{caller()."::main"} : undef),
+    # callback => (exists &::main ? \&::main : undef),
     staticp => sub { $_[0]->url =~ m/\.(jpg|jpeg|gif|png|css|ico|js)$/ },
     no_content_type => 0,
     reap_after => undef,
     allowed_methods => ['GET', 'POST'],
     @_,
   }, $class;
+
+  use strict 'refs';
 
   if($self->{reload}) {
     eval "use Module::Reload";
