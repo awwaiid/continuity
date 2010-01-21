@@ -406,7 +406,7 @@ sub handle_request {
       "$method not supported -- only (@{$self->{allowed_methods}}) for now"
     );
     $r->conn->close;
-    next;
+    return;
   }
 
   # We need some way to decide if we should send static or dynamic
@@ -417,10 +417,10 @@ sub handle_request {
   # Here's a way: ask the mapper.
 
   if($self->{staticp}->($r)) {
-      $self->debug(3, "Sending static content... ");
-      $self->{adapter}->send_static($r);
-      $self->debug(3, "done sending static content.");
-      next;
+    $self->debug(3, "Sending static content... ");
+    $self->{adapter}->send_static($r);
+    $self->debug(3, "done sending static content.");
+    return;
   }
 
   # Right now, map takes one of our Continuity::RequestHolder objects (with conn and request set) and sets queue
