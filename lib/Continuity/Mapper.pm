@@ -273,6 +273,7 @@ sub new_request_queue {
   async {
     $request_holder->next if $self->{implicit_first_next};
     $self->{callback}->($request_holder, @_);
+    $request_holder->end_request();
 
     # If the callback exits, the session is over
     delete $self->{sessions}->{$session_id};
