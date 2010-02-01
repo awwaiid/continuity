@@ -188,9 +188,6 @@ sub end_request {
 
 package Continuity;
 
-use Coro;
-use Coro::Generator;
-
 # Override the ->loop
 no warnings 'redefine';
 
@@ -232,7 +229,7 @@ sub loop {
 
   };
 
-  cede;
+  Coro::cede();
  
   $self->debug(3, "Returning app");
   return $app;
