@@ -172,6 +172,10 @@ sub send_basic_header {
 sub print {
   my $self = shift;
   push @{ $self->{response_content} }, @_;
+
+  # This is a good time to let other stuff run
+  Coro::cede();
+
   return $self;
 }
 
