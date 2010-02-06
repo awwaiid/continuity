@@ -7,6 +7,7 @@ doc/internal_structure.pod
 eg/README
 eg/addtwo.pl
 eg/animals.pl
+eg/callback_counter.pl
 eg/chat-ajax-push.js
 eg/chat-ajax-push.pl
 eg/chat.pl
@@ -19,6 +20,7 @@ eg/guess.fcgi
 eg/guess.pl
 eg/hello.fcgi
 eg/hello.pl
+eg/hello_plack.pl
 eg/jquery.js
 eg/leakfinder.pl
 eg/merlyn-animals.pl.txt
@@ -27,12 +29,16 @@ eg/old/bleh.php
 eg/old/client.php
 eg/old/phpcontize.pl
 eg/params.pl
+eg/petstore.pl
 eg/post-redirect.pl
 eg/query_session.pl
+eg/slowprint.pl
+eg/supercounter.pl
 eg/telnet-terminal.pl
 lib/Continuity.pm
 lib/Continuity/Adapt/FCGI.pm
 lib/Continuity/Adapt/HttpDaemon.pm
+lib/Continuity/Adapt/PSGI.pm
 lib/Continuity/Inspector.pm
 lib/Continuity/Mapper.pm
 lib/Continuity/Request.pm
@@ -45,5 +51,6 @@ t/03_cookies.t
 t/04_addtwo.t
 t/05_query_session.t
 t/06_params.t
+t/07_callback_counter.t
 t/test_helper.pl
 util/highport.c
