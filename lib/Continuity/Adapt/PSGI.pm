@@ -9,17 +9,14 @@ Continuity::Adapt::PSGI - PSGI backend for Continuity
   # Run with "plackup -s Coro demo.pl"
 
   use Continuity;
-  use Continuity::Adapt::PSGI;
 
-  my $server = Continuity->new(
-    adapter => Continuity::Adapt::PSGI->new()
-  );
+  my $server = Continuity->new();
   $server->loop;
 
   sub main {
     my $request = shift;
     my $i = 0;
-    while($i++) {
+    while(++$i) {
       $request->print("Hello number $i!");
       $request->next;
     }
