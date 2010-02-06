@@ -1,6 +1,12 @@
 Revision history for Continuity. See Changes-darcs or the main repository for a
 detailed list of internal changes.
 
+Version 1.1.1 (released 2010.02.05)
+  * Add PSGI Adapter! Try "plackup -s Coro guess.pl"
+  * Remove experimental Plack adapter
+  * PSGI adapter uses AnyEvent, the rest of Continuity will too soon
+  * Misc cleanups
+
 Version 1.01 (released 2009.06.06)
   * Allow callbacks to add callbacks without them getting deleted
   * Build README from pod and update copyleft dates

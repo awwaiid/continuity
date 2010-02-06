@@ -20,7 +20,35 @@ print $out $f;
 # *** This is the actual Changelog :) ***
 # ***************************************
 __DATA__
+Fri Feb  5 2010  awwaiid@thelackthereof.org
+  tagged v1.1
+  * version bump
+
+Sun Jan 31 2010  awwaiid@thelackthereof.org
+  * Remove guess.psgi (redundant with guess.pl)
+  * Add missing files
+  * Remove cruft
+  * Cede when printing in PSGI
+
+Wed Jan 20 2010  awwaiid@thelackthereof.org
+  * When we run off the end of the main subroutine, call a bonus ->end_request to finish things off
+  * Since we're not in a direct loop, use 'return' instead of 'next'
+
+Mon Jan 18 2010  awwaiid@thelackthereof.org
+  * Fix copyright a bit
+  * Documentation formatting and remove some dead code
+  * Break out start_request_loop and handle_request
+  * Automatically detect Plack as PSGI adapter
+  * Look up main() based on caller's package
+  * Add PSGI adapter
+
+Sun Sep 20 2009  awwaiid@thelackthereof.org
+  * Add parameter parsing to Plack adapter
+  * Add Plack Adapter (proof-of-concept)
+
 Sat Jun  6 2009  awwaiid@thelackthereof.org
+  tagged 1.01
+  * update changelogs
   * Version bump
   * Build README from Continuity.pm
   * It's 2009 now I guess
