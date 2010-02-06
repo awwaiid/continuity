@@ -6,6 +6,8 @@ Continuity::Adapt::PSGI - PSGI backend for Continuity
 
 =head1 SYNOPSIS
 
+  # Run with "plackup -s Coro demo.pl"
+
   use Continuity;
   use Continuity::Adapt::PSGI;
 
