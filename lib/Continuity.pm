@@ -443,9 +443,20 @@ no warnings 'redefine';
 
 sub loop {
   my ($self) = @_;
+  $self->reaper;
 
+  if($self->{adapter}->can('loop_hook')) {
+      return $self->{adapter}->loop_hook;
+  }
+
+  Coro::Event::loop();
+}
+
+sub reaper {
   # This is our reaper event. It looks for expired sessions and kills them off.
   # TODO: This needs some documentation at the very least
+  # XXX hello?  configurable timeout?  hello?
+  my $self = shift;
   async {
      my $timeout = 300;  
      $timeout = $self->{reap_after} if $self->{reap_after} and $self->{reap_after} < $timeout;
@@ -455,10 +466,8 @@ sub loop {
         $self->mapper->reap($self->{reap_after}) if $self->{reap_after};
      }
   };
-
-  # cede once to get our reaper running
+  # cede once to get the reaper running
   cede;
-  Coro::Event::loop();
 }
 
 # This is our internal debugging tool.
