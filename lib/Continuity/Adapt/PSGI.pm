@@ -185,6 +185,50 @@ sub end_request {
   $self->{response_done_watcher}->send;
 }
 
+=head2 C<< $adapter->map_path($path) >>
+
+Decodes URL-encoding in the path and attempts to guard against malice.
+Returns the processed filesystem path.
+
+=cut
+
+sub map_path {
+  my $self = shift;
+  my $path = shift() || '';
+  # my $docroot = $self->docroot || '';
+  my $docroot = Cwd::getcwd();
+  $docroot .= '/' if $docroot and $docroot ne '.' and $docroot !~ m{/$};
+  # some massaging, also makes it more secure
+  $path =~ s/%([0-9a-fA-F][0-9a-fA-F])/chr hex $1/ge;
+  $path =~ s%//+%/%g unless $docroot;
+  $path =~ s%/\.(?=/|$)%%g;
+  $path =~ s%/[^/]+/\.\.(?=/|$)%%g;
+
+  # if($path =~ m%^/?\.\.(?=/|$)%) then bad
+
+$self->Continuity::debug(2,"path: $docroot$path\n");
+
+  return "$docroot$path";
+}
+
+sub send_static {
+  my ($self, $r) = @_;
+
+  my $url = $r->url;
+  $url =~ s{\?.*}{};
+  my $path = $self->map_path($url) or do { 
+       $self->Continuity::debug(1, "can't map path: " . $url);
+       die;
+  };
+
+  require 'Plack::App::File';
+  my $stuff = Plack::App::File->serve_path({},$path);
+
+  ( $self->{response_code}, $self->{response_headers}, $self->{response_content} )
+    = @$stuff;
+
+}
+
 package Continuity;
 
 # Override the ->loop
