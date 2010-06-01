@@ -1,7 +1,5 @@
 package Continuity::Adapt::PSGI;
 
-# XXX Can't locate object method "send_static" via package "Continuity::Adapt::PSGI" at lib/Continuity.pm line 421, <> line 11.
-
 =head1 NAME
 
 Continuity::Adapt::PSGI - PSGI backend for Continuity
