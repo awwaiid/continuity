@@ -1,14 +1,16 @@
 package Continuity::Adapt::PSGI;
 
+# XXX C::A::PSGI doesn't support streaming as it is; rather than return all of the data at once, create an IO::Handle like object for Plack to read from
+
 =head1 NAME
 
 Continuity::Adapt::PSGI - PSGI backend for Continuity
 
 =head1 SYNOPSIS
 
-  # Run with "plackup -s <whichever AnyEvent/Coro friendly server> demo.pl"
+  # Run with "plackup -s <whichever Coro friendly server> demo.pl"
 
-  # Twiggy and Corona are two AnyEvent/Coro friendly Plack servers:
+  # Twiggy and Corona are two Coro friendly Plack servers:
   #
   #       "Twiggy is a lightweight and fast HTTP server"
   #       "Corona is a Coro based Plack web server. It uses Net::Server::Coro under the hood"
@@ -39,8 +41,9 @@ use warnings;
 use Continuity::Request;
 use base 'Continuity::Request';
 
-use AnyEvent;
 use Coro::Channel;
+use Coro::Signal;
+use Plack::App::File; # use this now; no surprises for later
 
 sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }
 
@@ -52,7 +55,7 @@ sub new {
     first_request => 1,
     debug_level => 1,
     debug_callback => sub { print STDERR "@_\n" },
-    request_queue => Coro::Channel->new(),  # AnyEvent->condvar,          #  turns out, I can't see how to implement a reusable queue with a condvar -- sdw
+    request_queue => Coro::Channel->new(),
     @_
   }, $class;
 }
@@ -81,12 +84,19 @@ sub loop_hook {
         my $request = Continuity::Adapt::PSGI::Request->new( $env ); # make it now and send it through the queue fully formed
         $self->{request_queue}->put($request);
 
-        $request->{response_done_watcher}->recv; # XXX should be ->wait?
+        $request->{response_done_watcher}->wait;
         return [ $request->{response_code}, $request->{response_headers}, $request->{response_content} ];
 
   };
 
 }
+
+=head2 C<< $adapter->map_path($path) >>
+
+Decodes URL-encoding in the path and attempts to guard against malice.
+Returns the processed filesystem path.
+
+=cut
 
 sub map_path {
   my $self = shift;
@@ -111,18 +121,21 @@ $self->Continuity::debug(2,"path: $docroot$path\n");
 sub send_static {
   my ($self, $r) = @_;
 
+  # this is called from Continuity.pm to give a request back to us to deal with that it got from our get_request.
+  # rather than sending it to the mapper to get sent to the per-user execution context, it gets returned straight back here.
+  # $r is an instance of Continuity::Adapt::PSGI::Request
+
   my $url = $r->url;
   $url =~ s{\?.*}{};
   my $path = $self->map_path($url) or do { 
        $self->Continuity::debug(1, "can't map path: " . $url);
-       die;
+       die; # XXX don't die except in debugging
   };
 
-  require 'Plack::App::File';
   my $stuff = Plack::App::File->serve_path({},$path);
 
-  ( $self->{response_code}, $self->{response_headers}, $self->{response_content} )
-    = @$stuff;
+  ( $r->{response_code}, $r->{response_headers}, $r->{response_content} ) = @$stuff;
+  $r->{response_done_watcher}->send;
 
 }
 
@@ -132,7 +145,7 @@ sub send_static {
 
 package Continuity::Adapt::PSGI::Request;
 
-use AnyEvent;
+use Coro::Signal;
 
 # List of cookies to send
 sub cookies { exists $_[1] ? $_[0]->{cookies} = $_[1] : $_[0]->{cookies} }
@@ -149,7 +162,7 @@ sub new {
     response_code => 200,
     response_headers => [],
     response_content => [],
-    response_done_watcher => AnyEvent->condvar,
+    response_done_watcher => Coro::Signal->new,
     %$env
   };
   bless $self, $class;
@@ -255,12 +268,5 @@ sub end_request {
   # Signal that we are done building our response
   $self->{response_done_watcher}->send;
 }
-
-=head2 C<< $adapter->map_path($path) >>
-
-Decodes URL-encoding in the path and attempts to guard against malice.
-Returns the processed filesystem path.
-
-=cut
 
 1;
