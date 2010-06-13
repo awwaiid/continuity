@@ -43,7 +43,10 @@ use base 'Continuity::Request';
 
 use Coro::Channel;
 use Coro::Signal;
+use Plack;
 use Plack::App::File; # use this now; no surprises for later
+
+warn "tested against Plack 0.9938; you have $Plack::VERSION" if $Plack::VERSION < 0.9938;
 
 sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }
 
@@ -81,6 +84,7 @@ sub loop_hook {
         # stuff $env onto a queue that get_request above pulls from; get_request is called from Continuity's main execution context/loop
         # Continuity's main execution loop invokes the Mapper to send the request across a queue to the per session execution context (creating a new one as needed)
 
+# use Data::Dumper; warn Dumper $env;
         my $request = Continuity::Adapt::PSGI::Request->new( $env ); # make it now and send it through the queue fully formed
         $self->{request_queue}->put($request);
 
@@ -129,7 +133,10 @@ sub send_static {
   $url =~ s{\?.*}{};
   my $path = $self->map_path($url) or do { 
        $self->Continuity::debug(1, "can't map path: " . $url);
-       die; # XXX don't die except in debugging
+       # die; # XXX don't die except in debugging
+      ( $r->{response_code}, $r->{response_headers}, $r->{response_content} ) = ( 404, [], [ "Static file not found" ] );
+      $r->{response_done_watcher}->send;
+      return;
   };
 
   my $stuff = Plack::App::File->serve_path({},$path);
