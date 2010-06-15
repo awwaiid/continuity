@@ -495,6 +495,8 @@ Website/Wiki: L<http://continuity.tlt42.org/>
 L<Continuity::Request>, L<Continuity::RequestCallbacks>, L<Continuity::Mapper>,
 L<Continuity::Adapt::HttpDaemon>, L<Coro>
 
+L<AnyEvent::DBI> and L<Coro::Mysql> for concurrent database access.
+
 =head1 AUTHOR
 
   Brock Wilcox <awwaiid@thelackthereof.org> - http://thelackthereof.org/
