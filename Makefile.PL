@@ -25,7 +25,6 @@ WriteMakefile(
     LICENSE           => 'perl',
     PREREQ_PM         => {
       Event           => 0,
-      Plack           => 0.9938, # for Plack::App::File XXX how do we say, "we don't require a module but if you have the module, it has to be of at least a certain version"?
       HTTP::Daemon    => 1.36,
       Coro            => 4.37,
       Coro::Event     => 0,
