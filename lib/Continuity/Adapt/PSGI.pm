@@ -78,7 +78,7 @@ sub loop_hook {
     # $server->loop calls this; plackup run .psgi files except a coderef as the last value and this lets that coderef fall out of the call to $server->loop
     # uniqe to the PSGI adapter -- a coderef that gets invoked when a request comes in
 
-    sub {
+    my $app = sub {
         my $env = shift;
 
         # stuff $env onto a queue that get_request above pulls from; get_request is called from Continuity's main execution context/loop
@@ -92,6 +92,8 @@ sub loop_hook {
         return [ $request->{response_code}, $request->{response_headers}, $request->{response_content} ];
 
   };
+  Coro::cede();
+  return $app;
 
 }
 
