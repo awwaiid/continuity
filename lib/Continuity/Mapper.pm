@@ -55,7 +55,7 @@ when C<query_session> is set but no GET/POST parameter of the specified name
 
 If you use C<query_session> to keep the user associated with their session,
 every link and form in the application must be written to include the session
-id. The currently assigned ID can be gotten at with C<$request->session_id>.
+id. The currently assigned ID can be gotten at with C<< $request->session_id >>.
 
 For each incoming HTTP hit, L<Continuity> must use some criteria for deciding
 which execution context to send that hit to.  For each of these that are set
