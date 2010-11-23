@@ -1,6 +1,9 @@
 Revision history for Continuity. See the main repository for a detailed list of
 internal changes.
 
+Version 1.3 (released 2010.11.22)
+  * Stupid version number issue
+
 Version 1.2.0 (released 2010.11.22)
   * Refactor PSGI adaptor (scrottie)
   * Random documentation updates
