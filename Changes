@@ -1,5 +1,9 @@
-Revision history for Continuity. See Changes-darcs or the main repository for a
-detailed list of internal changes.
+Revision history for Continuity. See the main repository for a detailed list of
+internal changes.
+
+Version 1.2.0 (released 2010.11.22)
+  * Refactor PSGI adaptor (scrottie)
+  * Random documentation updates
 
 Version 1.1.1 (released 2010.02.05)
   * Add PSGI Adapter! Try "plackup -s Coro guess.pl"
