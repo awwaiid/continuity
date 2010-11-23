@@ -481,7 +481,7 @@ sub debug {
       $output .= "$package:$line: ";
     }
     $output .= "@msg";
-    $self->debug_callback->($output);
+    $self->debug_callback->($output) if $self->can('debug_callback');
   }
 }
 
