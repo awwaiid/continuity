@@ -131,10 +131,11 @@ sub send_static {
   # rather than sending it to the mapper to get sent to the per-user execution context, it gets returned straight back here.
   # $r is an instance of Continuity::Adapt::PSGI::Request
 
-  my $url = $r->url;
-  $url =~ s{\?.*}{};
-  my $path = $self->map_path($url) or do { 
-       $self->Continuity::debug(1, "can't map path: " . $url);
+  my $url_path = $r->url_path;
+
+  $url_path =~ s{\?.*}{};
+  my $path = $self->map_path($url_path) or do { 
+       $self->Continuity::debug(1, "can't map path: " . $url_path);
        # die; # XXX don't die except in debugging
       ( $r->{response_code}, $r->{response_headers}, $r->{response_content} ) = ( 404, [], [ "Static file not found" ] );
       $r->{response_done_watcher}->send;
@@ -216,6 +217,11 @@ sub method {
 sub url {
   my ($self) = @_;
   return $self->{'psgi.url_scheme'} . '://' . $self->{HTTP_HOST} . $self->{PATH_INFO};
+}
+
+sub url_path {
+  my ($self) = @_;
+  return $self->{PATH_INFO};
 }
 
 sub uri {
