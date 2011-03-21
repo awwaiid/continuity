@@ -222,7 +222,6 @@ use strict;
 use warnings;
 
 use Coro;
-use Coro::Event;
 use HTTP::Status; # to grab static response codes. Probably shouldn't be here
 use Continuity::RequestHolder;
 use List::Util 'first';
@@ -444,11 +443,13 @@ no warnings 'redefine';
 
 sub loop {
   my ($self) = @_;
-  $self->reaper;
 
   if($self->{adapter}->can('loop_hook')) {
       return $self->{adapter}->loop_hook;
   }
+  
+  eval 'use Coro::Event';
+  $self->reaper;
 
   Coro::Event::loop();
 }
