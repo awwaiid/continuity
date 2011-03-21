@@ -349,6 +349,7 @@ sub print {
     } else {
         $e->next; $self->conn->print(@_); 
     }
+    Coro::cede();
     return 1;
 }
 
