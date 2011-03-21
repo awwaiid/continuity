@@ -383,6 +383,7 @@ sub new {
 sub start_request_loop {
   my ($self) = @_;
   async {
+    local $Coro::current->{desc} = 'Continuity Request Loop';
     while(1) {
       $self->debug(3, "Getting request from adapter");
       my $r = $self->adapter->get_request;
@@ -458,6 +459,7 @@ sub reaper {
   # XXX hello?  configurable timeout?  hello?
   my $self = shift;
   async {
+    local $Coro::current->{desc} = 'Session Reaper';
      my $timeout = 300;  
      $timeout = $self->{reap_after} if $self->{reap_after} and $self->{reap_after} < $timeout;
      my $timer = Coro::Event->timer(interval => $timeout, );
