@@ -1,6 +1,12 @@
 Revision history for Continuity. See the main repository for a detailed list of
 internal changes.
 
+Version 1.4 (released 2011.03.20)
+  * Make PSGI adapter be non-blocking
+  * Also make it use the psgi.streaming interface
+  * Add yield to Adapt::HttpDaemon's print (I thought it was there before?)
+  * Add Coro thread descriptions for better debugging
+
 Version 1.3 (released 2010.11.22)
   * Stupid version number issue
 
