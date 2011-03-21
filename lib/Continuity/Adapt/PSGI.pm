@@ -128,7 +128,7 @@ sub map_path {
   my $path = shift() || '';
   # my $docroot = $self->docroot || '';
   my $docroot = Cwd::getcwd();
-  $docroot .= '/' if $docroot and $docroot ne '.' and $docroot !~ m{/$};
+  #$docroot .= '/' if $docroot and $docroot ne '.' and $docroot !~ m{/$};
   # some massaging, also makes it more secure
   $path =~ s/%([0-9a-fA-F][0-9a-fA-F])/chr hex $1/ge;
   $path =~ s%//+%/%g unless $docroot;
@@ -164,6 +164,9 @@ sub send_static {
   my $stuff = Plack::App::File->serve_path({},$path);
 
   ( $r->{response_code}, $r->{response_headers}, $r->{response_content} ) = @$stuff;
+  $r->response->(
+    [ $r->response_code, $r->response_headers, $r->response_content ]
+  );
   $r->{response_done_watcher}->send;
 
 }
@@ -298,14 +301,12 @@ sub send_basic_header {
            "Content-type" => "text/html",
       ;
     }
-  
+
     my $writer = $self->response->(
       [ $self->response_code, $self->response_headers ]
     );
     
     $self->writer( $writer );
-
-    1;
 }
 
 sub print {
