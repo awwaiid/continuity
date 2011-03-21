@@ -14,14 +14,16 @@
 use strict;
 use lib '../lib';
 use Continuity;
+use Coro::Event;
 
 my @messages;    # Global (shared) list of messages
 my $got_message; # Flag to indicate that there is a new message to display
 
 my $server = Continuity->new(
-  port => 16001,
+  port => 5000,
   path_session => 1,
   cookie_session => 'sid',
+  debug_level => 3,
 );
 
 $server->loop;
@@ -32,7 +34,8 @@ $server->loop;
 sub main {
   my ($req) = @_;
   
-  my $path = $req->request->url->path;
+  #my $path = $req->request->url->path;
+  my $path = $req->request->url_path;
   print STDERR "Path: '$path'\n";
 
   # If this is a request for the pushtream, then give them that
@@ -81,7 +84,7 @@ sub send_message {
       pop @messages if $#messages > 15; # Only keep the recent 15 messages
     }
     $got_message = 1;
-    $req->print("Got it!");
+    $req->print("Got it! ($msg)");
     $req->next;
   }
 }
@@ -95,8 +98,8 @@ sub send_base_page {
       <html>
         <head>
           <title>Chat!</title>
-          <script src="jquery.js" type="text/javascript"></script>
-          <script src="chat-ajax-push.js" type="text/javascript"></script>
+          <script src="/jquery.js" type="text/javascript"></script>
+          <script src="/chat-ajax-push.js" type="text/javascript"></script>
         </head>
         <body>
           <form id=f>
