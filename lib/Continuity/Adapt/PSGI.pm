@@ -1,26 +1,22 @@
 package Continuity::Adapt::PSGI;
 
-# XXX C::A::PSGI doesn't support streaming as it is; rather than return all of the data at once, create an IO::Handle like object for Plack to read from
-
 =head1 NAME
 
 Continuity::Adapt::PSGI - PSGI backend for Continuity
 
 =head1 SYNOPSIS
 
-  # Run with "plackup -s <whichever Coro friendly server> demo.pl"
+  # Run with on of these:
+  #   corona demo.pl
+  #   twiggy demo.pl
+  #   ./myapp.pl # Will try to fall back to HttpDaemon ;)
 
-  # Twiggy and Corona are two Coro friendly Plack servers:
-  #
-  #       "Twiggy is a lightweight and fast HTTP server"
-  #       "Corona is a Coro based Plack web server. It uses Net::Server::Coro under the hood"
+  # "Twiggy is a lightweight and fast HTTP server"
+  # "Corona is a Coro based Plack web server. It uses Net::Server::Coro under the hood"
 
   use Continuity;
 
-  my $server = Continuity->new( 
-      adapter => Continuity::Adapt::PSGI->new,
-      staticp => sub { 0 },
-  );
+  my $server = Continuity->new;
 
   sub main {
     my $request = shift;
@@ -31,6 +27,8 @@ Continuity::Adapt::PSGI - PSGI backend for Continuity
     }
   }
 
+  # This is actually returning a subref to PSI/Plack
+  # So put it at the end
   $server->loop;
 
 =cut
@@ -43,7 +41,6 @@ use base 'Continuity::Request';
 
 use Coro;
 use Coro::Channel;
-use Coro::Signal;
 use Plack;
 use Plack::App::File; # use this now; no surprises for later
 
@@ -52,6 +49,8 @@ warn "tested against Plack 0.9938; you have $Plack::VERSION" if $Plack::VERSION 
 sub debug_level { exists $_[1] ? $_[0]->{debug_level} = $_[1] : $_[0]->{debug_level} }
 
 sub debug_callback { exists $_[1] ? $_[0]->{debug_callback} = $_[1] : $_[0]->{debug_callback} }
+
+sub docroot { exists $_[1] ? $_[0]->{docroot} = $_[1] : $_[0]->{docroot} }
 
 sub new {
   my $class = shift;
@@ -126,9 +125,9 @@ Returns the processed filesystem path.
 sub map_path {
   my $self = shift;
   my $path = shift() || '';
-  # my $docroot = $self->docroot || '';
-  my $docroot = Cwd::getcwd();
-  #$docroot .= '/' if $docroot and $docroot ne '.' and $docroot !~ m{/$};
+  my $docroot = $self->docroot || '';
+  # my $docroot = Cwd::getcwd();
+  # $docroot .= '/' if $docroot and $docroot ne '.' and $docroot !~ m{/$};
   # some massaging, also makes it more secure
   $path =~ s/%([0-9a-fA-F][0-9a-fA-F])/chr hex $1/ge;
   $path =~ s%//+%/%g unless $docroot;
@@ -312,7 +311,9 @@ sub send_basic_header {
 sub print {
   my $self = shift;
 
-  $self->writer->write( @_ );
+  eval {
+    $self->writer->write( @_ );
+  };
 
   # This is a good time to let other stuff run
   Coro::AnyEvent::idle();
@@ -324,7 +325,7 @@ sub end_request {
   my $self = shift;
   
   # Tell our writer that we're done
-  $self->writer->close;
+  $self->writer->close if $self->writer;
 
   # Signal that we are done building our response
   $self->{response_done_watcher}->send;
