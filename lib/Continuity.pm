@@ -27,7 +27,7 @@ Continuity - Abstract away statelessness of HTTP, for stateful Web applications
 =head1 DESCRIPTION
 
 Continuity is a library to simplify web applications. Each session is written
-and runs as a persistant application, and is able to request additional input
+and runs as a persistent application, and is able to request additional input
 at any time without exiting. This is significantly different from the
 traditional CGI model of web applications in which a program is restarted for
 each new request.
@@ -199,14 +199,14 @@ This library is designed to be extensible but have good defaults. There are two
 important components which you can extend or replace.
 
 The Adapter, such as the default L<Continuity::Adapt::HttpDaemon>, actually
-makes the HTTP connections with the client web broswer. If you want to use
+makes the HTTP connections with the client web browser. If you want to use
 FastCGI or even a non-HTTP protocol, then you will use or create an Adapter.
 
 The Mapper, such as the default L<Continuity::Mapper>, identifies incoming
 requests from The Adapter and maps them to instances of your program. In other
 words, Mappers keep track of sessions, figuring out which requests belong to
 which session. The default mapper can identify sessions based on any
-combination of cookie, ip address, and URL path. Override The Mapper to create
+combination of cookie, IP address, and URL path. Override The Mapper to create
 alternative session identification and management.
 
 =head1 METHODS
@@ -410,7 +410,7 @@ sub handle_request {
 
   # We need some way to decide if we should send static or dynamic
   # content.
-  # To save users from having to re-implement (likely incorrecty)
+  # To save users from having to re-implement (likely incorrectly)
   # basic security checks like .. abuse in GET paths, we should provide
   # a default implementation -- preferably one already on CPAN.
   # Here's a way: ask the mapper.
