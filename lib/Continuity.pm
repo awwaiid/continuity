@@ -303,7 +303,6 @@ sub new {
     debug_callback => sub { print STDERR "@_\n" },
     reload => 1, # XXX
     callback => (exists &{caller()."::main"} ? \&{caller()."::main"} : undef),
-    # callback => (exists &::main ? \&::main : undef),
     staticp => sub { $_[0]->url =~ m/\.(jpg|jpeg|gif|png|css|ico|js)$/ },
     no_content_type => 0,
     reap_after => undef,
