@@ -20,7 +20,6 @@ my $server = new Continuity(
     query_session => 'sid',
 );
 
-$server->loop;
 
 sub stats {
   my ($request) = @_;
@@ -110,6 +109,4 @@ sub main {
   }
 }
 
-
-1;
-
+$server->loop;

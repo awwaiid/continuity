@@ -1,6 +1,6 @@
 package Continuity;
 
-our $VERSION = '1.4';
+our $VERSION = '1.5';
 
 =head1 NAME
 
@@ -507,7 +507,7 @@ L<AnyEvent::DBI> and L<Coro::Mysql> for concurrent database access.
 
 =head1 COPYRIGHT
 
-  Copyright (c) 2004-2010 Brock Wilcox <awwaiid@thelackthereof.org>. All
+  Copyright (c) 2004-2011 Brock Wilcox <awwaiid@thelackthereof.org>. All
   rights reserved.  This program is free software; you can redistribute it
   and/or modify it under the same terms as Perl itself.
 

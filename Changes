@@ -1,6 +1,10 @@
 Revision history for Continuity. See the main repository for a detailed list of
 internal changes.
 
+Version 1.5 (released 2011.09.17)
+  * Fix PSGI docroot
+  * Documentation improvements
+
 Version 1.4 (released 2011.03.20)
   * Make PSGI adapter be non-blocking
   * Also make it use the psgi.streaming interface

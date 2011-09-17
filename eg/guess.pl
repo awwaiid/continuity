@@ -5,12 +5,6 @@ use strict;
 use warnings;
 use Continuity;
 
-my $server = Continuity->new(
-  port => 8080,
-);
-
-$server->loop;
-
 sub getNum {
   my $request = shift;
   $request->print( qq{
@@ -45,4 +39,9 @@ sub main {
   $request->print("It took you $tries tries.<br>\n");
 }
 
+my $server = Continuity->new(
+  port => 8080,
+);
+
+return $server->loop;
 
