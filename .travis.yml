@@ -1,0 +1,6 @@
+language: perl
+perl:
+  - "5.16"
+  - "5.10"
+before_script:
+  - cpanm -nq --installdeps .
