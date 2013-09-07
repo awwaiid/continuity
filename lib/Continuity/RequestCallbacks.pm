@@ -81,7 +81,7 @@ you've displayed the form and then done C<< $request->next >>.
 
 We don't call this from within C<< $request->next >> in case you need to do
 some processing before executing callbacks. Checking authentication is a good
-example of something you might be doing inbetween :)
+example of something you might be doing in between :)
 
 By default the callbacks are cleared with ->clear_callbacks after all callbacks
 are processed. If you'd like, you can pass a hashref with a flag to indicate
