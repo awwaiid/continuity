@@ -64,7 +64,7 @@ sub new {
 }
 
 sub get_request {
-  # called from Continuity's main loop (new calls start_request_loop; start_request_loop gets requests from here or whereever and passes them to the mapper)
+  # called from Continuity's main loop (new calls start_request_loop; start_request_loop gets requests from here or wherever and passes them to the mapper)
   my ($self) = @_;
   my $request = $self->{request_queue}->get or die;
   return $request;
@@ -78,7 +78,7 @@ sub loop_hook {
   # last value and this lets that coderef fall out of the call to
   # $server->loop.
 
-  # uniqe to the PSGI adapter -- a coderef that gets invoked when a request
+  # unique to the PSGI adapter -- a coderef that gets invoked when a request
   # comes in
 
   my $app = sub {
