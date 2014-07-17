@@ -29,4 +29,9 @@ WriteMakefile(
       Coro            => 4.37,
       Coro::Event     => 0,
     },
+    META_MERGE        => {
+        resources => {
+            repository => 'https://github.com/awwaiid/continuity',
+        },
+    },
 );
