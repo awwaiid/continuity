@@ -1,6 +1,9 @@
 Revision history for Continuity. See the main repository for a detailed list of
 internal changes.
 
+Version 1.6 (released 2014.07.17)
+  * Spelling fixes mostly (thanks dsteinbrunner!)
+
 Version 1.5 (released 2011.09.17)
   * Fix PSGI docroot
   * Documentation improvements
