@@ -1,4 +1,3 @@
-
 package Continuity::Adapt::HttpDaemon;
 
 use strict;
@@ -409,7 +408,7 @@ What we are doing is making these non-blocking using Coro::Event.
 do {
 
     # HTTP::Daemon isn't Coro-friendly and attempting to diddle HTTP::Daemon's
-    # inheritence to use Coro::Socket instead was a dissaster.  So, instead, we
+    # inheritance to use Coro::Socket instead was a disaster.  So, instead, we
     # provide reimplementations of just a couple of functions to make it all
     # Coro-friendly.  This kind of meddling- under-the-hood is still just
     # asking for breaking from future versions of HTTP::Daemon.
@@ -429,7 +428,7 @@ do {
             ${*$sock}{'httpd_daemon'} = $self;
             return wantarray ? ($sock, $peer) : $sock;
         } elsif($!{EAGAIN}) {
-            my $socket_read_event = Coro::Event->io(fd => fileno $self, poll => 'r', ); # XXX should create this once per call rather than ocne per EGAIN
+            my $socket_read_event = Coro::Event->io(fd => fileno $self, poll => 'r', ); # XXX should create this once per call rather than once per EGAIN
             $socket_read_event->next;
             $socket_read_event->cancel;
             goto try_again; 

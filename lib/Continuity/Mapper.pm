@@ -1,4 +1,3 @@
-
 package Continuity::Mapper;
 
 use strict;
@@ -23,7 +22,7 @@ This is the session dictionary and mapper. Given an HTTP request, mapper gives
 said request to the correct continuation. Mapper makes continuations as needed
 and stores them. Mapper may be subclassed to implement other strategies for
 associating requests with continuations. The default strategy is (in limbo but
-quite possibily) based on a cookie.
+quite possibly) based on a cookie.
 
 =head1 METHODS
 
@@ -77,11 +76,11 @@ which execution context to associate with that hit.  This makes it possible to
 write applications that give one user more than one execution contexts.  This
 is necessary to run server-push concurrently with push from the user back to
 the server (see the examples directory) or to have sub-applications running on
-the same port, each having its own state seperate from the others.
+the same port, each having its own state separate from the others.
 
 Cookies aren't issued or read by L<Continuity>, but we plan to add support for
 reading them.  I expect the name of the cookie to look for would be passed in,
-or perhaps a subroutine that validates the cookies and returns it (possibily
+or perhaps a subroutine that validates the cookies and returns it (possibly
 stripped of a secure hash) back out.  Other code (the main application, or
 another session handling module from CPAN, or whatnot) will have the work of
 picking session IDs.
@@ -147,8 +146,8 @@ sub get_session_id_from_hit {
   # Path sessions
   if($self->{path_session}) {
     my ($path) = $request->uri =~ m{/([^?]*)};
-    $path =~ s/\.//g; # ./ and / are the same thing, and hey -- we use the dot as our seperator anyway
-    $path ||= '/';  # needed to make it consistant
+    $path =~ s/\.//g; # ./ and / are the same thing, and hey -- we use the dot as our separator anyway
+    $path ||= '/';  # needed to make it consistent
     $session_id .= '.' . $path;
   }
 
