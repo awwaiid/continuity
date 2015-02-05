@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use Continuity;
 
-my $server = new Continuity(
+my $server = Continuity->new(
   path_session => 1,
   port => 8080
 );

@@ -18,7 +18,7 @@ as a very simple tutorial of the basic functionality.
 
 use Continuity;
 use Continuity::RequestCallbacks;
-my $server = new Continuity;
+my $server = Continuity->new;
 $server->loop;
 
 # Main is invoked when we get a new session

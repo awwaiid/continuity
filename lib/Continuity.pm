@@ -13,7 +13,7 @@ Continuity - Abstract away statelessness of HTTP, for stateful Web applications
   use strict;
   use Continuity;
 
-  my $server = new Continuity;
+  my $server = Continuity->new;
   $server->loop;
 
   sub main {
@@ -57,7 +57,7 @@ Here's a simple example:
   use strict;
   use Continuity;
 
-  my $server = new Continuity;
+  my $server = Continuity->new;
   $server->loop;
 
   sub main {

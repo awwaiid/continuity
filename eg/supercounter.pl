@@ -15,7 +15,7 @@ code. We even implement our own 'prompt'...
 =cut
 
 use Continuity;
-my $server = new Continuity(
+my $server = Continuity->new(
     port => 8080,
     query_session => 'sid',
 );
@@ -96,7 +96,7 @@ package Main;
 sub main {
   my $request = shift;
 
-  my @counter = map { new Counter } 1..5;
+  my @counter = map { Counter->new } 1..5;
 
   while(1) {
     foreach my $counter (@counter) {
