@@ -25,7 +25,7 @@ objects that are sent to applications running inside Continuity.
 
 =over
 
-=item $server = new Continuity::Adapt::FCGI(...)
+=item $server = Continuity::Adapt::FCGI->new(...)
 
 Create a new continuation adapter and HTTP::Daemon. This actually starts the
 HTTP server which is embedded.
@@ -40,9 +40,9 @@ sub new {
   bless $self, $class;
 
   my $env = {};
-  my $in = new IO::Handle;
-  my $out = new IO::Handle;
-  my $err = new IO::Handle;
+  my $in = IO::Handle->new;
+  my $out = IO::Handle->new;
+  my $err = IO::Handle->new;
 
   $self->{fcgi_request} = FCGI::Request($in,$out,$err,$env);
   $self->{in} = $in;

@@ -8,7 +8,7 @@ use Devel::Size qw(size total_size);
 use Data::Dumper;
 
 use Continuity;
-my $server = new Continuity(
+my $server = Continuity->new(
   path_session => 1,
   port => 18081,
 );

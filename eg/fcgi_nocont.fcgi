@@ -7,9 +7,9 @@ use IO::Handle;
 
 my $count = 0;
 
-my $in = new IO::Handle;
-my $out = new IO::Handle;
-my $err = new IO::Handle;
+my $in = IO::Handle->new;
+my $out = IO::Handle->new;
+my $err = IO::Handle->new;
 my $r = FCGI::Request($in,$out,$err);
 
 while($r->Accept() >= 0) {

@@ -17,7 +17,7 @@ as a very simple tutorial of the basic functionality.
 =cut
 
 use Continuity;
-my $server = new Continuity;
+my $server = Continuity->new;
 $server->loop;
 
 # Ask a question and keep asking until they answer. General purpose prompt.

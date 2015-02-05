@@ -6,7 +6,7 @@ use warnings;
 use Continuity;
 use Continuity::Inspector;
 
-my $server = new Continuity(
+my $server = Continuity->new(
       port => 8080,
       ip_session => 0,
       cookie_session => 'sid',
