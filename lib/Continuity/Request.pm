@@ -1,6 +1,9 @@
 
 package Continuity::Request;
 
+use strict;
+use warnings;
+
 =head1 NAME
 
 Continuity::Request - Simple HTTP::Request-like API for requests inside Continuity
