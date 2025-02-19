@@ -148,6 +148,8 @@ sub fcgi_request { exists $_[1] ? $_[0]->{fcgi_request} = $_[1] : $_[0]->{fcgi_r
 sub debug_level :lvalue { $_[0]->{debug_level} }
 sub debug_callback :lvalue { $_[0]->{debug_callback} }
 
+=over 4
+
 =item $request = Continuity::Adapt::FCGI::Request->new($client, $id, $cgi, $query)
 
 Creates a new C<Continuity::Adapt::FCGI::Request> object. This deletes values
@@ -215,6 +217,7 @@ sub peerhost {
 
 Sends a HTTP error back to the user.
 
+
 =cut
 
 sub error {
@@ -240,6 +243,7 @@ Gets the specified variable out of the CGI environment.
 
 eg:
    $request->env("REMOTE_ADDR");
+
 
 =cut
 
@@ -352,6 +356,8 @@ sub send_basic_header {
 
 sub immediate { }
 
+=back
+
 =head1 SEE ALSO
 
 L<Continuity>
@@ -367,7 +373,10 @@ L<Continuity>
   reserved.  This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 
+
 =cut
+
+
 
 1;
 
