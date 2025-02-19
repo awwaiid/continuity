@@ -8,7 +8,7 @@ SYNOPSIS
       use strict;
       use Continuity;
 
-      my $server = new Continuity;
+      my $server = Continuity->new;
       $server->loop;
 
       sub main {
@@ -50,7 +50,7 @@ GETTING STARTED
       use strict;
       use Continuity;
 
-      my $server = new Continuity;
+      my $server = Continuity->new;
       $server->loop;
 
       sub main {

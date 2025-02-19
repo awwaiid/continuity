@@ -5,7 +5,7 @@ use warnings;
 
 use Continuity;
 use Continuity::Adapt::FCGI;
-my $server = new Continuity(
+my $server = Continuity->new(
   adapter => 'FCGI',
 );
 

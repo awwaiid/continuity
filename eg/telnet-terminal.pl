@@ -20,7 +20,7 @@ my $r = shift;
 
 my ($host, $port) = ('localhost', 23);
 
-my $t = new Net::Telnet (
+my $t = Net::Telnet->new(
   'Host' => $host,
   'Port' => $port,
   'Errmode' => 'return',
@@ -35,7 +35,7 @@ $t->option_accept ('Do' => TELOPT_TTYPE);
 $t->suboption_callback (\&subopt_callback);
 $t->timeout(undef);
 
-my $vt = Term::VT102->new (
+my $vt = Term::VT102->new(
   'cols' => 80,
   'rows' => 23,
 );
